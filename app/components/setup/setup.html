@@ -1,0 +1,47 @@
+<form name="setupCtrl.form">
+  <h3>Arena</h3>
+  <div layout="row" layout-wrap>
+    <md-input-container>
+      <label>Arena Width</label>
+      <input type="number" name="arenaWidth"
+          ng-model="setupCtrl.options.arenaWidth"
+          required step="1" min="1">
+      <div ng-messages="setupCtrl.form.arenaWidth.$error" role="alert">
+        <div ng-message="min">Must have at least one node.</div>
+        <div ng-messages-include="utils/formErrors.html"></div>
+      </div>
+    </md-input-container>
+
+    <md-input-container>
+      <label>Arena Height</label>
+      <input type="number" name="arenaHeight"
+          ng-model="setupCtrl.options.arenaHeight"
+          required step="1" min="1">
+      <div ng-messages="setupCtrl.form.arenaHeight.$error" role="alert">
+        <div ng-message="min">Must have at least one node.</div>
+        <div ng-messages-include="utils/formErrors.html"></div>
+      </div>
+    </md-input-container>
+
+  </div>
+
+  <md-button
+      class="md-raised md-primary"
+      type="submit"
+      ng-disabled="setupCtrl.worker"
+      ng-click="setupCtrl.startWorker()">
+    Start
+  </md-button>
+
+  <md-button
+      class="md-warn"
+      ng-disabled="!setupCtrl.worker"
+      ng-click="setupCtrl.stopWorker()">
+    Stop
+  </md-button>
+</form>
+
+<h3>Messages</h3>
+<p ng-repeat="message in setupCtrl.messages">{{ message }}</p>
+
+<div id="arena-container" layout-fill></div>
