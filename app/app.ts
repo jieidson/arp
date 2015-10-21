@@ -30,9 +30,9 @@ angular
     $logProvider.debugEnabled(CONFIG.debug);
   })
 
-  .config(function ($locationProvider: ng.ILocationProvider) {
-    $locationProvider.html5Mode(true);
-  })
+  //.config(function ($locationProvider: ng.ILocationProvider) {
+  //  $locationProvider.html5Mode(true);
+  //})
 
   .config(function ($translateProvider: angular.translate.ITranslateProvider) {
     $translateProvider

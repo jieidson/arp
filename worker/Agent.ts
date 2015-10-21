@@ -1,10 +1,24 @@
 class Agent {
 
-  constructor(public name: string, public x: number, public y: number) {}
+  name: string;
+  node: ArenaNode;
+
+  constructor(name: string, node: ArenaNode) {
+    this.name = name;
+    this.node = node;
+
+    this.node.enter(this);
+  }
 
   tick(): void {
-    this.x += Rand.integer(-1, 1);
-    this.y += Rand.integer(-1, 1);
+    var edge = Rand.pick(this.node.edges);
+    this.follow(edge);
+  }
+
+  follow(edge: ArenaEdge): void {
+    this.node.leave(this);
+    this.node = this.node.follow(edge);
+    this.node.enter(this);
   }
 
 }

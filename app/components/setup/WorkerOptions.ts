@@ -1,7 +1,7 @@
 class WorkerOptions {
 
-  arenaWidth: number = 10;
-  arenaHeight: number = 10;
+  arenaWidth: number = 3;
+  arenaHeight: number = 3;
 
 }
 

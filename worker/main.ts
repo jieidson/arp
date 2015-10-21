@@ -14,15 +14,13 @@ function main(options: WorkerOptions): void {
 
   postMessage(arena.toVis());
 
+  var a = new Agent('a', Rand.pick(arena.nodes));
 
-  //var a = new Agent('a', 0, 0);
-  //postMessage(a);
+  var tick = function () {
+    a.tick();
+    postMessage(arena.toVis());
+    setTimeout(tick, 1000);
+  };
 
-  //var tick = function () {
-  //  a.tick();
-  //  postMessage(a);
-  //  setTimeout(tick, 1000);
-  //};
-
-  //setTimeout(tick, 1000);
+  tick();
 }
