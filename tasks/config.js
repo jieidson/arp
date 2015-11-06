@@ -11,8 +11,8 @@ var gulp = require('gulp');
 
 module.exports = {
   version: '1.0.0',
-  configModule: 'crimesim.config',
-  templateModule: 'crimesim.templates'
+  configModule: 'arp.config',
+  templateModule: 'arp.templates'
 };
 
 gulp.task('config:git', function (done) {

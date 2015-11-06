@@ -1,3 +1,3 @@
-angular.module('crimesim.utils', [
+angular.module('arp.utils', [
     'pascalprecht.translate'
 ]);

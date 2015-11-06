@@ -27,7 +27,7 @@ class SiteTitleService {
 }
 
 angular
-  .module('crimesim.utils')
+  .module('arp.utils')
   .service('SiteTitleService', SiteTitleService)
   .run(function (SiteTitleService: SiteTitleService) {
     SiteTitleService.listen();

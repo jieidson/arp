@@ -50,5 +50,5 @@ class SetupController {
 }
 
 angular
-  .module('crimesim.setup')
+  .module('arp.setup')
   .controller('SetupController', SetupController);

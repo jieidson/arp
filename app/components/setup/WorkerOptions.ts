@@ -6,5 +6,5 @@ class WorkerOptions {
 }
 
 angular
-  .module('crimesim.setup')
+  .module('arp.setup')
   .constant('SharedWorkerOptions', WorkerOptions);

@@ -7,5 +7,5 @@ function setupEn($translateProvider: angular.translate.ITranslateProvider) {
 }
 
 angular
-  .module('crimesim.setup')
+  .module('arp.setup')
   .config(setupEn);

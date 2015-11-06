@@ -1,6 +1,6 @@
-angular.module('crimesim.setup', [
+angular.module('arp.setup', [
     'ngMessages',
     'pascalprecht.translate',
     'ui.router',
-    'crimesim.utils'
+    'arp.utils'
 ]);

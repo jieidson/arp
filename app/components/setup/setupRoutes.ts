@@ -12,5 +12,5 @@ function setupRoutes($stateProvider: angular.ui.IStateProvider) {
 }
 
 angular
-  .module('crimesim.setup')
+  .module('arp.setup')
   .config(setupRoutes);

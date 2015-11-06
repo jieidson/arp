@@ -18,5 +18,5 @@ function formError() {
 };
 
 angular
-  .module('crimesim.utils')
+  .module('arp.utils')
   .directive('formError', formError);

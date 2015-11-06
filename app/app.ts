@@ -10,16 +10,16 @@ interface Config {
 }
 
 angular
-  .module('crimesim.app', [
+  .module('arp.app', [
     'angular-locker',
     'ngMaterial',
     'ngSanitize',
     'pascalprecht.translate',
     'ui.router',
 
-    'crimesim.config',
-    'crimesim.setup',
-    'crimesim.templates'
+    'arp.config',
+    'arp.setup',
+    'arp.templates'
   ])
 
   .config(function (
@@ -40,14 +40,14 @@ angular
       .determinePreferredLanguage()
       .fallbackLanguage('en')
       .translations('en', {
-        SITE_TITLE: 'CrimeSim'
+        SITE_TITLE: 'ARP Model Simulator'
       });
   })
 
   .config(function (lockerProvider: any) {
     lockerProvider.defaults({
       driver: 'local',
-      namespace: 'crimesim'
+      namespace: 'arp'
     });
   })
 
@@ -72,6 +72,6 @@ angular
     } else {
       buildType = 'RELEASE';
     }
-    $log.info(`CrimeSim ${CONFIG.version} (${buildType}). Commit: ${CONFIG.git.short} Branch: ${CONFIG.git.branch}`);
+    $log.info(`ARP Model Simulator ${CONFIG.version} (${buildType}). Commit: ${CONFIG.git.short} Branch: ${CONFIG.git.branch}`);
   })
 ;
