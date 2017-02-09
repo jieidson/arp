@@ -1,7 +1,0 @@
-{
-  "name": "crimesim-worker",
-  "version:": "1.0.0",
-  "dependencies": {
-    "random": "1.0.8"
-  }
-}
