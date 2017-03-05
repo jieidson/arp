@@ -8,6 +8,10 @@ export class Random {
     this.engine = rand.engines.mt19937().seed(seed)
   }
 
+  pick<T>(array: Array<T>): T {
+    return rand.pick(this.engine, array)
+  }
+
   sample<T>(population: Array<T>, sampleSize: number): Array<T> {
     return rand.sample(this.engine, population, sampleSize)
   }
