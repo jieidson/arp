@@ -43,7 +43,7 @@
     "no-empty": true,
     "no-empty-interface": true,
     "no-eval": true,
-    "no-inferrable-types": true,
+    "no-inferrable-types": [true, "ignore-params"],
     "no-internal-module": true,
     "no-namespace": true,
     "no-reference": true,
@@ -106,7 +106,8 @@
       "check-decl",
       "check-operator",
       "check-separator",
-      "check-type"
+      "check-type",
+      "check-preblock"
     ],
 
     "directive-selector": [true, "attribute", "arp", "camelCase"],
@@ -123,7 +124,6 @@
 
     "component-class-suffix": true,
     "directive-class-suffix": true,
-    "import-destructuring-spacing": true,
     "no-access-missing-member": true,
     "templates-use-public": true,
     "invoke-injectable": true

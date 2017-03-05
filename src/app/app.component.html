@@ -1,3 +1,70 @@
-<h1>
-  {{ title }}
-</h1>
+<md-toolbar color="primary">
+  ARP Simulator
+</md-toolbar>
+
+<md-card class="container">
+
+  <md-card-title>Configuration</md-card-title>
+
+  <md-card-content>
+    <form id="sim-form" (ngSubmit)="start()"
+        fxLayout="row" fxLayoutWrap="wrap">
+
+      <md-card>
+        <md-card-subtitle>Agents</md-card-subtitle>
+        <md-card-content fxLayout="column">
+          <md-input-container>
+            <input name="police" [(ngModel)]="config.agents.police"
+                type="number" mdInput placeholder="Police">
+          </md-input-container>
+          <md-input-container>
+            <input name="civilian" [(ngModel)]="config.agents.civilian"
+                type="number" mdInput placeholder="Civilians">
+          </md-input-container>
+          <md-input-container>
+            <input name="offender" [(ngModel)]="config.agents.offender"
+                type="number" mdInput placeholder="Offenders">
+          </md-input-container>
+        </md-card-content>
+      </md-card>
+
+      <md-card>
+        <md-card-subtitle>Arena</md-card-subtitle>
+        <md-card-content fxLayout="column">
+          <md-input-container>
+            <input name="arenaWidth" [(ngModel)]="config.arena.width"
+                type="number" mdInput placeholder="Width">
+          </md-input-container>
+          <md-input-container>
+            <input name="arenaHeight" [(ngModel)]="config.arena.height"
+                type="number" mdInput placeholder="Height">
+          </md-input-container>
+        </md-card-content>
+      </md-card>
+
+      <md-card>
+        <md-card-subtitle>Simulation</md-card-subtitle>
+        <md-card-content fxLayout="column">
+          <md-input-container>
+            <input name="totalTicks" [(ngModel)]="config.ticks.total"
+                type="number" mdInput placeholder="Total Ticks">
+          </md-input-container>
+          <md-input-container>
+            <input name="dayTicks" [(ngModel)]="config.ticks.day"
+                type="number" mdInput placeholder="Ticks per Day">
+          </md-input-container>
+          <md-input-container>
+            <input name="seed" [(ngModel)]="config.ticks.seed"
+                type="number" mdInput placeholder="RNG Seed">
+          </md-input-container>
+        </md-card-content>
+      </md-card>
+
+    </form>
+  </md-card-content>
+
+  <md-card-actions align="end">
+    <button type="submit" form="sim-form" md-raised-button color="primary">Start</button>
+  </md-card-actions>
+
+</md-card>

@@ -3,20 +3,16 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "lib": ["es2015"],
-    "module": "commonjs",
+    "lib": ["es2016", "dom"],
     "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "../dist/out-tsc-e2e",
+    "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "strictNullChecks": true,
-    "target": "es5",
-    "typeRoots": [
-      "../node_modules/@types"
-    ]
+    "target": "es5"
   }
 }
