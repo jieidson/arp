@@ -17,7 +17,6 @@ export class AppComponent {
   ) {}
 
   start(): void {
-    console.log('START SIM')
     this.runner.start(this.config)
   }
 

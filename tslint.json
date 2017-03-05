@@ -23,8 +23,7 @@
     "member-access": false,
     "member-ordering": [
       true,
-      "static-before-instance",
-      "variables-before-functions"
+      "instance-sandwitch"
     ],
     "no-arg": true,
     "no-bitwise": true,
@@ -65,7 +64,7 @@
       "check-else",
       "check-whitespace"
     ],
-    "ordered-imports": true,
+    "ordered-imports": [true],
     "prefer-const": true,
     "quotemark": [
       true,
@@ -106,8 +105,7 @@
       "check-decl",
       "check-operator",
       "check-separator",
-      "check-type",
-      "check-preblock"
+      "check-type"
     ],
 
     "directive-selector": [true, "attribute", "arp", "camelCase"],
