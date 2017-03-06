@@ -3,8 +3,8 @@ import { Edge }  from './edge'
 
 export class Node {
 
- edges: Set<Edge> = new Set()
- agents: Set<Agent> = new Set()
+ edges: Edge[] = []
+ agents: Agent[] = []
 
  constructor(
    public id: number,
@@ -14,18 +14,19 @@ export class Node {
 
  link(node: Node): Edge {
    const edge = new Edge(this, node)
-   this.edges.add(edge)
-   node.edges.add(edge)
+   this.edges.push(edge)
+   node.edges.push(edge)
    return edge
  }
 
  enter(agent: Agent): void {
-   this.agents.add(agent)
+   this.agents.push(agent)
    agent.location = this
  }
 
  leave(agent: Agent): void {
-   this.agents.delete(agent)
+   const idx = this.agents.indexOf(agent)
+   this.agents.splice(idx, 1)
  }
 
 }

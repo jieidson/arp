@@ -10,7 +10,7 @@ export class Agent {
   constructor(public id: number, public sim: Simulator) {}
 
   init(): void {
-    this.behaviors.forEach(b => b.init(this))
+    this.behaviors.forEach(b => b.init())
   }
 
 }
