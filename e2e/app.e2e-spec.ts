@@ -1,6 +1,6 @@
 import { ArpPage } from './app.po'
 
-describe('arp App', function() {
+describe('arp App', () => {
   let page: ArpPage
 
   beforeEach(() => {
