@@ -12,8 +12,6 @@ export class Clock {
   movement$: Observable<Events.MovementEvent>
   action$: Observable<Events.MovementEvent>
 
-  private count = 0
-
   constructor(private dispatcher: Dispatcher) {
     this.tick$ = this.dispatcher.event$
       .filter(evt => evt.type === 'tick')
@@ -25,22 +23,20 @@ export class Clock {
       .filter(evt => evt.type === 'action')
   }
 
-  tick() {
-    const c = this.count++
-
+  tick(count: number) {
     this.dispatcher.event$.next({
       type: 'tick',
-      count: c,
+      count: count,
     })
 
     this.dispatcher.event$.next({
       type: 'movement',
-      count: c,
+      count: count,
     })
 
     this.dispatcher.event$.next({
       type: 'action',
-      count: c,
+      count: count,
     })
   }
 

@@ -41,11 +41,17 @@ export class Simulator {
     console.log('Navigator:', this.navigator)
     console.log('Agents:', this.agents)
 
-    for (let i = 0; i < this.config.ticks.total; i++) {
-      this.clock.tick()
-      //console.log('tick')
+    let tick = 0
+    const tickfn = () => {
+      this.clock.tick(tick++)
+      if (tick < this.config.ticks.total) {
+        requestAnimationFrame(tickfn)
+      } else {
+        console.log('done')
+      }
     }
-    console.log('done')
+
+    tickfn()
   }
 
   private makePoliceAgent(id: number): Agent {
