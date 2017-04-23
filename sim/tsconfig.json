@@ -2,8 +2,9 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "baseUrl": "",
+    "lib": ["es2016", "webworker"],
     "module": "es2015",
-    "outDir": "../out-tsc/app",
+    "outDir": "../out-tsc/sim",
     "types": []
   },
   "exclude": [
