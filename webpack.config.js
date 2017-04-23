@@ -183,7 +183,8 @@ module.exports = function (env) {
           postcss: [
             autoprefixer(),
             postcssUrl({
-              url: URL => {
+              url: (URL) => {
+                URL = URL.url
                 // Only convert root relative URLs, which CSS-Loader won't process into require().
                 if (!URL.startsWith('/') || URL.startsWith('//')) {
                   return URL

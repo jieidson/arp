@@ -37,21 +37,16 @@ export class Simulator {
 
   start() {
     console.log('Start Simulation')
+    console.log('Config:', this.config)
     console.log('Arena:', this.arena)
     console.log('Navigator:', this.navigator)
     console.log('Agents:', this.agents)
 
     let tick = 0
-    const tickfn = () => {
+    while (tick < this.config.ticks.total) {
       this.clock.tick(tick++)
-      if (tick < this.config.ticks.total) {
-        requestAnimationFrame(tickfn)
-      } else {
-        console.log('done')
-      }
     }
-
-    tickfn()
+    console.log('done')
   }
 
   private makePoliceAgent(id: number): Agent {

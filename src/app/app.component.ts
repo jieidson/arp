@@ -1,7 +1,8 @@
 import { Component } from '@angular/core'
 
-import { defaultConfig } from './sim/config'
-import { RunnerService } from './sim/runner.service'
+import { RunnerService } from './shared/runner.service'
+
+import { defaultConfig } from '../../sim/config'
 
 @Component({
   selector: 'arp-app',
