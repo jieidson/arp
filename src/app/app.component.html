@@ -67,4 +67,6 @@
     <button type="submit" form="sim-form" md-raised-button color="primary">Start</button>
   </md-card-actions>
 
+  <arp-spinner *ngIf="busy$ | async"></arp-spinner>
+
 </md-card>

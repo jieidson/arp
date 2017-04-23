@@ -1,5 +1,7 @@
 import { Component } from '@angular/core'
 
+import { Observable } from 'rxjs/Observable'
+
 import { RunnerService } from './shared/runner.service'
 
 import { defaultConfig } from '../../sim/config'
@@ -16,6 +18,10 @@ export class AppComponent {
   constructor(
     private runner: RunnerService,
   ) {}
+
+  get busy$(): Observable<boolean> {
+    return this.runner.running$
+  }
 
   start(): void {
     this.runner.start(this.config)

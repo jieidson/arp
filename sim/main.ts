@@ -9,7 +9,16 @@ self.addEventListener('message', (msg: MessageEvent) => {
   switch (msg.data.type) {
     case 'start':
       sim = new Simulator(msg.data.config)
+      sendEvent('started')
       sim.start()
+      sendEvent('finished')
+      break
+
+    default:
 
   }
 })
+
+function sendEvent(type: string) {
+  postMessage({ type })
+}

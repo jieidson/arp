@@ -15,3 +15,11 @@ html {
 body {
   margin: 0;
 }
+
+// We often put a spinner inside a card, after the actions block.  Material has
+// a CSS rule that removes the bottom margin from the last child of a card.
+// Since the spinner comes after the actions, the actions will have a bottom
+// margin.  Force the actions block to never have a margin.
+md-card-actions.mat-card-actions {
+  margin-bottom: -16px;
+}

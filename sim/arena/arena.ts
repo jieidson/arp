@@ -6,7 +6,7 @@ export class Arena {
   nodes: Node[] = []
   edges: Edge[] = []
 
-  static randomGrid(width: number, height: number): Arena {
+  static grid(width: number, height: number): Arena {
     const arena = new Arena()
     arena.nodes = new Array(width * height)
 
@@ -41,6 +41,5 @@ export class Arena {
 
     return arena
   }
-
 
 }

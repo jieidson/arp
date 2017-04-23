@@ -4,7 +4,7 @@ import { Edge }  from './edge'
 export class Node {
 
  edges: Edge[] = []
- agents: Agent[] = []
+ agents: Set<Agent> = new Set()
 
  constructor(
    public id: number,
@@ -20,13 +20,12 @@ export class Node {
  }
 
  enter(agent: Agent): void {
-   this.agents.push(agent)
+   this.agents.add(agent)
    agent.location = this
  }
 
  leave(agent: Agent): void {
-   const idx = this.agents.indexOf(agent)
-   this.agents.splice(idx, 1)
+   this.agents.delete(agent)
  }
 
 }

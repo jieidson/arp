@@ -1,26 +1,27 @@
+import { Simulator } from 'simulator'
 import { Agent }     from './agent'
 import { Behavior }  from './behavior'
 
 export class PoliceBehavior implements Behavior {
 
-  constructor(private agent: Agent) {}
+  constructor(private sim: Simulator) {}
 
-  init(): void {
+  init(agent: Agent): void {
     // Randomly choose a starting location
-    this.agent.location = this.agent.sim.rng.pick(this.agent.sim.arena.nodes)
-
-    this.agent.sim.clock.movement$.subscribe(this.onMovement.bind(this))
+    agent.location = this.sim.rng.pick(this.sim.arena.nodes)
   }
 
-  // Police agents move randomly
-  private onMovement(): void {
-    const cur = this.agent.location
+  move(agent: Agent): void {
+    // Police agents move randomly
+    const current = agent.location
 
     // Pick a random path to walk down
-    const edge = this.agent.sim.rng.pick(cur.edges)
-    edge.follow(this.agent)
+    const edge = this.sim.rng.pick(current.edges)
+    edge.follow(agent)
 
-    //console.log(`${this.agent.id}: move ${cur.id} -> ${this.agent.location.id}`)
+    // console.log(`${agent.id}: move ${current.id} -> ${agent.location.id}`)
   }
+
+  action(_: Agent): void {}
 
 }

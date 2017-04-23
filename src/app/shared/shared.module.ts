@@ -11,10 +11,12 @@ import {
   MdButtonModule,
   MdCardModule,
   MdInputModule,
+  MdProgressSpinnerModule,
   MdToolbarModule,
  } from '@angular/material'
 
-import { RunnerService } from './runner.service'
+import { RunnerService }    from './runner.service'
+import { SpinnerComponent } from './spinner.component'
 
 @NgModule({
   imports: [
@@ -24,11 +26,12 @@ import { RunnerService } from './runner.service'
     FlexLayoutModule,
     FormsModule,
     HttpModule,
-    RouterModule,
-    MdToolbarModule,
-    MdInputModule,
     MdButtonModule,
     MdCardModule,
+    MdInputModule,
+    MdProgressSpinnerModule,
+    MdToolbarModule,
+    RouterModule,
   ],
   exports: [
     BrowserAnimationsModule,
@@ -37,11 +40,17 @@ import { RunnerService } from './runner.service'
     FlexLayoutModule,
     FormsModule,
     HttpModule,
-    RouterModule,
-    MdToolbarModule,
-    MdInputModule,
     MdButtonModule,
     MdCardModule,
+    MdInputModule,
+    MdProgressSpinnerModule,
+    MdToolbarModule,
+    RouterModule,
+
+    SpinnerComponent,
+  ],
+  declarations: [
+    SpinnerComponent,
   ],
 })
 export class SharedModule {

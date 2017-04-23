@@ -1,5 +1,4 @@
 import { Node }      from '../arena/node'
-import { Simulator } from '../simulator'
 import { Behavior }  from './behavior'
 
 export class Agent {
@@ -7,10 +6,24 @@ export class Agent {
   location: Node
   behaviors: Behavior[] = []
 
-  constructor(public id: number, public sim: Simulator) {}
+  constructor(public id: number) {}
 
   init(): void {
-    this.behaviors.forEach(b => b.init())
+    for (const b of this.behaviors) {
+      b.init(this)
+    }
+  }
+
+  move(): void {
+    for (const b of this.behaviors) {
+      b.move(this)
+    }
+  }
+
+  action(): void {
+    for (const b of this.behaviors) {
+      b.action(this)
+    }
   }
 
 }
