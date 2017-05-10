@@ -2,32 +2,15 @@ const path = require('path');
 
 const ProgressPlugin    = require('webpack/lib/ProgressPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const autoprefixer      = require('autoprefixer')
+const cssnano           = require('cssnano');
 const postcssUrl        = require('postcss-url')
 
-const {
-  GlobCopyWebpackPlugin,
-  BaseHrefWebpackPlugin,
-} = require('@angular/cli/plugins/webpack')
-
-const { AotPlugin } = require('@ngtools/webpack')
-
-const {
-  CheckerPlugin,
-  TsConfigPathsPlugin,
-} = require('awesome-typescript-loader')
-
-const {
-  NoEmitOnErrorsPlugin,
-  LoaderOptionsPlugin,
-  HashedModuleIdsPlugin,
-} = require('webpack')
-
-const {
-  CommonsChunkPlugin,
-  UglifyJsPlugin,
-} = require('webpack').optimize
+const { GlobCopyWebpackPlugin, BaseHrefWebpackPlugin } = require('@angular/cli/plugins/webpack')
+const { AotPlugin }                                    = require('@ngtools/webpack')
+const { CheckerPlugin, TsConfigPathsPlugin }           = require('awesome-typescript-loader')
+const { NoEmitOnErrorsPlugin, HashedModuleIdsPlugin }  = require('webpack')
+const { CommonsChunkPlugin, UglifyJsPlugin }           = require('webpack').optimize
 
 const nodeModules = path.join(process.cwd(), 'node_modules')
 const entryPoints = ['inline', 'polyfills', 'sw-register', 'styles', 'vendor', 'main']
@@ -35,6 +18,47 @@ const baseHref = ''
 const deployUrl = ''
 
 module.exports = function (env) {
+  const minimizeCss = env === 'prod'
+
+  function postcssPlugins() {
+    // safe settings based on: https://github.com/ben-eb/cssnano/issues/358#issuecomment-283696193
+    const importantCommentRe = /@preserve|@license|[@#]\s*source(?:Mapping)?URL|^!/i
+    const minimizeOptions = {
+      autoprefixer: false,
+      safe: true,
+      mergeLonghand: false,
+      discardComments: { remove: (comment) => !importantCommentRe.test(comment) },
+    }
+    return [
+      postcssUrl({
+        url: (URL) => {
+          if (URL.url) {
+            URL = URL.url
+          }
+          // Only convert root relative URLs, which CSS-Loader won't process into require().
+          if (!URL.startsWith('/') || URL.startsWith('//')) {
+            return URL
+
+          } if (deployUrl.match(/:\/\//)) {
+            // If deployUrl contains a scheme, ignore baseHref use deployUrl as is.
+            return `${deployUrl.replace(/\/$/, '')}${URL}`
+
+          } else if (baseHref.match(/:\/\//)) {
+            // If baseHref contains a scheme, include it as is.
+            return baseHref.replace(/\/$/, '') +
+              `/${deployUrl}/${URL}`.replace(/\/\/+/g, '/')
+
+          } else {
+            // Join together base-href, deploy-url and the original URL.
+            // Also dedupe multiple slashes into single ones.
+            return `/${baseHref}/${deployUrl}/${URL}`.replace(/\/\/+/g, '/')
+          }
+        }
+      }),
+      autoprefixer(),
+    ].concat(minimizeCss ? [cssnano(minimizeOptions)] : [])
+  }
+
   let config = {
     devtool: 'source-map',
     resolve: {
@@ -81,46 +105,102 @@ module.exports = function (env) {
         {
           exclude: [path.join(process.cwd(), 'src/styles.scss')],
           test: /\.css$/,
-          loaders: [
+          use: [
             'exports-loader?module.exports.toString()',
-            'css-loader?{"sourceMap":false,"importLoaders":1}',
-            'postcss-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: false,
+                importLoaders: 1,
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                ident: 'postcss',
+                plugins: postcssPlugins,
+              },
+            },
           ],
         },
         {
           exclude: [path.join(process.cwd(), 'src/styles.scss')],
           test: /\.scss$|\.sass$/,
-          loaders: [
+          use: [
             'exports-loader?module.exports.toString()',
-            'css-loader?{"sourceMap":false,"importLoaders":1}',
-            'postcss-loader',
-            'sass-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: false,
+                importLoaders: 1,
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                ident: 'postcss',
+                plugins: postcssPlugins,
+              },
+            },
+            {
+              loader: 'sass-loader',
+              options: {
+                sourceMap: false,
+                precision: 8,
+                includePaths: [],
+              },
+            },
           ],
         },
         {
           include: [path.join(process.cwd(), 'src/styles.scss')],
           test: /\.css$/,
-          loaders: ExtractTextPlugin.extract({
-            use: [
-              'css-loader?{"sourceMap":false,"importLoaders":1}',
-              'postcss-loader',
-            ],
-            fallback: 'style-loader',
-            publicPath: '',
-          }),
+          use: [
+            'style-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: false,
+                importLoaders: 1,
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                ident: 'postcss',
+                plugins: postcssPlugins,
+              }
+            },
+          ],
         },
         {
           include: [path.join(process.cwd(), 'src/styles.scss')],
           test: /\.scss$|\.sass$/,
-          loaders: ExtractTextPlugin.extract({
-            use: [
-              'css-loader?{"sourceMap":false,"importLoaders":1}',
-              'postcss-loader',
-              'sass-loader',
-            ],
-            fallback: 'style-loader',
-            publicPath: '',
-          }),
+          use: [
+            'style-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: false,
+                importLoaders: 1,
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                ident: 'postcss',
+                plugins: postcssPlugins,
+              },
+            },
+            {
+              loader: 'sass-loader',
+              options: {
+                sourceMap: false,
+                precision: 8,
+                includePaths: [],
+              },
+            },
+          ],
         },
         {
           test: /sim\/.*\.ts$/,
@@ -173,53 +253,6 @@ module.exports = function (env) {
         minChunks: module => module.resource && module.resource.startsWith(nodeModules),
         chunks: ['main'],
       }),
-      new ExtractTextPlugin({
-        filename: '[name].bundle.css',
-        disable: true,
-      }),
-      new LoaderOptionsPlugin({
-        sourceMap: false,
-        options: {
-          postcss: [
-            autoprefixer(),
-            postcssUrl({
-              url: (URL) => {
-                URL = URL.url
-                // Only convert root relative URLs, which CSS-Loader won't process into require().
-                if (!URL.startsWith('/') || URL.startsWith('//')) {
-                  return URL
-                }
-
-                if (deployUrl.match(/:\/\//)) {
-                  // If deployUrl contains a scheme, ignore baseHref use deployUrl as is.
-                  return `${deployUrl.replace(/\/$/, '')}${URL}`
-
-                } else if (baseHref.match(/:\/\//)) {
-                  // If baseHref contains a scheme, include it as is.
-                  return baseHref.replace(/\/$/, '') +
-                    `/${deployUrl}/${URL}`.replace(/\/\/+/g, '/')
-
-                } else {
-                  // Join together base-href, deploy-url and the original URL.
-                  // Also dedupe multiple slashes into single ones.
-                  return `/${baseHref}/${deployUrl}/${URL}`.replace(/\/\/+/g, '/')
-                }
-              }
-            })
-          ],
-          sassLoader: {
-            sourceMap: false,
-            includePaths: [],
-          },
-          context: '',
-          worker: {
-            output: {
-              filename: '[name].worker.js',
-              chunkFilename: '[id].worker.chunk.js',
-            }
-          },
-        }
-      }),
       new CheckerPlugin(),
       new TsConfigPathsPlugin(),
       new AotPlugin({
@@ -231,6 +264,11 @@ module.exports = function (env) {
         exclude: [],
         tsConfigPath: 'src/tsconfig.app.json',
         skipCodeGeneration: env === 'prod' ? false : true,
+        compilerOptions: {
+          // We get an error right now about unused paramters in prod builds.
+          // Disable it here.
+          noUnusedParameters: env !== 'prod',
+        },
       }),
     ],
     node: {
@@ -243,7 +281,10 @@ module.exports = function (env) {
       module: false,
       clearImmediate: false,
       setImmediate: false,
-    }
+    },
+    devServer: {
+      historyApiFallback: true,
+    },
   }
 
   if (env === 'prod') {
