@@ -1,3 +1,5 @@
+import 'rxjs/add/operator/map'
+
 import { Component } from '@angular/core'
 
 import { Observable } from 'rxjs/Observable'
@@ -21,6 +23,14 @@ export class AppComponent {
 
   get busy$(): Observable<boolean> {
     return this.runner.running$
+  }
+
+  get progress$(): Observable<number> {
+    return this.runner.progress$.map(msg => msg.percent)
+  }
+
+  get status$(): Observable<string> {
+    return this.runner.progress$.map(msg => msg.status)
   }
 
   start(): void {

@@ -60,6 +60,14 @@
         </md-card-content>
       </md-card>
 
+      <md-card>
+        <md-card-subtitle>Status</md-card-subtitle>
+        <md-card-content fxLayout="column">
+          <p>Message: {{ status$ | async }}</p>
+          <p>Progress: {{ progress$ | async }}%</p>
+        </md-card-content>
+      </md-card>
+
     </form>
   </md-card-content>
 
@@ -67,6 +75,6 @@
     <button type="submit" form="sim-form" md-raised-button color="primary">Start</button>
   </md-card-actions>
 
-  <arp-spinner *ngIf="busy$ | async"></arp-spinner>
+  <arp-spinner *ngIf="busy$ | async" [progress]="progress$ | async"></arp-spinner>
 
 </md-card>

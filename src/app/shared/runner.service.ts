@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject'
 import { Observable }      from 'rxjs/Observable'
 
 import { Config } from '../../../sim/config'
+import * as messages from '../../../sim/messages'
 
 declare function require(id: string): any
 
@@ -17,7 +18,18 @@ export class RunnerService {
     return this.runningSubject
   }
 
+  get progress$(): Observable<messages.ProgressMessage> {
+    return this.progressSubject
+  }
+
   private runningSubject = new BehaviorSubject<boolean>(false)
+  private progressSubject = new BehaviorSubject<messages.ProgressMessage>({
+    type: 'progress',
+    status: 'stopped',
+    percent: 0,
+  })
+  private running = false
+
   private worker: Worker
 
   constructor() {
@@ -27,22 +39,29 @@ export class RunnerService {
   }
 
   start(config: Config): void {
-    this.worker.postMessage({ type: 'start', config })
+    this.send({ type: 'start', config })
+  }
+
+  private send(msg: messages.SimMessage): void {
+    this.worker.postMessage(msg)
   }
 
   private onWorkerMessage(evt: MessageEvent): void {
-    console.log('from worker:', evt.data)
-    switch (evt.data.type) {
-      case 'started':
-        this.runningSubject.next(true)
-        break
-
-      case 'finished':
-        this.runningSubject.next(false)
+    const msg: messages.SimMessage = evt.data
+    console.log('message from sim:', msg)
+    switch (msg.type) {
+      case 'progress':
+        const running = msg.percent > 0 && msg.percent < 100
+        if (this.running !== running) {
+          this.running = running
+          this.runningSubject.next(running)
+        }
+        this.progressSubject.next(msg)
         break
 
       default:
         console.error('unexpected worker event type')
+        break
     }
   }
 

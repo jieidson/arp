@@ -1,24 +1,21 @@
+import * as messages from './messages'
 import { Simulator } from './simulator'
 
 console.log('Web worker started')
 
 let sim: Simulator
 
-self.addEventListener('message', (msg: MessageEvent) => {
-  console.log('From main:', msg.data)
-  switch (msg.data.type) {
+self.addEventListener('message', (evt: MessageEvent) => {
+  const msg: messages.SimMessage = evt.data
+  console.log('From main:', msg)
+
+  switch (msg.type) {
     case 'start':
-      sim = new Simulator(msg.data.config)
-      sendEvent('started')
+      sim = new Simulator(msg.config)
       sim.start()
-      sendEvent('finished')
       break
 
     default:
-
+      console.error('unexpected worker event type')
   }
 })
-
-function sendEvent(type: string) {
-  postMessage({ type })
-}
