@@ -21,9 +21,9 @@ export interface Config {
 export function defaultConfig(): Config {
   return {
     agents: {
-      police: 1,
-      civilian: 7,
-      offender: 2,
+      police: 200,
+      civilian: 800,
+      offender: 200,
     },
 
     arena: {

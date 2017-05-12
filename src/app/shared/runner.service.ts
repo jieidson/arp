@@ -33,13 +33,28 @@ export class RunnerService {
   private worker: Worker
 
   constructor() {
-    this.worker = new SimWorker()
-    this.worker.addEventListener('message', evt => this.onWorkerMessage(evt))
-    this.worker.addEventListener('error', evt => this.onWorkerError(evt))
+    this.init()
   }
 
   start(config: Config): void {
     this.send({ type: 'start', config })
+  }
+
+  kill(): void {
+    this.worker.terminate()
+    this.runningSubject.next(false)
+    this.progressSubject.next({
+      type: 'progress',
+      status: 'terminated',
+      percent: 0,
+    })
+    this.init()
+  }
+
+  private init(): void {
+    this.worker = new SimWorker()
+    this.worker.addEventListener('message', evt => this.onWorkerMessage(evt))
+    this.worker.addEventListener('error', evt => this.onWorkerError(evt))
   }
 
   private send(msg: messages.SimMessage): void {

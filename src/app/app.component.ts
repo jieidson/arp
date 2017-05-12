@@ -1,6 +1,8 @@
+import { Subscription } from 'rxjs/Subscription'
+
 import 'rxjs/add/operator/map'
 
-import { Component } from '@angular/core'
+import { Component, OnDestroy, OnInit } from '@angular/core'
 
 import { Observable } from 'rxjs/Observable'
 
@@ -13,13 +15,24 @@ import { defaultConfig } from '../../sim/config'
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
 
   config = defaultConfig()
+  running = false
+
+  private runningSub: Subscription
 
   constructor(
     private runner: RunnerService,
   ) {}
+
+  ngOnInit(): void {
+    this.runningSub = this.runner.running$.subscribe(r => this.running = r)
+  }
+
+  ngOnDestroy(): void {
+    this.runningSub.unsubscribe()
+  }
 
   get busy$(): Observable<boolean> {
     return this.runner.running$
@@ -35,6 +48,10 @@ export class AppComponent {
 
   start(): void {
     this.runner.start(this.config)
+  }
+
+  stop(): void {
+    this.runner.kill()
   }
 
 }

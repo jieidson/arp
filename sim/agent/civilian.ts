@@ -38,10 +38,6 @@ export class CivilianBehavior implements Behavior {
       throw new Error(`No path to target: ${agent.id}: ${current.id} -> ${targetNode.id}`)
     }
     edge.follow(agent)
-
-    if (agent.id === 3) {
-      console.log(`${agent.id}: move ${current.id} -> ${agent.location.id}`)
-    }
   }
 
   action(agent: Agent): void {
@@ -50,9 +46,6 @@ export class CivilianBehavior implements Behavior {
 
     // If agent is at the target, pick a new target
     if (agent.location === targetNode) {
-      if (agent.id === 3) {
-        console.log(`At target: ${data.target} ${targetNode.id}`)
-      }
       data.target = (data.target + 1) % data.activities.length
     }
   }

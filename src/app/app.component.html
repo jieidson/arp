@@ -7,23 +7,22 @@
   <md-card-title>Configuration</md-card-title>
 
   <md-card-content>
-    <form id="sim-form" (ngSubmit)="start()"
-        fxLayout="row" fxLayoutWrap="wrap">
+    <form (ngSubmit)="start()" fxLayout="row" fxLayoutWrap="wrap">
 
       <md-card>
         <md-card-subtitle>Agents</md-card-subtitle>
         <md-card-content fxLayout="column">
           <md-input-container>
             <input name="police" [(ngModel)]="config.agents.police"
-                type="number" mdInput placeholder="Police">
+                type="number" mdInput placeholder="Police" [disabled]="running">
           </md-input-container>
           <md-input-container>
             <input name="civilian" [(ngModel)]="config.agents.civilian"
-                type="number" mdInput placeholder="Civilians">
+                type="number" mdInput placeholder="Civilians" [disabled]="running">
           </md-input-container>
           <md-input-container>
             <input name="offender" [(ngModel)]="config.agents.offender"
-                type="number" mdInput placeholder="Offenders">
+                type="number" mdInput placeholder="Offenders" [disabled]="running">
           </md-input-container>
         </md-card-content>
       </md-card>
@@ -33,11 +32,11 @@
         <md-card-content fxLayout="column">
           <md-input-container>
             <input name="arenaWidth" [(ngModel)]="config.arena.width"
-                type="number" mdInput placeholder="Width">
+                type="number" mdInput placeholder="Width" [disabled]="running">
           </md-input-container>
           <md-input-container>
             <input name="arenaHeight" [(ngModel)]="config.arena.height"
-                type="number" mdInput placeholder="Height">
+                type="number" mdInput placeholder="Height" [disabled]="running">
           </md-input-container>
         </md-card-content>
       </md-card>
@@ -47,15 +46,15 @@
         <md-card-content fxLayout="column">
           <md-input-container>
             <input name="totalTicks" [(ngModel)]="config.ticks.total"
-                type="number" mdInput placeholder="Total Ticks">
+                type="number" mdInput placeholder="Total Ticks" [disabled]="running">
           </md-input-container>
           <md-input-container>
             <input name="dayTicks" [(ngModel)]="config.ticks.day"
-                type="number" mdInput placeholder="Ticks per Day">
+                type="number" mdInput placeholder="Ticks per Day" [disabled]="running">
           </md-input-container>
           <md-input-container>
             <input name="seed" [(ngModel)]="config.ticks.seed"
-                type="number" mdInput placeholder="RNG Seed">
+                type="number" mdInput placeholder="RNG Seed" [disabled]="running">
           </md-input-container>
         </md-card-content>
       </md-card>
@@ -65,16 +64,24 @@
         <md-card-content fxLayout="column">
           <p>Message: {{ status$ | async }}</p>
           <p>Progress: {{ progress$ | async }}%</p>
+
+          <md-progress-spinner
+            mode="determinate" [value]="progress$ | async"
+          ></md-progress-spinner>
+
+          <button *ngIf="!running"
+              type="submit" md-raised-button color="primary">
+            Start
+          </button>
+          <button *ngIf="running"
+              type="button" md-raised-button color="warn"
+              (click)="stop()">
+            Stop
+          </button>
         </md-card-content>
       </md-card>
 
     </form>
   </md-card-content>
-
-  <md-card-actions align="end">
-    <button type="submit" form="sim-form" md-raised-button color="primary">Start</button>
-  </md-card-actions>
-
-  <arp-spinner *ngIf="busy$ | async" [progress]="progress$ | async"></arp-spinner>
 
 </md-card>
