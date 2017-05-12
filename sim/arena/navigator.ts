@@ -50,6 +50,21 @@ export class Navigator {
     return path
   }
 
+  // Returns the next edge to travel down on the path from -> to.  Null if there
+  // is no path, or if from and to are the same node.
+  nextEdge(from: Node, to: Node): Edge | undefined {
+    if (from === to) {
+      return undefined
+    }
+
+    const edgeID = this.next[from.id][to.id]
+    if (edgeID === undefined) {
+      return undefined
+    }
+
+    return this.edgeNext[from.id][edgeID]
+  }
+
   private static initDistanceMatrix(nodes: Node[]): number[][] {
     const mat = new Array(nodes.length)
     for (let i = 0; i < nodes.length; i++) {
@@ -96,7 +111,7 @@ export class Navigator {
 
       if (dist[rightID][leftID] > edge.weight) {
         dist[rightID][leftID] = edge.weight
-        next[rightID][leftID] = rightID
+        next[rightID][leftID] = leftID
         edgeNext[rightID][leftID] = edge
       }
     }

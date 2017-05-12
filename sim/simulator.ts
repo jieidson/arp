@@ -1,12 +1,13 @@
 import * as moment from 'moment'
 
-import { Agent }          from './agent/agent'
-import { PoliceBehavior } from './agent/police'
-import { Arena }          from './arena/arena'
-import { Navigator }      from './arena/navigator'
-import { Config }         from './config'
-import { Messenger }      from './messenger'
-import { Random }         from './random'
+import { Agent }            from './agent/agent'
+import { CivilianBehavior } from './agent/civilian'
+import { PoliceBehavior }   from './agent/police'
+import { Arena }            from './arena/arena'
+import { Navigator }        from './arena/navigator'
+import { Config }           from './config'
+import { Messenger }        from './messenger'
+import { Random }           from './random'
 
 export class Simulator {
 
@@ -27,8 +28,9 @@ export class Simulator {
 
     this.agents = []
 
-    Messenger.progress(3, 'generating police agents')
+    Messenger.progress(3, 'generating agents')
     this.makePolice()
+    this.makeCivilians()
 
     // TODO: Make civilians and offenders
 
@@ -77,11 +79,21 @@ export class Simulator {
   }
 
   private makePolice(): void {
-    const policeBehavior = new PoliceBehavior(this)
+    const behavior = new PoliceBehavior(this)
 
     for (let i = 0; i < this.config.agents.police; i++) {
       const agent = new Agent(this.agents.length)
-      agent.behaviors.push(policeBehavior)
+      agent.behaviors.push(behavior)
+      this.agents.push(agent)
+    }
+  }
+
+  private makeCivilians(): void {
+    const behavior = new CivilianBehavior(this)
+
+    for (let i = 0; i < this.config.agents.civilian; i++) {
+      const agent = new Agent(this.agents.length)
+      agent.behaviors.push(behavior)
       this.agents.push(agent)
     }
   }

@@ -1,4 +1,4 @@
-import { Simulator } from 'simulator'
+import { Simulator } from '../simulator'
 import { Agent }     from './agent'
 import { Behavior }  from './behavior'
 
@@ -22,6 +22,8 @@ export class PoliceBehavior implements Behavior {
     // console.log(`${agent.id}: move ${current.id} -> ${agent.location.id}`)
   }
 
-  action(_: Agent): void {}
+  action(_: Agent): void {
+    return
+  }
 
 }

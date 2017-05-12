@@ -6,6 +6,9 @@ export class Agent {
   location: Node
   behaviors: Behavior[] = []
 
+  // Data store for behaviors
+  data: { [key: string]: any } = {}
+
   constructor(public id: number) {}
 
   init(): void {
