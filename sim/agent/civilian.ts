@@ -13,7 +13,7 @@ export class CivilianBehavior implements Behavior {
   constructor(private sim: Simulator) {}
 
   init(agent: Agent): void {
-    const data: CivilianData {
+    const data: CivilianData = {
       // Randomly choose home, and three activity locations
       activities: this.sim.rng.sample(this.sim.arena.nodes, 4),
 

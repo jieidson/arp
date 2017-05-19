@@ -60,6 +60,60 @@
       </md-card>
 
       <md-card>
+        <md-card-subtitle>Civilian Behavior</md-card-subtitle>
+        <md-card-content fxLayout="column">
+          <md-input-container>
+            <input name="timeAwayMean" [(ngModel)]="config.civilians.timeAwayMean"
+                type="number" mdInput placeholder="Mean Time of Away From Home (%)" [disabled]="running">
+          </md-input-container>
+          <md-input-container>
+            <input name="timeAwayDeviation" [(ngModel)]="config.civilians.timeAwayDeviation"
+                type="number" mdInput placeholder="Standard Deviation of Time Away From Home (%)" [disabled]="running">
+          </md-input-container>
+          <md-input-container>
+            <input name="wealthMean" [(ngModel)]="config.civilians.wealthMean"
+                type="number" mdInput placeholder="Mean Wealth" [disabled]="running">
+          </md-input-container>
+          <md-input-container>
+            <input name="wealthDeviation" [(ngModel)]="config.civilians.wealthDeviation"
+                type="number" mdInput placeholder="Standard Deviation of Wealth" [disabled]="running">
+          </md-input-container>
+          <md-input-container>
+            <input name="payRate" [(ngModel)]="config.civilians.payRate"
+                type="number" mdInput placeholder="Income per pay cycle (two weeks)" [disabled]="running">
+          </md-input-container>
+        </md-card-content>
+      </md-card>
+
+      <md-card>
+        <md-card-subtitle>Offender Behavior</md-card-subtitle>
+        <md-card-content fxLayout="column">
+          <md-input-container>
+            <input name="stealAmount" [(ngModel)]="config.civilians.stealAmount"
+                type="number" mdInput placeholder="Amount stolen when robbed" [disabled]="running">
+          </md-input-container>
+        </md-card-content>
+      </md-card>
+
+      <md-card>
+        <md-card-subtitle>Economy</md-card-subtitle>
+        <md-card-content fxLayout="column">
+          <md-input-container>
+            <input name="unemployment" [(ngModel)]="config.civilians.unemployment"
+                type="number" mdInput placeholder="Initial Unemployment Rate (%)" [disabled]="running">
+          </md-input-container>
+          <md-input-container>
+            <input name="hiringRate" [(ngModel)]="config.civilians.hiringRate"
+                type="number" mdInput placeholder="Hiring Rate per Year (%)" [disabled]="running">
+          </md-input-container>
+          <md-input-container>
+            <input name="firingRate" [(ngModel)]="config.civilians.firingRate"
+                type="number" mdInput placeholder="Firing Rate per Year (%)" [disabled]="running">
+          </md-input-container>
+        </md-card-content>
+      </md-card>
+
+      <md-card>
         <md-card-subtitle>Status</md-card-subtitle>
         <md-card-content fxLayout="column">
           <p>Message: {{ status$ | async }}</p>

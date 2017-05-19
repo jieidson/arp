@@ -16,6 +16,21 @@ export interface Config {
     seed: number,
   }
 
+  civilians: {
+    timeAwayMean: number,
+    timeAwayDeviation: number,
+
+    wealthMean: number,
+    wealthDeviation: number,
+
+    unemployment: number,
+    hiringRate: number,
+    firingRate: number,
+
+    payRate: number,
+    stealAmount: number,
+  }
+
 }
 
 export function defaultConfig(): Config {
@@ -35,7 +50,23 @@ export function defaultConfig(): Config {
     ticks: {
       day: 60 * 24,
       total: 60 * 24 * 365,
-      seed: 12345,
+      seed: 100,
+    },
+
+    civilians: {
+      timeAwayMean: 50,
+      timeAwayDeviation: 10,
+
+      wealthMean: 50,
+      wealthDeviation: 20,
+
+      unemployment: 7,
+      hiringRate: 3,
+      firingRate: 3,
+
+      payRate: 5,
+      stealAmount: 1,
+
     },
   }
 }

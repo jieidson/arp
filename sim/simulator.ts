@@ -54,6 +54,7 @@ export class Simulator {
     const start = moment()
 
     for (let tick = 0; tick < this.config.ticks.total; tick++) {
+      // Every <step> ticks, report progress to the UI.
       if (tick % step === 0) {
         Messenger.progress(i++, 'running simulation')
       }

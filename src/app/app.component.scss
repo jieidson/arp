@@ -5,3 +5,7 @@ md-card {
 md-card-content {
   height: calc(100% - 32px);
 }
+
+.container md-card {
+  width: 250px;
+}
