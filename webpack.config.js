@@ -13,6 +13,7 @@ const { NoEmitOnErrorsPlugin, HashedModuleIdsPlugin }  = require('webpack')
 const { CommonsChunkPlugin, UglifyJsPlugin }           = require('webpack').optimize
 
 const nodeModules = path.join(process.cwd(), 'node_modules')
+const genDirNodeModules = path.join(process.cwd(), 'src', '$$_gendir', 'node_modules');
 const entryPoints = ['inline', 'polyfills', 'sw-register', 'styles', 'vendor', 'main']
 const baseHref = ''
 const deployUrl = ''
@@ -250,7 +251,8 @@ module.exports = function (env) {
       }),
       new CommonsChunkPlugin({
         name: 'vendor',
-        minChunks: module => module.resource && module.resource.startsWith(nodeModules),
+        minChunks: module => module.resource &&
+                   (module.resource.startsWith(nodeModules) || module.resource.startsWith(genDirNodeModules)),
         chunks: ['main'],
       }),
       new CheckerPlugin(),
