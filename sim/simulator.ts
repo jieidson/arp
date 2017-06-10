@@ -16,7 +16,9 @@ export class Simulator {
   navigator: Navigator
   rng: Random
 
-  constructor(private config: Config) {
+  tick = 0
+
+  constructor(public config: Config) {
     Messenger.progress(0, 'seeding RNG')
     this.rng = new Random(config.ticks.seed)
 
@@ -53,9 +55,9 @@ export class Simulator {
 
     const start = moment()
 
-    for (let tick = 0; tick < this.config.ticks.total; tick++) {
+    for (this.tick = 0; this.tick < this.config.ticks.total; this.tick++) {
       // Every <step> ticks, report progress to the UI.
-      if (tick % step === 0) {
+      if (this.tick % step === 0) {
         Messenger.progress(i++, 'running simulation')
       }
       for (const agent of this.agents) {

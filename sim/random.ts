@@ -3,9 +3,11 @@ import * as rand from 'random-js'
 export class Random {
 
   private engine: rand.Engine
+  private realRange: (engine: rand.Engine) => number
 
   constructor(seed: number) {
     this.engine = rand.engines.mt19937().seed(seed)
+    this.realRange = rand.real(0, 1, false)
   }
 
   pick<T>(array: Array<T>): T {
@@ -16,8 +18,16 @@ export class Random {
     return rand.sample(this.engine, population, sampleSize)
   }
 
+  integer(min: number, max: number): number {
+    return rand.integer(min, max)(this.engine)
+  }
+
+  real(min: number, max: number, inclusive: boolean): number {
+    return rand.real(min, max, inclusive)(this.engine)
+  }
+
   gaussian(mean: number, stdev: number): number {
-    const x = rand.real(0, 1, false)(this.engine)
+    const x = this.realRange(this.engine)
     return mean - stdev * Math.sqrt(2) * this.ierfc(2 * x)
   }
 

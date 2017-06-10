@@ -17,8 +17,8 @@ export interface Config {
   }
 
   civilians: {
-    timeAwayMean: number,
-    timeAwayDeviation: number,
+    homeTicksMean: number,
+    homeTicksDeviation: number,
 
     wealthMean: number,
     wealthDeviation: number,
@@ -54,8 +54,8 @@ export function defaultConfig(): Config {
     },
 
     civilians: {
-      timeAwayMean: 50,
-      timeAwayDeviation: 10,
+      homeTicksMean: 720,
+      homeTicksDeviation: 144,
 
       wealthMean: 50,
       wealthDeviation: 20,
