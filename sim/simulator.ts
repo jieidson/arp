@@ -2,6 +2,7 @@ import * as moment from 'moment'
 
 import { Agent }            from './agent/agent'
 import { CivilianBehavior } from './agent/civilian'
+import { OffenderBehavior } from './agent/offender'
 import { PoliceBehavior }   from './agent/police'
 import { Arena }            from './arena/arena'
 import { Navigator }        from './arena/navigator'
@@ -33,8 +34,7 @@ export class Simulator {
     Messenger.progress(3, 'generating agents')
     this.makePolice()
     this.makeCivilians()
-
-    // TODO: Make civilians and offenders
+    this.makeOffenders()
 
     Messenger.progress(4, 'initializing agents')
     this.agents.forEach(agent => agent.init())
@@ -97,6 +97,19 @@ export class Simulator {
     for (let i = 0; i < this.config.agents.civilian; i++) {
       const agent = new Agent(this.agents.length)
       agent.behaviors.push(behavior)
+      this.agents.push(agent)
+    }
+  }
+
+  private makeOffenders(): void {
+    const civilian = new CivilianBehavior(this)
+    // const offender = new OffenderBehavior(this)
+    const offender = new OffenderBehavior()
+
+    for (let i = 0; i < this.config.agents.offender; i++) {
+      const agent = new Agent(this.agents.length)
+      agent.behaviors.push(civilian)
+      agent.behaviors.push(offender)
       this.agents.push(agent)
     }
   }
