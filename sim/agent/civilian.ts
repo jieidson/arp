@@ -4,14 +4,28 @@ import { Agent }     from './agent'
 import { Behavior }  from './behavior'
 
 export interface CivilianData {
+  // List of locations the agent travels between.  The first one is the agent's
+  // home location.
   activities: Node[]
-  active: boolean
+
+  // An index into the activities list for the location the agent is traveling
+  // towards.
   target: number
 
+  // How many ticks to stay at each activity location.
   activityTicks: number[]
+
+  // How many ticks the node has to get to the next activity location.
   travelTicks: number[]
 
+  // Whether the agent is currently traveling, or busy at an activity location.
+  active: boolean
+
+  // The next tick at which this agent will become active.
   becomeActiveTick: number
+
+  // Number of nodes to step through per move.
+  travelSteps: number
 }
 
 export class CivilianBehavior implements Behavior {
@@ -23,15 +37,14 @@ export class CivilianBehavior implements Behavior {
       // Randomly choose home, and three activity locations
       activities: this.sim.rng.sample(this.sim.arena.nodes, 4),
 
-      active: false,
-
       // Agent's target is the first activity location
       target: 1,
 
       activityTicks: new Array(4),
       travelTicks: new Array(4),
-
+      active: false,
       becomeActiveTick: 0,
+      travelSteps: 1,
     }
 
     // Number of ticks to stay at home
@@ -40,47 +53,38 @@ export class CivilianBehavior implements Behavior {
       this.sim.config.civilians.homeTicksDeviation,
     ))
 
-    // Maximum number of ticks to travel between locations
-    for (let i = 0; i < data.activities.length; i++) {
-      const nexti = (i + 1) % data.activities.length
-      data.travelTicks[i] = this.sim.navigator.distance(
-        data.activities[i], data.activities[nexti])
+    // The maximum number of ticks an agent will need to travel to the next
+    // activity location is the distance between the two locations (assuming
+    // agent can travel one node per tick).
+    let totalTravelTicks = data.activities
+      .map((node, i) => {
+        const nexti = (i + 1) % data.activities.length
+        return this.sim.navigator.distance(node, data.activities[nexti])
+      })
+      .reduce((val, cur) => val + cur, 0)
+
+    // Number of ticks left for everything else.
+    let totalActivityTicks = this.sim.config.ticks.day - data.activityTicks[0]
+      - (data.activities.length - 1)
+
+    // If there's not enough time to travel, and spend at least one tick at each
+    // activity location, skip nodes while traveling.
+    while (totalActivityTicks < (totalTravelTicks / data.travelSteps)) {
+      data.travelSteps += 1
     }
 
-    const totalTravelTicks = data.travelTicks.reduce((val, x) => val + x, 0)
+    // Readjust totals if we skip nodes.
+    totalTravelTicks = totalActivityTicks / data.travelSteps
+    totalActivityTicks = this.sim.config.ticks.day - totalTravelTicks
 
-    // Number of ticks left for activities
-    let activityTicks = this.sim.config.ticks.day
-      - data.activityTicks[0] - totalTravelTicks
-
-    // Make sure there's time for at least one tick at each activity location.
-    if (activityTicks < data.activities.length - 1) {
-      activityTicks = data.activities.length - 1
-    }
-
-    const travelTimeRemaining = this.sim.config.ticks.day
-      - data.activityTicks[0] - activityTicks
-
-    // Randomly assign amount of ticks to stay at each activity.  Skip activity
-    // zero, which is home.
     for (let i = 1; i < data.activityTicks.length; i++) {
-      const remaining = data.activityTicks.length - i - 1
-
-      // Minimum of one tick, maximum of remaining ticks, leaving room for
-      // remaining activities.
-      data.activityTicks[i] = this.sim.rng.integer(1, activityTicks - remaining)
-
-      activityTicks -= data.activityTicks[0]
-    }
-
-    // If there's not enough time to visit each node between two locations, the
-    // agent will have to skip some.
-    if (travelTimeRemaining < totalTravelTicks) {
-      const ticksToRemove = Math.ceil((totalTravelTicks - travelTimeRemaining) / 4)
-
-      for (let i = 0; i < data.activities.length; i++) {
-        data.travelTicks[i] -= ticksToRemove
+      let remaining = totalActivityTicks - data.activityTicks.length - i - 1
+      // Make sure to spend at least one tick at each activity.
+      if (remaining <= 1) {
+        remaining = 1
       }
+      data.activityTicks[i] = this.sim.rng.integer(1, remaining)
+      totalActivityTicks -= data.activityTicks[i]
     }
 
     // Agent first becomes active when it's time to leave home.
@@ -97,9 +101,6 @@ export class CivilianBehavior implements Behavior {
 
     if (this.sim.tick === data.becomeActiveTick) {
       data.active = true
-
-      // Next deadline is target's travel time
-      data.becomeActiveTick = data.travelTicks[data.target]
     }
 
     if (!data.active) {
@@ -109,17 +110,14 @@ export class CivilianBehavior implements Behavior {
     const currentNode = agent.location
     const targetNode = data.activities[data.target]
 
-    const distance = this.sim.navigator.distance(currentNode, targetNode)
-    const deadline = data.becomeActiveTick - this.sim.tick
-
-    // NEXT: Decide how to skip nodes
-
-    // Move towards the current target
-    const edge = this.sim.navigator.nextEdge(agent.location, targetNode)
-    if (edge === undefined) {
-      throw new Error(`No path to target: ${agent.id}: ${currentNode.id} -> ${targetNode.id}`)
+    for (let i = 0; i < data.travelSteps; i++) {
+      // Move towards the current target
+      const edge = this.sim.navigator.nextEdge(agent.location, targetNode)
+      if (edge === undefined) {
+        throw new Error(`Agent ${agent.id} - No path to target: ${currentNode.id} -> ${targetNode.id}`)
+      }
+      edge.follow(agent)
     }
-    edge.follow(agent)
   }
 
   action(agent: Agent): void {
@@ -133,8 +131,9 @@ export class CivilianBehavior implements Behavior {
 
     // If agent is at the target, pick a new target, and become inactive.
     if (agent.location === targetNode) {
-      data.target = (data.target + 1) % data.activities.length
       data.active = false
+      data.target = (data.target + 1) % data.activities.length
+      data.becomeActiveTick = this.sim.tick + data.activityTicks[data.target]
     }
   }
 
