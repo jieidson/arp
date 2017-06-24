@@ -63,12 +63,12 @@
         <md-card-subtitle>Civilian Behavior</md-card-subtitle>
         <md-card-content fxLayout="column">
           <md-input-container>
-            <input name="timeAwayMean" [(ngModel)]="config.civilians.timeAwayMean"
-                type="number" mdInput placeholder="Mean Time of Away From Home (%)" [disabled]="running">
+            <input name="homeTicksMean" [(ngModel)]="config.civilians.homeTicksMean"
+                type="number" mdInput placeholder="Mean Ticks at Home" [disabled]="running">
           </md-input-container>
           <md-input-container>
-            <input name="timeAwayDeviation" [(ngModel)]="config.civilians.timeAwayDeviation"
-                type="number" mdInput placeholder="Standard Deviation of Time Away From Home (%)" [disabled]="running">
+            <input name="homeTicksDeviation" [(ngModel)]="config.civilians.homeTicksDeviation"
+                type="number" mdInput placeholder="Standard Deviation of Ticks At Home" [disabled]="running">
           </md-input-container>
           <md-input-container>
             <input name="wealthMean" [(ngModel)]="config.civilians.wealthMean"

@@ -1,19 +1,27 @@
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-const ProgressPlugin    = require('webpack/lib/ProgressPlugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ProgressPlugin    = require('webpack/lib/ProgressPlugin')
 const autoprefixer      = require('autoprefixer')
-const cssnano           = require('cssnano');
+const cssnano           = require('cssnano')
 const postcssUrl        = require('postcss-url')
 
 const { GlobCopyWebpackPlugin, BaseHrefWebpackPlugin } = require('@angular/cli/plugins/webpack')
 const { AotPlugin }                                    = require('@ngtools/webpack')
 const { CheckerPlugin, TsConfigPathsPlugin }           = require('awesome-typescript-loader')
-const { NoEmitOnErrorsPlugin, HashedModuleIdsPlugin }  = require('webpack')
 const { CommonsChunkPlugin, UglifyJsPlugin }           = require('webpack').optimize
 
+const {
+  NoEmitOnErrorsPlugin,
+  SourceMapDevToolPlugin,
+  NamedModulesPlugin,
+  HashedModuleIdsPlugin,
+} = require('webpack')
+
 const nodeModules = path.join(process.cwd(), 'node_modules')
-const genDirNodeModules = path.join(process.cwd(), 'src', '$$_gendir', 'node_modules');
+const realNodeModules = fs.realpathSync(nodeModules);
+const genDirNodeModules = path.join(process.cwd(), 'src', '$$_gendir', 'node_modules')
 const entryPoints = ['inline', 'polyfills', 'sw-register', 'styles', 'vendor', 'main']
 const baseHref = ''
 const deployUrl = ''
@@ -28,11 +36,11 @@ module.exports = function (env) {
       autoprefixer: false,
       safe: true,
       mergeLonghand: false,
-      discardComments: { remove: (comment) => !importantCommentRe.test(comment) },
+      discardComments: { remove: comment => !importantCommentRe.test(comment) },
     }
     return [
       postcssUrl({
-        url: (URL) => {
+        url: URL => {
           if (URL.url) {
             URL = URL.url
           }
@@ -61,7 +69,6 @@ module.exports = function (env) {
   }
 
   let config = {
-    devtool: 'source-map',
     resolve: {
       extensions: ['.ts', '.js'],
       modules: ['./node_modules'],
@@ -100,8 +107,8 @@ module.exports = function (env) {
           loader: 'file-loader?name=[name].[hash:20].[ext]',
         },
         {
-          test: /\.(jpg|png|gif|otf|ttf|woff|woff2|cur|ani)$/,
-          loader: 'url-loader?name=[name].[hash:20].[ext]&limit=10000',
+          test: /\.(jpg|png|webp|gif|otf|ttf|woff|woff2|cur|ani)$/,
+          loader: "url-loader?name=[name].[hash:20].[ext]&limit=10000",
         },
         {
           exclude: [path.join(process.cwd(), 'src/styles.scss')],
@@ -224,6 +231,12 @@ module.exports = function (env) {
         },
       }),
       new ProgressPlugin(),
+      new SourceMapDevToolPlugin({
+        filename: '[file].map[query]',
+        moduleFilenameTemplate: '[resource-path]',
+        fallbackModuleFilenameTemplate: '[resource-path]?[hash]',
+        sourceRoot: 'webpack:///',
+      }),
       new HtmlWebpackPlugin({
         template: './src/index.html',
         filename: './index.html',
@@ -242,9 +255,18 @@ module.exports = function (env) {
           if (leftIndex > rightindex) { return 1 }
           else if (leftIndex < rightindex) { return -1 }
           else { return 0 }
-        }
+        },
+        minify: env === 'prod' ? {
+          caseSensitive: true,
+          collapseWhitespace: true,
+          keepClosingSlash: true,
+        } : false,
       }),
       new BaseHrefWebpackPlugin({}),
+      new CommonsChunkPlugin({
+        minChunks: 2,
+        async: 'common',
+      }),
       new CommonsChunkPlugin({
         name: 'inline',
         minChunks: null,
@@ -252,7 +274,9 @@ module.exports = function (env) {
       new CommonsChunkPlugin({
         name: 'vendor',
         minChunks: module => module.resource &&
-                   (module.resource.startsWith(nodeModules) || module.resource.startsWith(genDirNodeModules)),
+                   (module.resource.startsWith(nodeModules)
+                     || module.resource.startsWith(genDirNodeModules)
+                    || module.resource.startsWith(realNodeModules)),
         chunks: ['main'],
       }),
       new CheckerPlugin(),
