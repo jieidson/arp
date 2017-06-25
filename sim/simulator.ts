@@ -9,12 +9,14 @@ import { Navigator }        from './arena/navigator'
 import { Config }           from './config'
 import { Messenger }        from './messenger'
 import { Random }           from './random'
+import { Recorder }         from './recorder'
 
 export class Simulator {
 
   agents: Agent[]
   arena: Arena
   navigator: Navigator
+  recorder: Recorder
   rng: Random
 
   tick = 0
@@ -38,6 +40,8 @@ export class Simulator {
 
     Messenger.progress(4, 'initializing agents')
     this.agents.forEach(agent => agent.init())
+
+    this.recorder = new Recorder(this.agents.length)
   }
 
   start() {
@@ -66,7 +70,15 @@ export class Simulator {
       for (const agent of this.agents) {
         agent.action()
       }
+
+      // At the end of each day, record logs.
+      if (this.tick % this.config.ticks.day === 0) {
+        this.recorder.onDayEnded()
+      }
     }
+
+    Messenger.progress(96, 'writing output file')
+    const blob = this.recorder.write()
 
     const duration = moment.duration(moment().diff(start))
     let msg: string
@@ -76,7 +88,7 @@ export class Simulator {
       msg = `${duration.seconds()} seconds`
     }
 
-    Messenger.progress(100, `finished in ${msg}`)
+    Messenger.complete(`finished in ${msg}`, blob)
 
     console.log('done')
   }

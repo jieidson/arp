@@ -54,6 +54,7 @@ export function defaultConfig(): Config {
     ticks: {
       day: 60 * 24,
       total: 60 * 24 * 365,
+      // total: 60 * 24 * 2,
       seed: 100,
     },
 

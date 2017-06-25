@@ -1,14 +1,13 @@
+import { Observable }   from 'rxjs/Observable'
 import { Subscription } from 'rxjs/Subscription'
 
 import 'rxjs/add/operator/map'
 
 import { Component, OnDestroy, OnInit } from '@angular/core'
 
-import { Observable } from 'rxjs/Observable'
-
-import { RunnerService } from './shared/runner.service'
-
 import { defaultConfig } from '../../sim/config'
+import { ProgressMessage } from '../../sim/messages'
+import { RunnerService } from './shared/runner.service'
 
 @Component({
   selector: 'arp-app',
@@ -38,12 +37,8 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.runner.running$
   }
 
-  get progress$(): Observable<number> {
-    return this.runner.progress$.map(msg => msg.percent)
-  }
-
-  get status$(): Observable<string> {
-    return this.runner.progress$.map(msg => msg.status)
+  get progress$(): Observable<ProgressMessage> {
+    return this.runner.progress$
   }
 
   start(): void {

@@ -40,7 +40,6 @@ export class OffenderBehavior implements Behavior {
 
   action(agent: Agent): void {
     const civilianData: CivilianData = agent.data.civilian
-    const offenderData: OffenderData = agent.data.offender
 
     if (!civilianData.active) {
       return
@@ -72,12 +71,7 @@ export class OffenderBehavior implements Behavior {
     }
 
     // Robbery!
-    const amount = Math.min(this.sim.config.offenders.stealAmount, targetData.wealth)
-    targetData.wealth -= amount
-    civilianData.wealth += amount
-
-    offenderData.offended = true
-    offenderData.offendCooldown = this.sim.config.offenders.cooldown
+    this.offend(agent, target)
   }
 
   private gatherTargets(agent: Agent): Agent[] {
@@ -157,6 +151,21 @@ export class OffenderBehavior implements Behavior {
     const targetData: CivilianData = target.data.civilian
 
     return targetData.wealth - agentData.wealth + this.sim.rng.integer(-1, 1)
+  }
+
+  private offend(agent: Agent, target: Agent): void {
+    const civilianData: CivilianData = agent.data.civilian
+    const offenderData: OffenderData = agent.data.offender
+    const targetData: CivilianData = agent.data.civilian
+
+    const amount = Math.min(this.sim.config.offenders.stealAmount, targetData.wealth)
+    targetData.wealth -= amount
+    civilianData.wealth += amount
+
+    offenderData.offended = true
+    offenderData.offendCooldown = this.sim.config.offenders.cooldown
+
+    this.sim.recorder.robbery(agent, target)
   }
 
 }

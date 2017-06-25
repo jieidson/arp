@@ -15,8 +15,9 @@ import {
   MdToolbarModule,
  } from '@angular/material'
 
-import { RunnerService }    from './runner.service'
-import { SpinnerComponent } from './spinner.component'
+import { BufferHrefDirective } from './buffer-href.directive'
+import { RunnerService }       from './runner.service'
+import { SpinnerComponent }    from './spinner.component'
 
 @NgModule({
   imports: [
@@ -47,9 +48,11 @@ import { SpinnerComponent } from './spinner.component'
     MdToolbarModule,
     RouterModule,
 
+    BufferHrefDirective,
     SpinnerComponent,
   ],
   declarations: [
+    BufferHrefDirective,
     SpinnerComponent,
   ],
 })

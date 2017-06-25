@@ -11,4 +11,5 @@ export interface ProgressMessage {
   type: 'progress'
   status: string
   percent: number
+  buffer?: ArrayBuffer
 }

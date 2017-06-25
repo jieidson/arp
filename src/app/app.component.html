@@ -119,24 +119,41 @@
 
       <md-card>
         <md-card-subtitle>Status</md-card-subtitle>
-        <md-card-content fxLayout="column">
-          <p>Message: {{ status$ | async }}</p>
-          <p>Progress: {{ progress$ | async }}%</p>
+        <md-card-content
+            *ngIf="progress$ | async as progress; else stopped"
+            fxLayout="column">
+          <p>Message: {{ progress.status }}</p>
+          <p>Progress: {{ progress.percent }}%</p>
+          <a
+              *ngIf="progress.buffer"
+              [arpBufferHref]="progress.buffer"
+              download="datafile.xlsx"
+          >Output File</a>
 
           <md-progress-spinner
-            mode="determinate" [value]="progress$ | async"
+              mode="determinate" [value]="progress.percent"
           ></md-progress-spinner>
 
-          <button *ngIf="!running"
-              type="submit" md-raised-button color="primary">
+          <button
+              *ngIf="!running" type="submit" md-raised-button color="primary">
             Start
           </button>
-          <button *ngIf="running"
-              type="button" md-raised-button color="warn"
+          <button
+              *ngIf="running" type="button" md-raised-button color="warn"
               (click)="stop()">
             Stop
           </button>
         </md-card-content>
+
+        <ng-template #stopped>
+          <md-card-content>
+            <p>Simulation not running.</p>
+
+            <button type="submit" md-raised-button color="primary">
+              Start
+            </button>
+          </md-card-content>
+        </ng-template>
       </md-card>
 
     </form>
