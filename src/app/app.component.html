@@ -89,8 +89,12 @@
         <md-card-subtitle>Offender Behavior</md-card-subtitle>
         <md-card-content fxLayout="column">
           <md-input-container>
-            <input name="stealAmount" [(ngModel)]="config.civilians.stealAmount"
+            <input name="stealAmount" [(ngModel)]="config.offenders.stealAmount"
                 type="number" mdInput placeholder="Amount stolen when robbed" [disabled]="running">
+          </md-input-container>
+          <md-input-container>
+            <input name="cooldown" [(ngModel)]="config.offenders.cooldown"
+                type="number" mdInput placeholder="Amount of ticks before an agent can offend again" [disabled]="running">
           </md-input-container>
         </md-card-content>
       </md-card>

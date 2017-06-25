@@ -103,8 +103,7 @@ export class Simulator {
 
   private makeOffenders(): void {
     const civilian = new CivilianBehavior(this)
-    // const offender = new OffenderBehavior(this)
-    const offender = new OffenderBehavior()
+    const offender = new OffenderBehavior(this)
 
     for (let i = 0; i < this.config.agents.offender; i++) {
       const agent = new Agent(this.agents.length)

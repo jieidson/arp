@@ -2,11 +2,18 @@ import { Simulator } from '../simulator'
 import { Agent }     from './agent'
 import { Behavior }  from './behavior'
 
+export interface PoliceData {
+  type: 'police'
+}
+
 export class PoliceBehavior implements Behavior {
 
   constructor(private sim: Simulator) {}
 
   init(agent: Agent): void {
+    const data: PoliceData = { type: 'police' }
+    agent.data.police = data
+
     // Randomly choose a starting location
     agent.location = this.sim.rng.pick(this.sim.arena.nodes)
   }

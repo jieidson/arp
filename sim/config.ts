@@ -28,7 +28,11 @@ export interface Config {
     firingRate: number,
 
     payRate: number,
+  }
+
+  offenders: {
     stealAmount: number,
+    cooldown: number,
   }
 
 }
@@ -65,8 +69,11 @@ export function defaultConfig(): Config {
       firingRate: 3,
 
       payRate: 5,
-      stealAmount: 1,
+    },
 
+    offenders: {
+      stealAmount: 1,
+      cooldown: 60,
     },
   }
 }

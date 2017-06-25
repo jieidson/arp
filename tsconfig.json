@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
+    "alwaysStrict": true,
     "baseUrl": "src",
+    "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -13,6 +15,7 @@
     "noUnusedParameters": true,
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
+    "strict": true,
     "strictNullChecks": true,
     "target": "es5",
     "typeRoots": ["node_modules/@types"]

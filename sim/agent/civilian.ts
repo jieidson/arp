@@ -4,6 +4,8 @@ import { Agent }     from './agent'
 import { Behavior }  from './behavior'
 
 export interface CivilianData {
+  type: 'civilian'
+
   // List of locations the agent travels between.  The first one is the agent's
   // home location.
   activities: Node[]
@@ -26,6 +28,9 @@ export interface CivilianData {
 
   // Number of nodes to step through per move.
   travelSteps: number
+
+  // How much money this agent has.
+  wealth: number
 }
 
 export class CivilianBehavior implements Behavior {
@@ -34,6 +39,8 @@ export class CivilianBehavior implements Behavior {
 
   init(agent: Agent): void {
     const data: CivilianData = {
+      type: 'civilian',
+
       // Randomly choose home, and three activity locations
       activities: this.sim.rng.sample(this.sim.arena.nodes, 4),
 
@@ -45,6 +52,10 @@ export class CivilianBehavior implements Behavior {
       active: false,
       becomeActiveTick: 0,
       travelSteps: 1,
+
+      wealth: this.sim.rng.gaussian(
+        this.sim.config.civilians.wealthMean,
+        this.sim.config.civilians.wealthDeviation),
     }
 
     // Number of ticks to stay at home
@@ -122,6 +133,10 @@ export class CivilianBehavior implements Behavior {
 
   action(agent: Agent): void {
     const data: CivilianData = agent.data.civilian
+
+    if (this.sim.tick % (this.sim.config.ticks.day * 14)) {
+      data.wealth += this.sim.config.civilians.payRate
+    }
 
     if (!data.active) {
       return
