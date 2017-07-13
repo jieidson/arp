@@ -134,6 +134,7 @@ export class CivilianBehavior implements Behavior {
   action(agent: Agent): void {
     const data: CivilianData = agent.data.civilian
 
+    // Get paid every 14 days.
     if (this.sim.tick % (this.sim.config.ticks.day * 14)) {
       data.wealth += this.sim.config.civilians.payRate
     }
