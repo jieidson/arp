@@ -1,66 +1,27 @@
-ARP - Adult Robbery Patterns Simulator
-======================================
+# Arp
 
-This is a web-based simulator of ARP.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.3.
 
-Try it yourself at: https://jieidson.github.io/arp/
+## Development server
 
-Technologies
-------------
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-This project uses the following technologies:
-* [Angular](https://angular.io/) - Framework used for GUI.
-* [Angular CLI](https://cli.angular.io/) - Build tooling.
-* [Karma](https://karma-runner.github.io/) - Unit-test framework.
-* [Protractor](http://www.protractortest.org/) - End-to-end test framework.
+## Code scaffolding
 
-Development
------------
+Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-The following is only necessary if you wish to set up a development environment
-to work on the ARP simulator code.
+## Build
 
-* Install [Node.js](https://nodejs.org/).
-* In this project's root directory install dependencies with:
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
 
-        npm install
+## Running unit tests
 
-* Run a development server (http://localhost:4200/):
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-        npm start
+## Running end-to-end tests
 
-* Generate a production build:
+Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
 
-        npm run build:prod
+## Further help
 
-* To run unit tests:
-
-        # This will open a Chrome window for tests, and watch for changes.
-        npm run test
-
-        # Run tests once and then exit
-        npm run test -- --watch=false
-
-        # Run tests through PhantomJS
-        npm run test -- --watch=false --browsers PhantomJS
-
-* To run end-to-end tests:
-
-        # First, start a development server:
-        npm start
-
-        # Then, in another terminal:
-        npm run e2e
-
-* To run lint checks:
-
-        npm run lint
-
-* To scaffold new classes:
-
-        # Can also generate directive/pipe/service/class/module
-        npm generate component component-name
-
-* To deploy to GitHub pages:
-
-        npm run ng -- github-pages:deploy
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
