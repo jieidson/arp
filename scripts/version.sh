@@ -14,7 +14,8 @@ then
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-COMMIT=$(git rev-parse --short HEAD)
+COMMIT=$(git rev-parse HEAD)
+SHORT=$(git rev-parse --short HEAD)
 
 if git describe 2> /dev/null
 then
@@ -22,7 +23,7 @@ then
   STRING=$(git describe --dirty='*')
 else
   TAG=v0.0.0
-  STRING=v0.0.0-$COMMIT
+  STRING=v0.0.0-$SHORT*
 fi
 
 cat > "$SCRIPT_DIR/$OUT_FILE" <<VERSIONFILE
@@ -30,6 +31,7 @@ export const VERSION = {
   tag: '$TAG',
   branch: '$BRANCH',
   commit: '$COMMIT',
+  short: '$SHORT',
   string: '$STRING',
 }
 VERSIONFILE
