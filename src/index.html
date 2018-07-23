@@ -1,14 +1,113 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Arp</title>
-  <base href="/">
+  <head>
+    <meta charset="utf-8">
+    <title>ARP Simulator</title>
+    <base href="/">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#006064">
+    <meta name="description" content="ARP Simulator">
+
+    <link rel="manifest" href="manifest.json">
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" sizes="48x48" href="assets/logo-48.png">
+    <link rel="icon" sizes="96x96" href="assets/logo-96.png">
+    <link rel="icon" sizes="144x144" href="assets/logo-144.png">
+    <link rel="icon" sizes="192x192" href="assets/logo-192.png">
+    <link rel="apple-touch-icon" href="assets/logo-192.png">
+
+    <style>
+      /* Styles used while Angular is loading. */
+      body.app-loading {
+        margin: 0;
+        background-color: #303030;
+        color: #fff;
+      }
+
+      .app-loading-content {
+        display: none;
+      }
+
+      body.app-loading .app-loading-content {
+        display: flex;
+        flex-direction: column;
+        place-content: center;
+        align-items: center;
+
+        height: 100vh;
+
+        text-align: center;
+      }
+
+      .app-loading-content img {
+        margin: 24px;
+      }
+
+      .app-loading-content .spinner {
+        width: 64px;
+        height: 64px;
+
+        background: linear-gradient(to right, #fff 10%, rgba(255, 255, 255, 0) 42%);
+        border-radius: 50%;
+
+        position: relative;
+
+        animation: app-loading-spin 1s infinite linear;
+
+        flex: 0 0 auto;
+      }
+
+      .app-loading-content .spinner::before {
+        width: 50%;
+        height: 50%;
+
+        background: #fff;
+        border-radius: 100% 0 0 0;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        content: '';
+      }
+
+      .app-loading-content .spinner::after {
+        width: 75%;
+        height: 75%;
+
+        background: #303030;
+        border-radius: 50%;
+
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+
+        margin: auto;
+
+        content: '';
+      }
+
+      @keyframes app-loading-spin {
+        0% { transform: rotate(0); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+
+  <!-- The app-loading class is removed once Angular loads. -->
+  <body class="mat-app-background mat-typography app-loading">
+    <app-root>
+      <!-- This content is removed automatically once Angular has loaded. -->
+      <div class="app-loading-content">
+        <img src="assets/logo.svg" width="128" height="128">
+        <h1>ChimeraKB Console</h1>
+        <h2>Loading...</h2>
+        <div class="spinner"></div>
+      </div>
+    </app-root>
+  </body>
 </html>

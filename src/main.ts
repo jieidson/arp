@@ -8,5 +8,12 @@ if (environment.production) {
   enableProdMode()
 }
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.log(err))
+console.info('commit:', environment.version.commit)
+console.info('branch:', environment.version.branch)
+console.info('version:', environment.version.tag)
+console.info('environment:', environment.name)
+
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .then(() => document.body.classList.remove('app-loading'))
+  .catch(err => console.error('Angular bootstrap error:', err))
