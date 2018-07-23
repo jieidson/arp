@@ -1,0 +1,15 @@
+@import './theme';
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  $background: map-get(map-get($app-theme, background), background);
+  background-color: lighten($background, 15%);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: mat-color($app-primary, lighter);
+}

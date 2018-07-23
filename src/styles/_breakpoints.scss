@@ -1,0 +1,17 @@
+// From: https://material.io/design/layout/responsive-layout-grid.html#breakpoints
+
+$bp-xsmall: "(max-width: 599px)";
+$bp-small:  "(min-width: 600px) and (max-width: 959px)";
+$bp-medium: "(min-width: 960px) and (max-width: 1279px)";
+$bp-large:  "(min-width: 1280px) and (max-width: 1919px)";
+$bp-xlarge: "(min-width: 1920px)";
+
+$bp-gt-xsmall: "(min-width: 600px)";
+$bp-gt-small:  "(min-width: 960px)";
+$bp-gt-medium: "(min-width: 1280px)";
+$bp-gt-large:  "(min-width: 1920px)";
+
+$bp-lt-small:  "(max-width: 599px)";
+$bp-lt-medium: "(max-width: 959px)";
+$bp-lt-large:  "(max-width: 1279px)";
+$bp-lt-xlarge: "(max-width: 1919px)";

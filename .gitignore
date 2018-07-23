@@ -34,9 +34,9 @@ yarn-error.log
 testem.log
 /typings
 
-# System Files
+# system files
 .DS_Store
 Thumbs.db
 
-# Version file
-src/environments/version.ts
+# generated version file
+/src/environments/version.ts

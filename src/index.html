@@ -6,7 +6,7 @@
     <base href="/">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#006064">
+    <meta name="theme-color" content="#00bcd4">
     <meta name="description" content="ARP Simulator">
 
     <link rel="manifest" href="manifest.json">
@@ -18,12 +18,14 @@
     <link rel="icon" sizes="192x192" href="assets/logo-192.png">
     <link rel="apple-touch-icon" href="assets/logo-192.png">
 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Material+Icons">
+
     <style>
       /* Styles used while Angular is loading. */
       body.app-loading {
         margin: 0;
-        background-color: #303030;
-        color: #fff;
+        background: #fafafa;
+        color: rgba(0, 0, 0, 0.87);
       }
 
       .app-loading-content {
@@ -49,7 +51,7 @@
         width: 64px;
         height: 64px;
 
-        background: linear-gradient(to right, #fff 10%, rgba(255, 255, 255, 0) 42%);
+        background: linear-gradient(to right, #4caf50 10%, rgba(255, 255, 255, 0) 42%);
         border-radius: 50%;
 
         position: relative;
@@ -63,8 +65,7 @@
         width: 50%;
         height: 50%;
 
-        background: #fff;
-        border-radius: 100% 0 0 0;
+        background: #fafafa;
 
         position: absolute;
         top: 0;
@@ -77,7 +78,7 @@
         width: 75%;
         height: 75%;
 
-        background: #303030;
+        background: #fafafa;
         border-radius: 50%;
 
         position: absolute;
@@ -104,7 +105,7 @@
       <!-- This content is removed automatically once Angular has loaded. -->
       <div class="app-loading-content">
         <img src="assets/logo.svg" width="128" height="128">
-        <h1>ChimeraKB Console</h1>
+        <h1>ARP Simulator</h1>
         <h2>Loading...</h2>
         <div class="spinner"></div>
       </div>
