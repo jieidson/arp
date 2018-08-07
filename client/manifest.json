@@ -3,11 +3,11 @@
   "short_name": "ARP",
   "description": "Adult Robbery Patterns Simulator",
   "lang": "en-US",
+  "theme_color": "#00bcd4",
+  "background_color": "#fafafa",
+  "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "background_color": "#fafafa",
-  "theme_color": "#00bcd4",
-  "display": "standalone",
   "icons": [
     {
       "src": "assets/logo.svg",

@@ -1,0 +1,9 @@
+{
+  "$schema": "../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../dist/library",
+  "lib": {
+    "entryFile": "src/main.ts",
+    "flatModuleFile": "arp-simulator",
+    "umdId": "arp.simulator"
+  }
+}

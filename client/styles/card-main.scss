@@ -1,0 +1,59 @@
+:host {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  width: 100%;
+  height: 100%;
+
+  @media (max-width: 959px) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+mat-card {
+  margin: 16px;
+
+  flex: 1 1 0;
+
+  @media (max-width: 959px) {
+    flex: 0 1 auto;
+  }
+
+  // Force mat-card-actions to have no bottom margin, even if it's not the last
+  // child. This lets us add a app-loading-spinner to the bottom of a card
+  // nicely.
+  mat-card-actions {
+    padding-bottom: 0;
+    margin-bottom: -16px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  form {
+    mat-checkbox {
+      display: block;
+    }
+
+    mat-form-field, mat-checkbox {
+      width: 100%;
+    }
+  }
+}
+
+.fab-container {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+
+  display: flex;
+  flex-direction: column;
+
+  [mat-fab] {
+    margin: 8px 0;
+  }
+}

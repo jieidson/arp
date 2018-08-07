@@ -5,7 +5,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Output relative to this script's location.
-OUT_FILE="../src/environments/version.ts"
+OUT_FILE="../client/environments/version.ts"
 
 if [ ! -e "$(which git)" ]
 then
@@ -17,7 +17,7 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 COMMIT=$(git rev-parse HEAD)
 SHORT=$(git rev-parse --short HEAD)
 
-if git describe 2> /dev/null
+if git describe 2>&1 > /dev/null
 then
   TAG=$(git describe --abbrev=0)
   STRING=$(git describe --dirty='*')

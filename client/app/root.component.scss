@@ -1,0 +1,31 @@
+@import '../styles/breakpoints';
+
+mat-card-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+mat-accordion {
+  display: grid;
+  grid-gap: 16px;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  @media #{$bp-lt-medium} {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media #{$bp-lt-small} {
+    grid-template-columns: auto;
+  }
+}
+
+mat-expansion-panel {
+  height: fit-content;
+  margin: 0;
+}
+
+mat-panel-title {
+  font-size: 18px;
+}

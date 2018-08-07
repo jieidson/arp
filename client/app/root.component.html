@@ -1,0 +1,36 @@
+<mat-toolbar color="primary">ARP Simulator</mat-toolbar>
+
+<mat-card>
+  <mat-card-title>
+    <span>Configuration</span>
+
+    <button (click)="toggleOpen()" type="button" mat-icon-button
+        [matTooltip]="allOpen ? 'Collapse All' : 'Open All'">
+      <mat-icon>{{ allOpen ? 'unfold_less' : 'unfold_more' }}</mat-icon>
+    </button>
+
+  </mat-card-title>
+
+  <mat-card-content>
+    <mat-accordion [multi]="true">
+      <mat-expansion-panel
+          *ngFor="let group of form.controls | keyvalue">
+
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ group.key | titlecase }}</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <mat-form-field
+            *ngFor="let field of group.value.controls | keyvalue">
+          <input type="text" matInput [placeholder]="field.key | titlecase">
+        </mat-form-field>
+      </mat-expansion-panel>
+
+    </mat-accordion>
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button (click)="start()" type="button" mat-raised-button color="primary">Start</button>
+  </mat-card-actions>
+
+</mat-card>

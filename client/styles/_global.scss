@@ -1,0 +1,57 @@
+@import './typography';
+@import './theme';
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body, p, h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+body, *, *::before, *::after {
+  box-sizing: border-box;
+}
+
+mat-toolbar {
+  mat-form-field.mat-form-field {
+    font-size: mat-font-size($typography-config, input);
+
+    &.mat-form-field-should-float {
+      margin-top: 15px;
+    }
+  }
+}
+
+mat-expansion-panel {
+  pre {
+    overflow-x: auto;
+  }
+}
+
+mat-card {
+  margin: auto;
+
+  // Force mat-card-actions to have no bottom margin, even if it's not the last
+  // child. This lets us add a app-loading-spinner to the bottom of a card
+  // nicely.
+  mat-card-actions {
+    padding-bottom: 0;
+    margin-bottom: -16px;
+  }
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  $background: map-get(map-get($app-theme, background), background);
+  background-color: lighten($background, 15%);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: mat-color($app-primary, lighter);
+}
