@@ -2,11 +2,11 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
-  "defaultProject": "client",
+  "defaultProject": "gui",
   "projects": {
-    "client": {
+    "gui": {
       "root": "",
-      "sourceRoot": "client",
+      "sourceRoot": "gui",
       "projectType": "application",
       "prefix": "app",
       "schematics": {
@@ -18,18 +18,18 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/client",
-            "index": "client/index.html",
-            "main": "client/main.ts",
-            "polyfills": "client/polyfills.ts",
-            "tsConfig": "client/tsconfig.app.json",
+            "outputPath": "dist/gui",
+            "index": "gui/index.html",
+            "main": "gui/main.ts",
+            "polyfills": "gui/polyfills.ts",
+            "tsConfig": "gui/tsconfig.app.json",
             "assets": [
-              "client/favicon.ico",
-              "client/assets",
-              "client/manifest.json"
+              "gui/favicon.ico",
+              "gui/assets",
+              "gui/manifest.json"
             ],
             "styles": [
-              "client/styles.scss"
+              "gui/styles.scss"
             ],
             "scripts": []
           },
@@ -37,11 +37,11 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "client/environments/environment.ts",
-                  "with": "client/environments/environment.prod.ts"
+                  "replace": "gui/environments/environment.ts",
+                  "with": "gui/environments/environment.prod.ts"
                 }
               ],
-              "polyfills": "client/polyfills.prod.ts",
+              "polyfills": "gui/polyfills.prod.ts",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -58,35 +58,35 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "client:build"
+            "browserTarget": "gui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "client:build:production"
+              "browserTarget": "gui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "client:build"
+            "browserTarget": "gui:build"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "client/test.ts",
-            "polyfills": "client/polyfills.ts",
-            "tsConfig": "client/tsconfig.spec.json",
-            "karmaConfig": "client/karma.conf.js",
+            "main": "gui/test.ts",
+            "polyfills": "gui/polyfills.ts",
+            "tsConfig": "gui/tsconfig.spec.json",
+            "karmaConfig": "gui/karma.conf.js",
             "styles": [
-              "client/styles.scss"
+              "gui/styles.scss"
             ],
             "scripts": [],
             "assets": [
-              "client/favicon.ico",
-              "client/assets",
-              "client/manifest.json"
+              "gui/favicon.ico",
+              "gui/assets",
+              "gui/manifest.json"
             ]
           }
         },
@@ -94,8 +94,8 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "client/tsconfig.app.json",
-              "client/tsconfig.spec.json"
+              "gui/tsconfig.app.json",
+              "gui/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -104,7 +104,7 @@
         }
       }
     },
-    "client-e2e": {
+    "gui-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "architect": {
@@ -112,7 +112,7 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "client:serve"
+            "devServerTarget": "gui:serve"
           }
         },
         "lint": {
@@ -173,15 +173,9 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-webpack:webpack",
           "options": {
-            "tsConfig": "simulator/tsconfig.json",
-            "project": "simulator/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "project": "simulator/ng-package.prod.json"
-            }
+            "webpackConfig": "simulator/webpack.config.js"
           }
         },
         "test": {

@@ -5,7 +5,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Output relative to this script's location.
-OUT_FILE="../client/environments/version.ts"
+OUT_FILE="../gui/environments/version.ts"
 
 if [ ! -e "$(which git)" ]
 then

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 
 import { Command, Event } from '@arp/shared'
 
-const WORKER_PATH = './assets/arp-simulator.umd.js'
+const WORKER_PATH = './assets/simulator.js'
 
 @Injectable({ providedIn: 'root' })
 export class SimulatorService {
