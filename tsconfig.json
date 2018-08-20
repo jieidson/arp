@@ -19,9 +19,11 @@
     "sourceMap": true,
     "strict": true,
     "target": "es5",
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "typeRoots": ["node_modules/@types"],
+    "paths": {
+      "@arp/shared": ["dist/shared"],
+      "@arp/shared/*": ["dist/shared/*"],
+    }
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

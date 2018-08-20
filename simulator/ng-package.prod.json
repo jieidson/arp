@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../dist/library",
+  "dest": "../dist/simulator",
   "lib": {
     "entryFile": "src/main.ts",
     "flatModuleFile": "arp-simulator",

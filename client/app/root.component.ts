@@ -4,6 +4,8 @@ import {
 import { FormBuilder, Validators } from '@angular/forms'
 import { MatAccordion } from '@angular/material'
 
+import { SimulatorService } from './shared/services/simulator.service'
+
 @Component({
   selector: 'app-root',
   templateUrl: './root.component.html',
@@ -17,9 +19,8 @@ export class RootComponent implements AfterViewInit {
 
   constructor(
     private readonly formBuilder: FormBuilder,
+    private readonly simulatorService: SimulatorService,
   ) {}
-
-  private worker?: Worker
 
   @ViewChild(MatAccordion) readonly accordion!: MatAccordion
 
@@ -50,16 +51,9 @@ export class RootComponent implements AfterViewInit {
   }
 
   start(): void {
-    if (!this.worker) {
-      console.log('starting web worker')
-      this.worker = new Worker('./assets/arp-simulator.umd.js')
-
-      this.worker.addEventListener('message', evt => {
-        console.log('from worker:', evt.data)
-      })
-    }
-
-    this.worker.postMessage('hello from main')
+    console.log('CLICK')
+    this.simulatorService.start()
+    this.simulatorService.run()
   }
 
 }

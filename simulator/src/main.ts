@@ -1,8 +1,17 @@
-console.info('Web worker started')
+import { Messenger } from './messenger'
+import { Simulator } from './simulator'
 
-addEventListener('message', evt => {
-  console.log('From main:', evt.data)
-  postMessage('hello from web worker')
-})
+export function main() {
+  console.info('simulator web worker started')
 
-export const SIMULATOR = true
+  const messenger = new Messenger()
+  addEventListener('message', evt => messenger.onMessage(evt))
+
+  const simulator = new Simulator(
+    messenger,
+  )
+
+  simulator.start()
+}
+
+main()

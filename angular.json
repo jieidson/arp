@@ -126,6 +126,46 @@
         }
       }
     },
+    "shared": {
+     "root": "shared",
+      "sourceRoot": "shared/src",
+      "projectType": "library",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "shared/tsconfig.json",
+            "project": "shared/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "project": "shared/ng-package.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "shared/src/test.ts",
+            "tsConfig": "shared/tsconfig.spec.json",
+            "karmaConfig": "shared/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "shared/tsconfig.json",
+              "shared/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
     "simulator": {
      "root": "simulator",
       "sourceRoot": "simulator/src",
