@@ -1,13 +1,19 @@
 import { Injectable } from '@angular/core'
 
-import { Command, Event } from '@arp/shared'
+import { Observable, Subject } from 'rxjs'
+
+import { Command, Config, Event } from '@arp/shared'
 
 const WORKER_PATH = './assets/simulator.js'
 
 @Injectable({ providedIn: 'root' })
 export class SimulatorService {
 
+  private eventSubject = new Subject<Event>()
+
   private worker?: Worker
+
+  events$: Observable<Event> = this.eventSubject.asObservable()
 
   start(): void {
     if (this.worker) {
@@ -29,8 +35,8 @@ export class SimulatorService {
     delete this.worker
   }
 
-  run(): void {
-    this.send({ type: 'run' })
+  run(config: Config): void {
+    this.send({ type: 'run', config })
   }
 
   private send(cmd: Command): void {
@@ -44,16 +50,7 @@ export class SimulatorService {
   private onWorkerMessage(messageEvent: MessageEvent): void {
     const evt: Event = messageEvent.data
     console.log('simulator event:', evt)
-
-    switch (evt.type) {
-      case 'arena':
-        console.log('ARENA GENERATED')
-        break
-
-      default:
-        console.error('unexpected simulator event type:', evt.type)
-        return
-    }
+    this.eventSubject.next(evt)
   }
 
   private onWorkerError(evt: ErrorEvent): void {

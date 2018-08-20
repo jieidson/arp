@@ -5,7 +5,7 @@
     "target": "es2015",
     "module": "es2015",
     "inlineSources": true,
-    "lib": ["webworker", "es2015"]
+    "lib": ["dom", "es2015"]
   },
   "angularCompilerOptions": {
     "skipTemplateCodegen": true,

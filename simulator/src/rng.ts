@@ -1,14 +1,13 @@
+// tslint:disable:max-classes-per-file
+
 import * as rand from 'random-js'
 
-export class RNG {
+export abstract class RNG {
+  constructor(
+    private readonly engine: rand.Engine,
+  ) {}
 
-  constructor(seed: number) {
-    this.engine = rand.engines.mt19937().seed(seed)
-    this.realRange = rand.real(0, 1, false)
-  }
-
-  private engine: rand.Engine
-  private realRange: (engine: rand.Engine) => number
+  private readonly realRange = rand.real(0, 1, false)
 
   pick<T>(array: Array<T>): T {
     return rand.pick(this.engine, array)
@@ -29,6 +28,18 @@ export class RNG {
   gaussian(mean: number, stdev: number): number {
     const x = this.realRange(this.engine)
     return mean - stdev * Math.sqrt(2) * ierfc(2 * x)
+  }
+}
+
+export class MersenneTwisterRNG extends RNG {
+  constructor(seed: number) {
+    super(rand.engines.mt19937().seed(seed))
+  }
+}
+
+export class CryptoRNG extends RNG {
+  constructor() {
+    super(rand.engines.browserCrypto)
   }
 }
 

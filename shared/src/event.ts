@@ -1,5 +1,20 @@
-export interface ArenaEvent {
-  type: 'arena'
+export interface ReadyEvent {
+  type: 'ready'
+  arena: {
+    width: number,
+    height: number,
+    nodes: {
+      id: number,
+    }[],
+    edges: {
+      left: number,
+      right: number,
+    }[],
+  }
 }
 
-export type Event = ArenaEvent
+export interface ProgressEvent {
+  type: 'progress'
+}
+
+export type Event = ReadyEvent | ProgressEvent
