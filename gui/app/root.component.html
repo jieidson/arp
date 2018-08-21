@@ -36,7 +36,10 @@
 </mat-card>
 
 <mat-card>
+  <mat-card-title>
+    Arena
+  </mat-card-title>
   <mat-card-content>
-    <div class="graph" #graph></div>
+    <app-graph [data]="arena$ | async"></app-graph>
   </mat-card-content>
 </mat-card>

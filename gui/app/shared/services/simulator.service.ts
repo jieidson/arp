@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core'
 
 import { Observable, Subject } from 'rxjs'
+import { filter, map } from 'rxjs/operators'
 
-import { Command, Config, Event } from '@arp/shared'
+import { ArenaData, Command, Config, Event, isReadyEvent } from '@arp/shared'
 
 const WORKER_PATH = './assets/simulator.js'
 
@@ -14,6 +15,11 @@ export class SimulatorService {
   private worker?: Worker
 
   events$: Observable<Event> = this.eventSubject.asObservable()
+  arena$: Observable<ArenaData> = this.events$
+    .pipe(
+      filter(isReadyEvent),
+      map(evt => evt.arena),
+    )
 
   start(): void {
     if (this.worker) {

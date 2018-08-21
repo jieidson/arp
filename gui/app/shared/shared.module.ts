@@ -7,6 +7,7 @@ import {
   MatToolbarModule, MatTooltipModule,
 } from '@angular/material'
 
+import { GraphComponent } from './components/graph.component'
 import { InputErrorComponent } from './components/input-error.component'
 import { LoadingSpinnerComponent } from './components/loading-spinner.component'
 
@@ -39,10 +40,12 @@ import { LoadingSpinnerComponent } from './components/loading-spinner.component'
     MatToolbarModule,
     MatTooltipModule,
 
+    GraphComponent,
     InputErrorComponent,
     LoadingSpinnerComponent,
   ],
   declarations: [
+    GraphComponent,
     InputErrorComponent,
     LoadingSpinnerComponent,
   ],

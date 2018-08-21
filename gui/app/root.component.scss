@@ -1,5 +1,9 @@
 @import '../styles/breakpoints';
 
+mat-card {
+  margin: 16px;
+}
+
 mat-card-title {
   display: flex;
   flex-direction: row;
@@ -30,7 +34,8 @@ mat-panel-title {
   font-size: 18px;
 }
 
-.graph {
+app-graph {
+  display: block;
   width: 100%;
   height: 500px;
 }
