@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import {
   MatButtonModule, MatCardModule, MatExpansionModule, MatFormFieldModule,
-  MatIconModule, MatInputModule, MatProgressSpinnerModule,
+  MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule,
   MatToolbarModule, MatTooltipModule,
 } from '@angular/material'
 
@@ -23,6 +23,7 @@ import { LoadingSpinnerComponent } from './components/loading-spinner.component'
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
     MatToolbarModule,
     MatTooltipModule,
   ],
@@ -37,6 +38,7 @@ import { LoadingSpinnerComponent } from './components/loading-spinner.component'
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
     MatToolbarModule,
     MatTooltipModule,
 

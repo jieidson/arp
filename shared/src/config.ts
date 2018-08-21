@@ -14,13 +14,25 @@ export interface CryptoRNGConfig {
 
 export type RNGConfig = MersenneTwisterRNGConfig | CryptoRNGConfig
 
-export interface GridArenaConfig {
-  type: 'grid'
+export interface SimpleGridArenaConfig {
+  type: 'simple-grid'
   width: number
   height: number
 }
 
-export type ArenaConfig = GridArenaConfig
+export interface WeightedGridArenaConfig {
+  type: 'weighted-grid'
+  width: number
+  height: number
+
+  majorX: number
+  majorY: number
+
+  minorWeight: number
+  majorWeight: number
+}
+
+export type ArenaConfig = SimpleGridArenaConfig | WeightedGridArenaConfig
 
 export function defaultConfig(): Config {
   return {
@@ -29,7 +41,7 @@ export function defaultConfig(): Config {
       seed: 12345,
     },
     arena: {
-      type: 'grid',
+      type: 'simple-grid',
       width: 5,
       height: 5,
     },

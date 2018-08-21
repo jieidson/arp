@@ -41,6 +41,7 @@ export class Simulator {
         edges: arena.edges.map(edge => ({
           left: edge.left.id,
           right: edge.right.id,
+          weight: edge.weight,
         })),
       },
     })

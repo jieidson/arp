@@ -5,6 +5,7 @@ export interface ArenaData {
   edges: {
     left: number,
     right: number,
+    weight: number,
   }[]
 }
 

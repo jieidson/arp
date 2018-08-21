@@ -10,6 +10,7 @@ import * as cytoscape from 'cytoscape'
 @Component({
   selector: 'app-graph',
   template: '',
+  styleUrls: ['./graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraphComponent implements OnInit, OnChanges, OnDestroy {
@@ -34,7 +35,19 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy {
       minZoom: 0.5,
       maxZoom: 4,
       style: [
-        { selector: 'node', style: { content: 'data(id)' } } as cytoscape.Stylesheet,
+        {
+          selector: 'node',
+          style: {
+            content: 'data(id)',
+            'text-valign': 'center',
+          },
+        } as cytoscape.Stylesheet,
+        {
+          selector: 'edge',
+          style: {
+            content: 'data(weight)',
+          },
+        } as cytoscape.Stylesheet,
       ],
     })
   }
@@ -70,6 +83,7 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy {
         data: {
           source: edge.left.toString(),
           target: edge.right.toString(),
+          weight: edge.weight,
         },
       } as cytoscape.ElementDefinition))
 
@@ -83,6 +97,8 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy {
           name: 'grid',
           rows: data.height,
           cols: data.width,
+          fit: false,
+          avoidOverlapPadding: 50,
         })
         .run()
       cy.autolock(true)
