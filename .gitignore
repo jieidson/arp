@@ -39,4 +39,4 @@ testem.log
 Thumbs.db
 
 # generated version file
-/src/environments/version.ts
+/gui/environments/version.ts
