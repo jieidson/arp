@@ -40,3 +40,6 @@ Thumbs.db
 
 # generated version file
 /gui/environments/version.ts
+
+# compiled simulator
+/gui/assets/simulator.ts
