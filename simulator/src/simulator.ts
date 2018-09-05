@@ -29,7 +29,7 @@ export class Simulator {
     const rng = factory.makeRNG(config.rng)
     console.info('RNG:', rng)
 
-    const arena = factory.makeArena(config.arena)
+    const arena = factory.makeArena(config.arena, rng)
     console.info('Arena:', arena)
 
     this.messenger.send({

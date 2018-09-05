@@ -1,6 +1,6 @@
 import { ArenaConfig, RNGConfig } from '@arp/shared'
 
-import { Arena, basicGrid } from './arena/arena'
+import { Arena, simpleGrid, weightedGrid } from './arena/arena'
 import { CryptoRNG, MersenneTwisterRNG, RNG } from './rng'
 
 export function makeRNG(config: RNGConfig): RNG {
@@ -16,13 +16,13 @@ export function makeRNG(config: RNGConfig): RNG {
   }
 }
 
-export function makeArena(config: ArenaConfig): Arena {
+export function makeArena(config: ArenaConfig, rng: RNG): Arena {
   switch (config.type) {
     case 'simple-grid':
-      return basicGrid(config.width, config.height)
+      return simpleGrid(config)
 
     case 'weighted-grid':
-      return basicGrid(config.width, config.height)
+      return weightedGrid(config, rng)
 
     default:
       throw new Error('invalid arena config')
