@@ -3,19 +3,19 @@
     <mat-panel-title>{{ group?.title }}</mat-panel-title>
   </mat-expansion-panel-header>
 
-  <mat-form-field>
+  <mat-form-field class="type">
     <mat-select *ngIf="typeControl" [formControl]="typeControl" placeholder="Type">
       <mat-option
           *ngFor="let type of group?.types"
-          [value]="type.value"
-      >{{ type.name }}</mat-option>
+          [value]="type.id"
+      >{{ type.label }}</mat-option>
     </mat-select>
   </mat-form-field>
 
   <ng-container *ngIf="formGroup$ | async as formGroup" [formGroup]="formGroup">
     <mat-form-field *ngFor="let control of group?.controls[typeControl?.value]">
       <input
-          [formControlName]="control.name"
+          [formControlName]="control.id"
           [type]="control.type"
           [placeholder]="control.placeholder"
           matInput>

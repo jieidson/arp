@@ -14,82 +14,13 @@
   <mat-card-content>
 
     <mat-accordion [multi]="true">
-      <app-config-form></app-config-form>
+      <app-config-group
+          *ngFor="let group of groups"
+          [group]="group">
+      </app-config-group>
     </mat-accordion>
 
   </mat-card-content>
-
-  <!-- <mat-card-content [formGroup]="form">
-    <form id="config-form" [formGroup]="form" (ngSubmit)="start()">
-      <mat-accordion [multi]="true">
-
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
-            <mat-panel-title>Random Number Generator</mat-panel-title>
-          </mat-expansion-panel-header>
-
-          <mat-form-field class="type">
-            <mat-select formControlName="rngType" placeholder="Type">
-              <mat-option value="mersenne-twister">Mersenne Twister</mat-option>
-              <mat-option value="crypto">Cryptographic RNG</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <ng-container *ngIf="form.get('rngType').value === 'mersenne-twister'" formGroupName="rng">
-            <mat-form-field>
-              <input formControlName="seed" type="number" matInput placeholder="Seed">
-              <mat-error><app-input-error></app-input-error></mat-error>
-            </mat-form-field>
-          </ng-container>
-        </mat-expansion-panel>
-
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
-            <mat-panel-title>Arena</mat-panel-title>
-          </mat-expansion-panel-header>
-
-          <mat-form-field class="type">
-            <mat-select formControlName="arenaType" placeholder="Arena">
-              <mat-option value="simple-grid">Simple Grid</mat-option>
-              <mat-option value="weighted-grid">Weighted Grid</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <ng-container formGroupName="arena">
-            <mat-form-field>
-              <input formControlName="width" type="number" matInput placeholder="Width">
-              <mat-error><app-input-error></app-input-error></mat-error>
-            </mat-form-field>
-            <mat-form-field>
-              <input formControlName="height" type="number" matInput placeholder="Height">
-              <mat-error><app-input-error></app-input-error></mat-error>
-            </mat-form-field>
-
-            <ng-container *ngIf="form.get('arenaType').value === 'weighted-grid'">
-              <mat-form-field>
-                <input formControlName="majorX" type="number" matInput placeholder="Horizontal Major Streets">
-                <mat-error><app-input-error></app-input-error></mat-error>
-              </mat-form-field>
-              <mat-form-field>
-                <input formControlName="majorY" type="number" matInput placeholder="Vertical Major Streets">
-                <mat-error><app-input-error></app-input-error></mat-error>
-              </mat-form-field>
-
-              <mat-form-field>
-                <input formControlName="minorWeight" type="number" matInput placeholder="Minor Street Weight">
-                <mat-error><app-input-error></app-input-error></mat-error>
-              </mat-form-field>
-              <mat-form-field>
-                <input formControlName="majorWeight" type="number" matInput placeholder="Major Street Weight">
-                <mat-error><app-input-error></app-input-error></mat-error>
-              </mat-form-field>
-            </ng-container>
-          </ng-container>
-        </mat-expansion-panel>
-
-      </mat-accordion>
-    </form>
-  </mat-card-content> -->
 
   <mat-card-actions align="end">
     <button type="submit" form="config-form" mat-raised-button color="primary">Start</button>

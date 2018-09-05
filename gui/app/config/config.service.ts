@@ -1,20 +1,23 @@
 import { Injectable } from '@angular/core'
-import { FormBuilder, FormGroup, Validators } from '@angular/forms'
+import {
+  FormBuilder, FormGroup, ValidatorFn, Validators,
+} from '@angular/forms'
 import { equalsValidator } from '../shared/utils/validators'
 
 export interface ConfigGroup {
   name: string
   title: string
 
-  types: { name: string, value: string }[]
-  controls: { [name: string]: ConfigControl[] }
+  types: { id: string, label: string }[]
+  controls: { [id: string]: ConfigControl[] }
 }
 
 export interface ConfigControl {
-  name: string
+  id: string
   type: 'number'
   placeholder: string
   default: any
+  validators: ValidatorFn | ValidatorFn[]
 }
 
 @Injectable({ providedIn: 'root' })
@@ -29,16 +32,89 @@ export class ConfigService {
       name: 'rng',
       title: 'Random Number Generator',
       types: [
-        { name: 'Mersenne Twister', value: 'mersenne-twister' },
-        { name: 'Cryptographic RNG', value: 'crypto' },
+        { id: 'mersenne-twister', label: 'Mersenne Twister' },
+        { id: 'crypto', label: 'Cryptographic RNG' },
       ],
       controls: {
-        'mersenne-twister': [{
-          name: 'seed',
-          type: 'number',
-          placeholder: 'Seed',
-          default: 1234,
-        }],
+        'mersenne-twister': [
+          {
+            id: 'seed',
+            type: 'number',
+            placeholder: 'Seed',
+            default: 1234,
+            validators: Validators.required,
+          },
+        ],
+      },
+    },
+    {
+      name: 'arena',
+      title: 'Arena',
+      types: [
+        { id: 'simple-grid', label: 'Simple Grid' },
+        { id: 'weighted-grid', label: 'Weighted Grid' },
+      ],
+      controls: {
+        'simple-grid': [
+          {
+            id: 'width',
+            type: 'number',
+            placeholder: 'Width',
+            default: 5,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'height',
+            type: 'number',
+            placeholder: 'Height',
+            default: 5,
+            validators: [Validators.required, Validators.min(0)],
+          },
+        ],
+        'weighted-grid': [
+          {
+            id: 'width',
+            type: 'number',
+            placeholder: 'Width',
+            default: 5,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'height',
+            type: 'number',
+            placeholder: 'Height',
+            default: 5,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'majorX',
+            type: 'number',
+            placeholder: 'Horizontal Major Streets',
+            default: 2,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'majorY',
+            type: 'number',
+            placeholder: 'Vertical Major Streets',
+            default: 2,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'minorWeight',
+            type: 'number',
+            placeholder: 'Minor Street Weight',
+            default: 1,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'majorWeight',
+            type: 'number',
+            placeholder: 'Major Street Weight',
+            default: 5,
+            validators: [Validators.required, Validators.min(0)],
+          },
+        ],
       },
     },
   ]
@@ -60,7 +136,7 @@ export class ConfigService {
     const config: { [key: string]: any } = {}
 
     for (const control of controls) {
-      config[control.name] = [control.default, Validators.required]
+      config[control.id] = [control.default, control.validators]
     }
 
     this.form.addControl(name, this.formBuilder.group(config))
@@ -70,12 +146,12 @@ export class ConfigService {
     const config: { [key: string]: any } = {}
 
     for (const group of this.groups) {
-      const typeValues = group.types.map(t => t.value)
-      if (typeValues.length === 0) { throw new Error('no type values') }
+      const typeIDs = group.types.map(t => t.id)
+      if (typeIDs.length === 0) { throw new Error('no type values') }
 
-      const typeConfig = [typeValues[0], [
+      const typeConfig = [typeIDs[0], [
         Validators.required,
-        equalsValidator(...typeValues),
+        equalsValidator(...typeIDs),
       ]]
 
       config[group.name + 'Type'] = typeConfig

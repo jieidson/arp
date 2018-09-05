@@ -42,4 +42,4 @@ Thumbs.db
 /gui/environments/version.ts
 
 # compiled simulator
-/gui/assets/simulator.ts
+/gui/assets/simulator.js

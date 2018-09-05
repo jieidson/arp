@@ -1,0 +1,21 @@
+:host {
+  height: fit-content;
+}
+
+mat-expansion-panel {
+  // Don't add extra margin around host element.
+  margin: 0;
+  height: 100%;
+}
+
+mat-panel-title {
+  font-size: 18px;
+}
+
+mat-form-field {
+  margin: 0 1px;
+
+  &.type {
+    display: block;
+  }
+}

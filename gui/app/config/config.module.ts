@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core'
 
 import { SharedModule } from '../shared/shared.module'
 
-import { ConfigFormComponent } from './form.component'
 import { ConfigGroupComponent } from './group.component'
 
 @NgModule({
@@ -10,10 +9,9 @@ import { ConfigGroupComponent } from './group.component'
     SharedModule,
   ],
   exports: [
-    ConfigFormComponent,
+    ConfigGroupComponent,
   ],
   declarations: [
-    ConfigFormComponent,
     ConfigGroupComponent,
   ],
 })

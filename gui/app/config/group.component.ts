@@ -11,6 +11,7 @@ import { ConfigGroup, ConfigService } from './config.service'
 @Component({
   selector: 'app-config-group',
   templateUrl: './group.component.html',
+  styleUrls: ['./group.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfigGroupComponent implements OnChanges {

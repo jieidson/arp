@@ -1,16 +1,11 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit,
-  ViewChild,
+  AfterViewInit, ChangeDetectionStrategy, Component, ViewChild,
 } from '@angular/core'
-// import { FormBuilder, Validators } from '@angular/forms'
 import { MatAccordion } from '@angular/material'
 
-// import { Subscription } from 'rxjs'
-
-// import { Config } from '@arp/shared'
-
 import { SimulatorService } from './shared/services/simulator.service'
-// import { equalsValidator } from './shared/utils/validators'
+
+import { ConfigService } from './config/config.service'
 
 @Component({
   selector: 'app-root',
@@ -18,53 +13,23 @@ import { SimulatorService } from './shared/services/simulator.service'
   styleUrls: ['./root.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RootComponent implements OnInit, AfterViewInit, OnDestroy {
+export class RootComponent implements AfterViewInit {
 
   constructor(
-    // private readonly formBuilder: FormBuilder,
+    private readonly configService: ConfigService,
     private readonly simulatorService: SimulatorService,
   ) {}
 
-  // private rngSub?: Subscription
-  // private arenaSub?: Subscription
-
   @ViewChild(MatAccordion) readonly accordion!: MatAccordion
 
+  readonly groups = this.configService.groups
   readonly arena$ = this.simulatorService.arena$
 
-  // readonly form = this.formBuilder.group({
-  //   rngType: ['mersenne-twister', [Validators.required, equalsValidator(
-  //     'mersenne-twister', 'crypto',
-  //   )]],
-
-  //   arenaType: ['simple-grid', [Validators.required, equalsValidator(
-  //     'simple-grid', 'weighted-grid',
-  //   )]],
-  // })
-
   allOpen = true
-
-  ngOnInit(): void {
-    // tslint:disable:no-non-null-assertion
-    // this.rngSub = this.form.get('rngType')!.valueChanges
-    //   .subscribe(() => this.updateRNG())
-
-    // this.arenaSub = this.form.get('arenaType')!.valueChanges
-    //   .subscribe(() => this.updateArena())
-    // tslint:enable:no-non-null-assertion
-
-    // this.updateRNG()
-    // this.updateArena()
-  }
 
   ngAfterViewInit(): void {
     // Need to do this in the next turn of the change detector
     Promise.resolve().then(() => this.accordion.openAll())
-  }
-
-  ngOnDestroy(): void {
-    // if (this.rngSub) { this.rngSub.unsubscribe() }
-    // if (this.arenaSub) { this.arenaSub.unsubscribe() }
   }
 
   toggleOpen(): void {
@@ -101,27 +66,6 @@ export class RootComponent implements OnInit, AfterViewInit, OnDestroy {
     // this.simulatorService.start()
     // this.simulatorService.run(config)
   }
-
-  // private updateRNG(): void {
-  //   const typeControl = this.form.get('rngType')
-  //   if (!typeControl) { throw new Error('no rng type control') }
-
-  //   this.form.removeControl('rng')
-  //   switch (typeControl.value) {
-  //     case 'mersenne-twister':
-  //       this.form.addControl('rng', this.formBuilder.group({
-  //         seed: [1234, Validators.required],
-  //       }))
-  //       break
-
-  //     case 'crypto':
-  //       this.form.addControl('rng', this.formBuilder.group({}))
-  //       break
-
-  //     default:
-  //       throw new Error('invalid RNG type')
-  //   }
-  // }
 
   // private updateArena(): void {
   //   const typeControl = this.form.get('arenaType')
