@@ -28,7 +28,7 @@ export class ConfigGroupComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.group && this.group) {
-      this.typeControl = this.configService.form.get(this.group.name + 'Type')
+      this.typeControl = this.configService.form.get(this.group.id + 'Type')
       this.updateFormGroup(this.group)
     }
   }
@@ -42,8 +42,8 @@ export class ConfigGroupComponent implements OnChanges {
     this.formGroup$ = this.typeControl.valueChanges.pipe(
       startWith(this.typeControl.value),
       map(value => {
-        this.configService.updateForm(group.name, value)
-        return this.configService.form.get(group.name)
+        this.configService.updateForm(group.id, value)
+        return this.configService.form.get(group.id)
       }),
     )
   }

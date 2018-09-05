@@ -12,14 +12,14 @@
   </mat-card-title>
 
   <mat-card-content>
-
-    <mat-accordion [multi]="true">
-      <app-config-group
-          *ngFor="let group of groups"
-          [group]="group">
-      </app-config-group>
-    </mat-accordion>
-
+    <form id="config-form" [formGroup]="form" (ngSubmit)="start()">
+      <mat-accordion [multi]="true">
+        <app-config-group
+            *ngFor="let group of groups"
+            [group]="group">
+        </app-config-group>
+      </mat-accordion>
+    </form>
   </mat-card-content>
 
   <mat-card-actions align="end">

@@ -23,6 +23,7 @@ export class RootComponent implements AfterViewInit {
   @ViewChild(MatAccordion) readonly accordion!: MatAccordion
 
   readonly groups = this.configService.groups
+  readonly form = this.configService.form
   readonly arena$ = this.simulatorService.arena$
 
   allOpen = true
@@ -42,60 +43,18 @@ export class RootComponent implements AfterViewInit {
   }
 
   start(): void {
-    // if (this.form.invalid) {
-    //   console.warn('form invalid')
-    //   return
-    // }
+    if (this.form.invalid) {
+      console.warn('form invalid')
+      return
+    }
 
-    // const value = this.form.value
+    const config = this.configService.config
 
-    // const config: Config = {
-    //   rng: {
-    //     type: value.rngType,
-    //     ...value.rng,
-    //   },
-    //   arena: {
-    //     type: value.arenaType,
-    //     ...value.arena,
-    //   },
-    // }
+    this.allOpen = false
+    this.accordion.closeAll()
 
-    // this.allOpen = false
-    // this.accordion.closeAll()
-
-    // this.simulatorService.start()
-    // this.simulatorService.run(config)
+    this.simulatorService.start()
+    this.simulatorService.run(config)
   }
-
-  // private updateArena(): void {
-  //   const typeControl = this.form.get('arenaType')
-  //   if (!typeControl) { throw new Error('no arena type control') }
-
-  //   this.form.removeControl('arena')
-  //   switch (typeControl.value) {
-  //     case 'simple-grid':
-  //       this.form.addControl('arena', this.formBuilder.group({
-  //         width: [5, [Validators.required, Validators.min(0)]],
-  //         height: [5, [Validators.required, Validators.min(0)]],
-  //       }))
-  //       break
-
-  //     case 'weighted-grid':
-  //       this.form.addControl('arena', this.formBuilder.group({
-  //         width: [5, [Validators.required, Validators.min(0)]],
-  //         height: [5, [Validators.required, Validators.min(0)]],
-
-  //         majorX: [2, [Validators.required, Validators.min(0)]],
-  //         majorY: [2, [Validators.required, Validators.min(0)]],
-
-  //         minorWeight: [5, [Validators.required, Validators.min(0)]],
-  //         majorWeight: [1, [Validators.required, Validators.min(0)]],
-  //       }))
-  //       break
-
-  //     default:
-  //       throw new Error('invalid RNG type')
-  //   }
-  // }
 
 }

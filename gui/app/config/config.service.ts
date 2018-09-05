@@ -2,10 +2,13 @@ import { Injectable } from '@angular/core'
 import {
   FormBuilder, FormGroup, ValidatorFn, Validators,
 } from '@angular/forms'
+
+import { Config } from '@arp/shared'
+
 import { equalsValidator } from '../shared/utils/validators'
 
 export interface ConfigGroup {
-  name: string
+  id: string
   title: string
 
   types: { id: string, label: string }[]
@@ -29,7 +32,7 @@ export class ConfigService {
 
   readonly groups: ConfigGroup[] = [
     {
-      name: 'rng',
+      id: 'rng',
       title: 'Random Number Generator',
       types: [
         { id: 'mersenne-twister', label: 'Mersenne Twister' },
@@ -48,7 +51,7 @@ export class ConfigService {
       },
     },
     {
-      name: 'arena',
+      id: 'arena',
       title: 'Arena',
       types: [
         { id: 'simple-grid', label: 'Simple Grid' },
@@ -121,13 +124,32 @@ export class ConfigService {
 
   readonly form = this.makeFormGroup()
 
+  get config(): Config {
+    const config: any = {}
+
+    for (const group of this.groups) {
+      const typeControl = this.form.get(group.id + 'Type')
+      if (!typeControl) { throw new Error('no type control') }
+
+      const valueControl = this.form.get(group.id)
+      if (!valueControl) { throw new Error('no value control') }
+
+      config[group.id] = {
+        type: typeControl.value,
+        ...valueControl.value,
+      }
+    }
+
+    return config
+  }
+
   updateForm(name: string, value: string): void {
     const typeControl = this.form.get(name + 'Type')
     if (!typeControl) { throw new Error('no type control') }
 
     this.form.removeControl(name)
 
-    const group = this.groups.find(g => g.name === name)
+    const group = this.groups.find(g => g.id === name)
     if (!group) { throw new Error('no group') }
 
     const controls = group.controls[value]
@@ -154,7 +176,7 @@ export class ConfigService {
         equalsValidator(...typeIDs),
       ]]
 
-      config[group.name + 'Type'] = typeConfig
+      config[group.id + 'Type'] = typeConfig
     }
 
     return this.formBuilder.group(config)
