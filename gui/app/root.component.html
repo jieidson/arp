@@ -11,7 +11,15 @@
 
   </mat-card-title>
 
-  <mat-card-content [formGroup]="form">
+  <mat-card-content>
+
+    <mat-accordion [multi]="true">
+      <app-config-form></app-config-form>
+    </mat-accordion>
+
+  </mat-card-content>
+
+  <!-- <mat-card-content [formGroup]="form">
     <form id="config-form" [formGroup]="form" (ngSubmit)="start()">
       <mat-accordion [multi]="true">
 
@@ -81,7 +89,7 @@
 
       </mat-accordion>
     </form>
-  </mat-card-content>
+  </mat-card-content> -->
 
   <mat-card-actions align="end">
     <button type="submit" form="config-form" mat-raised-button color="primary">Start</button>

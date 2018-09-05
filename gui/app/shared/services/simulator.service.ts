@@ -10,12 +10,12 @@ const WORKER_PATH = './assets/simulator.js'
 @Injectable({ providedIn: 'root' })
 export class SimulatorService {
 
-  private eventSubject = new Subject<Event>()
+  private readonly eventSubject = new Subject<Event>()
 
   private worker?: Worker
 
-  events$: Observable<Event> = this.eventSubject.asObservable()
-  arena$: Observable<ArenaData> = this.events$
+  readonly events$: Observable<Event> = this.eventSubject.asObservable()
+  readonly arena$: Observable<ArenaData> = this.events$
     .pipe(
       filter(isReadyEvent),
       map(evt => evt.arena),

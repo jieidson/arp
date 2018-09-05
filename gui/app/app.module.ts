@@ -5,6 +5,7 @@ import { ServiceWorkerModule } from '@angular/service-worker'
 
 import { environment } from '../environments/environment'
 
+import { ConfigModule } from './config/config.module'
 import { SharedModule } from './shared/shared.module'
 
 import { RootComponent } from './root.component'
@@ -21,6 +22,7 @@ import { RootComponent } from './root.component'
     }),
 
     SharedModule,
+    ConfigModule,
   ],
   bootstrap: [RootComponent],
 })

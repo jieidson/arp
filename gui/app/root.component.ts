@@ -2,15 +2,15 @@ import {
   AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit,
   ViewChild,
 } from '@angular/core'
-import { FormBuilder, Validators } from '@angular/forms'
+// import { FormBuilder, Validators } from '@angular/forms'
 import { MatAccordion } from '@angular/material'
 
-import { Subscription } from 'rxjs'
+// import { Subscription } from 'rxjs'
 
-import { Config } from '@arp/shared'
+// import { Config } from '@arp/shared'
 
 import { SimulatorService } from './shared/services/simulator.service'
-import { equalsValidator } from './shared/utils/validators'
+// import { equalsValidator } from './shared/utils/validators'
 
 @Component({
   selector: 'app-root',
@@ -21,40 +21,40 @@ import { equalsValidator } from './shared/utils/validators'
 export class RootComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
-    private readonly formBuilder: FormBuilder,
+    // private readonly formBuilder: FormBuilder,
     private readonly simulatorService: SimulatorService,
   ) {}
 
-  private rngSub?: Subscription
-  private arenaSub?: Subscription
+  // private rngSub?: Subscription
+  // private arenaSub?: Subscription
 
   @ViewChild(MatAccordion) readonly accordion!: MatAccordion
 
   readonly arena$ = this.simulatorService.arena$
 
-  readonly form = this.formBuilder.group({
-    rngType: ['mersenne-twister', [Validators.required, equalsValidator(
-      'mersenne-twister', 'crypto',
-    )]],
+  // readonly form = this.formBuilder.group({
+  //   rngType: ['mersenne-twister', [Validators.required, equalsValidator(
+  //     'mersenne-twister', 'crypto',
+  //   )]],
 
-    arenaType: ['simple-grid', [Validators.required, equalsValidator(
-      'simple-grid', 'weighted-grid',
-    )]],
-  })
+  //   arenaType: ['simple-grid', [Validators.required, equalsValidator(
+  //     'simple-grid', 'weighted-grid',
+  //   )]],
+  // })
 
   allOpen = true
 
   ngOnInit(): void {
     // tslint:disable:no-non-null-assertion
-    this.rngSub = this.form.get('rngType')!.valueChanges
-      .subscribe(() => this.updateRNG())
+    // this.rngSub = this.form.get('rngType')!.valueChanges
+    //   .subscribe(() => this.updateRNG())
 
-    this.arenaSub = this.form.get('arenaType')!.valueChanges
-      .subscribe(() => this.updateArena())
+    // this.arenaSub = this.form.get('arenaType')!.valueChanges
+    //   .subscribe(() => this.updateArena())
     // tslint:enable:no-non-null-assertion
 
-    this.updateRNG()
-    this.updateArena()
+    // this.updateRNG()
+    // this.updateArena()
   }
 
   ngAfterViewInit(): void {
@@ -63,8 +63,8 @@ export class RootComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.rngSub) { this.rngSub.unsubscribe() }
-    if (this.arenaSub) { this.arenaSub.unsubscribe() }
+    // if (this.rngSub) { this.rngSub.unsubscribe() }
+    // if (this.arenaSub) { this.arenaSub.unsubscribe() }
   }
 
   toggleOpen(): void {
@@ -77,81 +77,81 @@ export class RootComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   start(): void {
-    if (this.form.invalid) {
-      console.warn('form invalid')
-      return
-    }
+    // if (this.form.invalid) {
+    //   console.warn('form invalid')
+    //   return
+    // }
 
-    const value = this.form.value
+    // const value = this.form.value
 
-    const config: Config = {
-      rng: {
-        type: value.rngType,
-        ...value.rng,
-      },
-      arena: {
-        type: value.arenaType,
-        ...value.arena,
-      },
-    }
+    // const config: Config = {
+    //   rng: {
+    //     type: value.rngType,
+    //     ...value.rng,
+    //   },
+    //   arena: {
+    //     type: value.arenaType,
+    //     ...value.arena,
+    //   },
+    // }
 
-    this.allOpen = false
-    this.accordion.closeAll()
+    // this.allOpen = false
+    // this.accordion.closeAll()
 
-    this.simulatorService.start()
-    this.simulatorService.run(config)
+    // this.simulatorService.start()
+    // this.simulatorService.run(config)
   }
 
-  private updateRNG(): void {
-    const typeControl = this.form.get('rngType')
-    if (!typeControl) { throw new Error('no rng type control') }
+  // private updateRNG(): void {
+  //   const typeControl = this.form.get('rngType')
+  //   if (!typeControl) { throw new Error('no rng type control') }
 
-    this.form.removeControl('rng')
-    switch (typeControl.value) {
-      case 'mersenne-twister':
-        this.form.addControl('rng', this.formBuilder.group({
-          seed: [1234, Validators.required],
-        }))
-        break
+  //   this.form.removeControl('rng')
+  //   switch (typeControl.value) {
+  //     case 'mersenne-twister':
+  //       this.form.addControl('rng', this.formBuilder.group({
+  //         seed: [1234, Validators.required],
+  //       }))
+  //       break
 
-      case 'crypto':
-        this.form.addControl('rng', this.formBuilder.group({}))
-        break
+  //     case 'crypto':
+  //       this.form.addControl('rng', this.formBuilder.group({}))
+  //       break
 
-      default:
-        throw new Error('invalid RNG type')
-    }
-  }
+  //     default:
+  //       throw new Error('invalid RNG type')
+  //   }
+  // }
 
-  private updateArena(): void {
-    const typeControl = this.form.get('arenaType')
-    if (!typeControl) { throw new Error('no arena type control') }
+  // private updateArena(): void {
+  //   const typeControl = this.form.get('arenaType')
+  //   if (!typeControl) { throw new Error('no arena type control') }
 
-    this.form.removeControl('arena')
-    switch (typeControl.value) {
-      case 'simple-grid':
-        this.form.addControl('arena', this.formBuilder.group({
-          width: [5, [Validators.required, Validators.min(0)]],
-          height: [5, [Validators.required, Validators.min(0)]],
-        }))
-        break
+  //   this.form.removeControl('arena')
+  //   switch (typeControl.value) {
+  //     case 'simple-grid':
+  //       this.form.addControl('arena', this.formBuilder.group({
+  //         width: [5, [Validators.required, Validators.min(0)]],
+  //         height: [5, [Validators.required, Validators.min(0)]],
+  //       }))
+  //       break
 
-      case 'weighted-grid':
-        this.form.addControl('arena', this.formBuilder.group({
-          width: [5, [Validators.required, Validators.min(0)]],
-          height: [5, [Validators.required, Validators.min(0)]],
+  //     case 'weighted-grid':
+  //       this.form.addControl('arena', this.formBuilder.group({
+  //         width: [5, [Validators.required, Validators.min(0)]],
+  //         height: [5, [Validators.required, Validators.min(0)]],
 
-          majorX: [2, [Validators.required, Validators.min(0)]],
-          majorY: [2, [Validators.required, Validators.min(0)]],
+  //         majorX: [2, [Validators.required, Validators.min(0)]],
+  //         majorY: [2, [Validators.required, Validators.min(0)]],
 
-          minorWeight: [5, [Validators.required, Validators.min(0)]],
-          majorWeight: [1, [Validators.required, Validators.min(0)]],
-        }))
-        break
+  //         minorWeight: [5, [Validators.required, Validators.min(0)]],
+  //         majorWeight: [1, [Validators.required, Validators.min(0)]],
+  //       }))
+  //       break
 
-      default:
-        throw new Error('invalid RNG type')
-    }
-  }
+  //     default:
+  //       throw new Error('invalid RNG type')
+  //   }
+  // }
 
 }

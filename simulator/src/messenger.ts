@@ -4,7 +4,7 @@ import { Command, Event } from '@arp/shared'
 
 export class Messenger {
 
-  private commandSubject = new Subject<Command>()
+  private readonly commandSubject = new Subject<Command>()
 
   commands$: Observable<Command> = this.commandSubject.asObservable()
 
