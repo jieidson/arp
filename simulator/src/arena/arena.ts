@@ -19,31 +19,35 @@ export function simpleGrid(config: SimpleGridArenaConfig): Arena {
   const nodes = new Array<Node>(width * height)
 
   // Construct each arena node
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = y * width + x
-      nodes[i] = new Node(i)
+  for (let row = 0; row < height; row++) {
+    for (let column = 0; column < width; column++) {
+      const index = row * width + column
+      nodes[index] = new Node(index)
     }
   }
 
   const edges: Edge[] = []
 
   // Link them together in a grid
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = y * width + x
-      const node = nodes[i]
+  for (let row = 0; row < height; row++) {
+    for (let column = 0; column < width; column++) {
+      const index = row * width + column
+      const node = nodes[index]
 
-      if (y + 1 < height) {
-        const downi = (y + 1) * width + x
-        const downNode = nodes[downi]
-        edges.push(node.link(downNode))
+      // If there is a node below this node, link it.
+      if (row + 1 < height) {
+        const downIndex = (row + 1) * width + column
+        const downNode = nodes[downIndex]
+        const edge = node.link(downNode)
+        edges.push(edge)
       }
 
-      if (x + 1 < width) {
-        const righti = y * width + (x + 1)
-        const rightNode = nodes[righti]
-        edges.push(node.link(rightNode))
+      // If there is a node to the right of this node, link it.
+      if (column + 1 < width) {
+        const rightIndex = row * width + (column + 1)
+        const rightNode = nodes[rightIndex]
+        const edge = node.link(rightNode)
+        edges.push(edge)
       }
     }
   }
@@ -52,69 +56,70 @@ export function simpleGrid(config: SimpleGridArenaConfig): Arena {
 }
 
 export function weightedGrid(config: WeightedGridArenaConfig, rng: RNG): Arena {
-  const arena = simpleGrid({
-    type: 'simple-grid',
-    width: config.width,
-    height: config.height,
-  })
+  const { width, height, majorX, majorY, minorWeight, majorWeight } = config
 
-  // Set all edge weights to our minor street weight to start.
-  for (const edge of arena.edges) {
-    edge.weight = config.minorWeight
+  const nodes = new Array<Node>(width * height)
+
+  // Construct each arena node
+  for (let row = 0; row < height; row++) {
+    for (let column = 0; column < width; column++) {
+      const index = row * width + column
+      nodes[index] = new Node(index)
+    }
   }
 
-  // Make arrays for row and column indexes, so we can randomly pick some to be
+  // Make lists for row and column indexes, so we can randomly pick some to be
   // major streets.
   const rowIndices = []
   const columnIndices = []
-
-  for (let i = 0; i < arena.height; i++) { rowIndices.push(i) }
-  for (let i = 0; i < arena.width; i++) { columnIndices.push(i) }
+  for (let i = 0; i < height; i++) { rowIndices.push(i) }
+  for (let i = 0; i < width; i++) { columnIndices.push(i) }
 
   // Chose some rows and columns to be major streets.
-  const horizontalMajors = rng.sample(rowIndices, config.majorX)
-  const verticalMajors = rng.sample(columnIndices, config.majorY)
+  const horizontalMajors = rng.sample(rowIndices, majorX)
+  const verticalMajors = rng.sample(columnIndices, majorY)
 
-  // Find the edges of each major street.
-  for (const row of horizontalMajors) {
-    for (let column = 0; column < arena.width; column++) {
-      const i = row * arena.width + column
+  const edges: Edge[] = []
 
-      if (column + 1 < arena.width) {
-        const righti = row * arena.width + (column + 1)
+  // Link them together in a grid
+  for (let row = 0; row < height; row++) {
+    for (let column = 0; column < width; column++) {
+      const index = row * width + column
+      const node = nodes[index]
 
-        const node = arena.nodes[i]
-        const rightNode = arena.nodes[righti]
+      // If there is a node below this node, link it.
+      if (row + 1 < height) {
+        const downIndex = (row + 1) * width + column
+        const downNode = nodes[downIndex]
 
-        for (const edge of node.edges) {
-          if (edge.left === node && edge.right === rightNode
-              || edge.left === rightNode && edge.right === node) {
-            edge.weight = config.majorWeight
-          }
+        // If this column is a major street, set its weight appropriately.
+        let weight = minorWeight
+        if (verticalMajors.indexOf(column) !== -1) {
+          weight = majorWeight
         }
+
+        const edge = node.link(downNode, weight)
+
+        edges.push(edge)
+      }
+
+      // If there is a node to the right of this node, link it.
+      if (column + 1 < width) {
+        const rightIndex = row * width + (column + 1)
+        const rightNode = nodes[rightIndex]
+
+        // If this row is a major street, set its weight appropriately.
+        let weight = minorWeight
+        if (horizontalMajors.indexOf(row) !== -1) {
+          weight = majorWeight
+        }
+
+        const edge = node.link(rightNode, weight)
+
+        edges.push(edge)
       }
     }
   }
 
-  for (const column of verticalMajors) {
-    for (let row = 0; row < arena.height; row++) {
-      const i = row * arena.width + column
-
-      if (row + 1 < arena.height) {
-        const downi = (row + 1) * arena.width + column
-
-        const node = arena.nodes[i]
-        const downNode = arena.nodes[downi]
-
-        for (const edge of node.edges) {
-          if (edge.left === node && edge.right === downNode
-              || edge.left === downNode && edge.right === node) {
-            edge.weight = config.majorWeight
-          }
-        }
-      }
-    }
-  }
-
-  return arena
+  return new Arena(width, height, nodes, edges)
 }
