@@ -976,9 +976,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VERSION = {
     tag: 'v0.0.0',
     branch: 'update',
-    commit: '9ee643a08d3cb5400ee4cd3149429d243c9e1ffe',
-    short: '9ee643a',
-    string: 'v0.0.0-9ee643a*',
+    commit: '5e2ec8daf3740b5513d4850c15bf94860ff8eff7',
+    short: '5e2ec8d',
+    string: 'v0.0.0-5e2ec8d*',
 };
 
 
