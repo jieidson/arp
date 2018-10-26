@@ -120,6 +120,104 @@ export class ConfigService {
         ],
       },
     },
+    {
+      id: 'morals',
+      title: 'Moral Context',
+      types: [
+        { id: 'random', label: 'Random' },
+        { id: 'major-minor', label: 'Major/Minor Streets' },
+      ],
+      controls: {
+        random: [
+          {
+            id: 'lowPercent',
+            type: 'number',
+            placeholder: 'Low Moral Context %',
+            default: 40,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'radiusMean',
+            type: 'number',
+            placeholder: 'Mean Radius',
+            default: 1,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+            ],
+          },
+          {
+            id: 'radiusStdDev',
+            type: 'number',
+            placeholder: 'Std. Dev. of Radius',
+            default: 1,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+            ],
+          },
+        ],
+        'major-minor': [
+          {
+            id: 'majorMajorPercent',
+            type: 'number',
+            placeholder: 'Major/Major Intersection Low',
+            default: 60,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'majorMinorPercent',
+            type: 'number',
+            placeholder: 'Major/Minor Intersection Low',
+            default: 20,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'minorMinorPercent',
+            type: 'number',
+            placeholder: 'Minor/Minor Intersection Low',
+            default: 20,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'radiusMean',
+            type: 'number',
+            placeholder: 'Mean Radius',
+            default: 1,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+            ],
+          },
+          {
+            id: 'radiusStdDev',
+            type: 'number',
+            placeholder: 'Std. Dev. of Radius',
+            default: 1,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+            ],
+          },
+        ],
+      },
+    },
   ]
 
   readonly form = this.makeFormGroup()
