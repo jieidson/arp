@@ -14,10 +14,10 @@
   <mat-card-content>
     <form id="config-form" [formGroup]="form" (ngSubmit)="start()">
       <mat-accordion [multi]="true">
-        <app-config-group
-            *ngFor="let group of groups"
-            [group]="group">
-        </app-config-group>
+        <app-config-section
+            *ngFor="let section of sections"
+            [section]="section">
+        </app-config-section>
       </mat-accordion>
     </form>
   </mat-card-content>

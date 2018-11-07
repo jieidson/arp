@@ -1,6 +1,6 @@
 import {
   ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, OnDestroy,
-  OnInit, SimpleChanges,
+  SimpleChanges,
 } from '@angular/core'
 
 import { ArenaData } from '@arp/shared'
@@ -13,7 +13,7 @@ import * as cytoscape from 'cytoscape'
   styleUrls: ['./graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GraphComponent implements OnInit, OnChanges, OnDestroy {
+export class GraphComponent implements OnChanges, OnDestroy {
 
   constructor(
     private readonly elementRef: ElementRef,
@@ -22,14 +22,31 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy {
   private cy?: cytoscape.Core
 
   @Input()
-  data: ArenaData = {
+  data?: ArenaData = {
     width: 0,
     height: 0,
     nodes: [],
     edges: [],
   }
 
-  ngOnInit(): void {
+  ngOnDestroy(): void {
+    if (this.cy) {
+      this.destroy()
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.data) {
+      if (this.data && this.data.width > 0 && this.data.height > 0
+          && this.data.nodes.length > 0 && this.data.edges.length > 0) {
+        this.update()
+      } else {
+        this.destroy()
+      }
+    }
+  }
+
+  private init(): void {
     this.cy = cytoscape({
       container: this.elementRef.nativeElement,
       minZoom: 0.5,
@@ -52,20 +69,17 @@ export class GraphComponent implements OnInit, OnChanges, OnDestroy {
     })
   }
 
-  ngOnDestroy(): void {
+  private destroy(): void {
     if (this.cy) {
       this.cy.destroy()
       delete this.cy
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.data) {
-      this.update()
+  private update(): void {
+    if (!this.cy) {
+      this.init()
     }
-  }
-
-  update(): void {
     const cy = this.cy
     const data = this.data
 

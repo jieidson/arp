@@ -22,7 +22,7 @@ export class RootComponent implements AfterViewInit {
 
   @ViewChild(MatAccordion) readonly accordion!: MatAccordion
 
-  readonly groups = this.configService.groups
+  readonly sections = this.configService.sections
   readonly form = this.configService.form
   readonly arena$ = this.simulatorService.arena$
 

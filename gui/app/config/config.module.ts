@@ -2,17 +2,17 @@ import { NgModule } from '@angular/core'
 
 import { SharedModule } from '../shared/shared.module'
 
-import { ConfigGroupComponent } from './group.component'
+import { ConfigSectionComponent } from './section.component'
 
 @NgModule({
   imports: [
     SharedModule,
   ],
   exports: [
-    ConfigGroupComponent,
+    ConfigSectionComponent,
   ],
   declarations: [
-    ConfigGroupComponent,
+    ConfigSectionComponent,
   ],
 })
 export class ConfigModule {}

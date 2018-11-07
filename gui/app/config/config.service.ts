@@ -7,12 +7,17 @@ import { Config } from '@arp/shared'
 
 import { equalsValidator } from '../shared/utils/validators'
 
-export interface ConfigGroup {
+export interface ConfigSection {
   id: string
   title: string
+  groups: ConfigGroup[]
+}
 
-  types: { id: string, label: string }[]
-  controls: { [id: string]: ConfigControl[] }
+export interface ConfigGroup {
+  id: string
+  label: string
+  controls?: ConfigControl[]
+  validators?: ValidatorFn | ValidatorFn[]
 }
 
 export interface ConfigControl {
@@ -23,23 +28,15 @@ export interface ConfigControl {
   validators: ValidatorFn | ValidatorFn[]
 }
 
-@Injectable({ providedIn: 'root' })
-export class ConfigService {
-
-  constructor(
-    private readonly formBuilder: FormBuilder,
-  ) {}
-
-  readonly groups: ConfigGroup[] = [
-    {
-      id: 'rng',
-      title: 'Random Number Generator',
-      types: [
-        { id: 'mersenne-twister', label: 'Mersenne Twister' },
-        { id: 'crypto', label: 'Cryptographic RNG' },
-      ],
-      controls: {
-        'mersenne-twister': [
+const SECTIONS: ConfigSection[] = [
+  {
+    id: 'rng',
+    title: 'Random Number Generator',
+    groups: [
+      {
+        id: 'mersenne-twister',
+        label: 'Mersenne Twister',
+        controls: [
           {
             id: 'seed',
             type: 'number',
@@ -49,16 +46,20 @@ export class ConfigService {
           },
         ],
       },
-    },
-    {
-      id: 'arena',
-      title: 'Arena',
-      types: [
-        { id: 'simple-grid', label: 'Simple Grid' },
-        { id: 'weighted-grid', label: 'Weighted Grid' },
-      ],
-      controls: {
-        'simple-grid': [
+      {
+        id: 'crypto',
+        label: 'Cryptographic RNG',
+      },
+    ],
+  },
+  {
+    id: 'arena',
+    title: 'Arena',
+    groups: [
+      {
+        id: 'simple-grid',
+        label: 'Simple Grid',
+        controls: [
           {
             id: 'width',
             type: 'number',
@@ -74,7 +75,11 @@ export class ConfigService {
             validators: [Validators.required, Validators.min(0)],
           },
         ],
-        'weighted-grid': [
+      },
+      {
+        id: 'weighted-grid',
+        label: 'Weighted Grid',
+        controls: [
           {
             id: 'width',
             type: 'number',
@@ -119,16 +124,16 @@ export class ConfigService {
           },
         ],
       },
-    },
-    {
-      id: 'morals',
-      title: 'Moral Context',
-      types: [
-        { id: 'random', label: 'Random' },
-        { id: 'major-minor', label: 'Major/Minor Streets' },
-      ],
-      controls: {
-        random: [
+    ],
+  },
+  {
+    id: 'morals',
+    title: 'Moral Context',
+    groups: [
+      {
+        id: 'random',
+        label: 'Random',
+        controls: [
           {
             id: 'lowPercent',
             type: 'number',
@@ -144,7 +149,7 @@ export class ConfigService {
             id: 'radiusMean',
             type: 'number',
             placeholder: 'Mean Radius',
-            default: 1,
+            default: 0,
             validators: [
               Validators.required,
               Validators.min(0),
@@ -154,14 +159,18 @@ export class ConfigService {
             id: 'radiusStdDev',
             type: 'number',
             placeholder: 'Std. Dev. of Radius',
-            default: 1,
+            default: 0,
             validators: [
               Validators.required,
               Validators.min(0),
             ],
           },
         ],
-        'major-minor': [
+      },
+      {
+        id: 'major-minor',
+        label: 'Major/Minor Streets',
+        controls: [
           {
             id: 'majorMajorPercent',
             type: 'number',
@@ -199,7 +208,7 @@ export class ConfigService {
             id: 'radiusMean',
             type: 'number',
             placeholder: 'Mean Radius',
-            default: 1,
+            default: 0,
             validators: [
               Validators.required,
               Validators.min(0),
@@ -209,7 +218,7 @@ export class ConfigService {
             id: 'radiusStdDev',
             type: 'number',
             placeholder: 'Std. Dev. of Radius',
-            default: 1,
+            default: 0,
             validators: [
               Validators.required,
               Validators.min(0),
@@ -217,22 +226,32 @@ export class ConfigService {
           },
         ],
       },
-    },
-  ]
+    ],
+  },
+]
+
+@Injectable({ providedIn: 'root' })
+export class ConfigService {
+
+  constructor(
+    private readonly formBuilder: FormBuilder,
+  ) {}
+
+  readonly sections = SECTIONS
 
   readonly form = this.makeFormGroup()
 
   get config(): Config {
     const config: any = {}
 
-    for (const group of this.groups) {
-      const typeControl = this.form.get(group.id + 'Type')
+    for (const section of this.sections) {
+      const typeControl = this.form.get(section.id + 'Type')
       if (!typeControl) { throw new Error('no type control') }
 
-      const valueControl = this.form.get(group.id)
+      const valueControl = this.form.get(section.id)
       if (!valueControl) { throw new Error('no value control') }
 
-      config[group.id] = {
+      config[section.id] = {
         type: typeControl.value,
         ...valueControl.value,
       }
@@ -241,17 +260,23 @@ export class ConfigService {
     return config
   }
 
-  updateForm(name: string, value: string): void {
-    const typeControl = this.form.get(name + 'Type')
+  updateForm(sectionID: string, groupID: string): FormGroup {
+    const typeControl = this.form.get(sectionID + 'Type')
     if (!typeControl) { throw new Error('no type control') }
 
-    this.form.removeControl(name)
+    this.form.removeControl(sectionID)
 
-    const group = this.groups.find(g => g.id === name)
+    const section = this.sections.find(s => s.id === sectionID)
+    if (!section) { throw new Error('no section') }
+
+    const group = section.groups.find(g => g.id === groupID)
     if (!group) { throw new Error('no group') }
 
-    const controls = group.controls[value]
-    if (!controls) { return }
+    let controls: ConfigControl[] = []
+
+    if (group.controls) {
+      controls = group.controls
+    }
 
     const config: { [key: string]: any } = {}
 
@@ -259,14 +284,16 @@ export class ConfigService {
       config[control.id] = [control.default, control.validators]
     }
 
-    this.form.addControl(name, this.formBuilder.group(config))
+    const formGroup = this.formBuilder.group(config)
+    this.form.addControl(sectionID, formGroup)
+    return formGroup
   }
 
   private makeFormGroup(): FormGroup {
     const config: { [key: string]: any } = {}
 
-    for (const group of this.groups) {
-      const typeIDs = group.types.map(t => t.id)
+    for (const section of this.sections) {
+      const typeIDs = section.groups.map(g => g.id)
       if (typeIDs.length === 0) { throw new Error('no type values') }
 
       const typeConfig = [typeIDs[0], [
@@ -274,7 +301,7 @@ export class ConfigService {
         equalsValidator(...typeIDs),
       ]]
 
-      config[group.id + 'Type'] = typeConfig
+      config[section.id + 'Type'] = typeConfig
     }
 
     return this.formBuilder.group(config)
