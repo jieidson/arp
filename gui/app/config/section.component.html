@@ -21,6 +21,10 @@
           matInput>
       <mat-error><app-input-error></app-input-error></mat-error>
     </mat-form-field>
+
+    <div>
+      <app-input-error [control]="formGroup"></app-input-error>
+    </div>
   </ng-container>
 
 </mat-expansion-panel>

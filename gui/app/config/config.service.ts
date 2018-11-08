@@ -5,7 +5,7 @@ import {
 
 import { Config } from '@arp/shared'
 
-import { equalsValidator } from '../shared/utils/validators'
+import { equalsValidator, maxValue, maxSum } from '../shared/utils/validators'
 
 export interface ConfigSection {
   id: string
@@ -65,14 +65,14 @@ const SECTIONS: ConfigSection[] = [
             type: 'number',
             placeholder: 'Width',
             default: 5,
-            validators: [Validators.required, Validators.min(0)],
+            validators: [Validators.required, Validators.min(1)],
           },
           {
             id: 'height',
             type: 'number',
             placeholder: 'Height',
             default: 5,
-            validators: [Validators.required, Validators.min(0)],
+            validators: [Validators.required, Validators.min(1)],
           },
         ],
       },
@@ -85,14 +85,14 @@ const SECTIONS: ConfigSection[] = [
             type: 'number',
             placeholder: 'Width',
             default: 5,
-            validators: [Validators.required, Validators.min(0)],
+            validators: [Validators.required, Validators.min(1)],
           },
           {
             id: 'height',
             type: 'number',
             placeholder: 'Height',
             default: 5,
-            validators: [Validators.required, Validators.min(0)],
+            validators: [Validators.required, Validators.min(1)],
           },
           {
             id: 'majorX',
@@ -122,6 +122,10 @@ const SECTIONS: ConfigSection[] = [
             default: 1,
             validators: [Validators.required, Validators.min(0)],
           },
+        ],
+        validators: [
+          maxValue('majorX', 'width'),
+          maxValue('majorY', 'height'),
         ],
       },
     ],
@@ -174,7 +178,7 @@ const SECTIONS: ConfigSection[] = [
           {
             id: 'majorMajorPercent',
             type: 'number',
-            placeholder: 'Major/Major Intersection Low',
+            placeholder: 'Major/Major Intersection %',
             default: 60,
             validators: [
               Validators.required,
@@ -185,7 +189,7 @@ const SECTIONS: ConfigSection[] = [
           {
             id: 'majorMinorPercent',
             type: 'number',
-            placeholder: 'Major/Minor Intersection Low',
+            placeholder: 'Major/Minor Intersection %',
             default: 20,
             validators: [
               Validators.required,
@@ -196,7 +200,7 @@ const SECTIONS: ConfigSection[] = [
           {
             id: 'minorMinorPercent',
             type: 'number',
-            placeholder: 'Minor/Minor Intersection Low',
+            placeholder: 'Minor/Minor Intersection %',
             default: 20,
             validators: [
               Validators.required,
@@ -207,7 +211,7 @@ const SECTIONS: ConfigSection[] = [
           {
             id: 'radiusMean',
             type: 'number',
-            placeholder: 'Mean Radius',
+            placeholder: 'Radius Mean',
             default: 0,
             validators: [
               Validators.required,
@@ -217,13 +221,16 @@ const SECTIONS: ConfigSection[] = [
           {
             id: 'radiusStdDev',
             type: 'number',
-            placeholder: 'Std. Dev. of Radius',
+            placeholder: 'Radius Std. Dev.',
             default: 0,
             validators: [
               Validators.required,
               Validators.min(0),
             ],
           },
+        ],
+        validators: [
+          maxSum(100, 'majorMajorPercent', 'majorMinorPercent', 'minorMinorPercent'),
         ],
       },
     ],
@@ -284,7 +291,9 @@ export class ConfigService {
       config[control.id] = [control.default, control.validators]
     }
 
-    const formGroup = this.formBuilder.group(config)
+    const extra = group.validators ? { validator: group.validators } : null
+
+    const formGroup = this.formBuilder.group(config, extra)
     this.form.addControl(sectionID, formGroup)
     return formGroup
   }

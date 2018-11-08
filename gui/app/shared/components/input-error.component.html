@@ -1,7 +1,10 @@
-<ng-container [ngSwitch]="type$ | async">
-  <ng-container *ngSwitchCase="'required'">This field is required.</ng-container>
-  <ng-container *ngSwitchCase="'email'">Please enter a valid email address.</ng-container>
-  <ng-container *ngSwitchCase="'match'">This field does not match.</ng-container>
-  <ng-container *ngSwitchCase="'min'">Minimum for this field is {{ error.min }}</ng-container>
-  <ng-container *ngSwitchCase="'max'">Maximum for this field is {{ error.max }}</ng-container>
+<ng-container *ngIf="error$ | async as error">
+  <ng-container [ngSwitch]="error.type">
+    <ng-container *ngSwitchCase="'required'">This field is required.</ng-container>
+    <ng-container *ngSwitchCase="'email'">Please enter a valid email address.</ng-container>
+    <ng-container *ngSwitchCase="'match'">This field does not match.</ng-container>
+    <ng-container *ngSwitchCase="'min'">Minimum for this field is {{ error.value.min }}</ng-container>
+    <ng-container *ngSwitchCase="'max'">Maximum for this field is {{ error.value.max }}</ng-container>
+    <ng-container *ngSwitchCase="'maxSum'">The sum of these fields exceeds {{ error.value.max }}</ng-container>
+  </ng-container>
 </ng-container>

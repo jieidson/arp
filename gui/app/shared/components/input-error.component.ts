@@ -1,53 +1,105 @@
-import { ChangeDetectionStrategy, Component, Host, OnInit } from '@angular/core'
-import { NgControl } from '@angular/forms'
+import {
+  ChangeDetectionStrategy, Component, Host, Input, OnChanges, OnDestroy,
+  OnInit, Optional, SimpleChanges,
+} from '@angular/core'
+import { AbstractControl } from '@angular/forms'
 import { MatFormField } from '@angular/material'
 
-import { EMPTY, Observable } from 'rxjs'
-import { map, startWith, tap } from 'rxjs/operators'
+import { Observable, Subject, Subscription } from 'rxjs'
+import { distinctUntilChanged } from 'rxjs/operators'
+
+export interface InputValid {
+  state: 'valid'
+}
+
+export interface InputError {
+  state: 'error'
+  type: string
+  value: any
+}
+
+export type InputState = InputValid | InputError
 
 @Component({
   selector: 'app-input-error',
   templateUrl: './input-error.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InputErrorComponent implements OnInit {
+export class InputErrorComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
-    @Host() private readonly field: MatFormField,
+    @Optional() @Host() private readonly field?: MatFormField,
   ) {}
 
-  type$: Observable<string> = EMPTY
-  error: any = null
+  private errorSubject = new Subject<InputState>()
+  private statusSubcription?: Subscription
+
+  @Input() control?: AbstractControl
+
+  error$: Observable<InputState> = this.errorSubject
+    .asObservable().pipe(distinctUntilChanged())
 
   ngOnInit(): void {
-    const control = this.control
+    this.update()
+  }
 
-    if (!control || !control.statusChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.control && !changes.control.firstChange) {
+      this.update()
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.statusSubcription) {
+      this.statusSubcription.unsubscribe()
+      delete this.statusSubcription
+    }
+  }
+
+  update(): void {
+    if (this.statusSubcription) {
+      this.statusSubcription.unsubscribe()
+      delete this.statusSubcription
+    }
+
+    const control = this.getControl()
+
+    if (!control) {
       throw new Error('field has no attached control')
     }
 
-    const getError = () => {
+    const postError = () => {
+      let state: InputState
       if (!control.errors) {
-        return ''
+        state = { state: 'valid' }
+      } else {
+        const key = Object.keys(control.errors)[0]
+        state = {
+          state: 'error',
+          type: key,
+          value: control.errors[key],
+        }
       }
-      return Object.keys(control.errors)[0]
+
+      this.errorSubject.next(state)
     }
 
-    this.type$ = control.statusChanges.pipe(
-      map(() => getError()),
-      startWith(getError()),
-      tap(type => {
-        if (control.errors) {
-          this.error = control.errors[type]
-        }
-      }),
-    )
+    this.statusSubcription = control.statusChanges.subscribe(() => postError())
+    postError()
   }
 
-  get control(): NgControl | null {
+  private getControl(): AbstractControl | null {
+    if (this.control) {
+      return this.control
+    }
+
     // This is a bit of a hack.  If this field ever goes away, we'll probably
     // need to go back to manually specifiying the control name.
-    return this.field._control.ngControl
+    if (this.field && this.field._control.ngControl) {
+      return this.field._control.ngControl.control
+    }
+
+    return null
   }
 
 }
