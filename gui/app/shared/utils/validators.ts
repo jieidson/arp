@@ -37,7 +37,7 @@ export function maxValue(valuePath: string | (string | number)[], maxPath: strin
   }
 }
 
-export function maxSum(max: number, ...paths: (string | (string | number)[])[]): ValidatorFn {
+export function sumEqual(equal: number, ...paths: (string | (string | number)[])[]): ValidatorFn {
   return control => {
     const childControls = paths
       .map(path => control.get(path))
@@ -47,13 +47,13 @@ export function maxSum(max: number, ...paths: (string | (string | number)[])[]):
       .reduce((total, ctrl) => total + Number.parseFloat(ctrl.value), 0)
 
     let update: (ctrl: AbstractControl) => void
-    if (sum > max) {
-      update = ctrl => appendError(ctrl, 'maxSum', {
-        max,
+    if (sum !== equal) {
+      update = ctrl => appendError(ctrl, 'sumEqual', {
+        equal,
         actual: sum,
       })
     } else {
-      update = ctrl => removeError(ctrl, 'maxSum')
+      update = ctrl => removeError(ctrl, 'sumEqual')
     }
 
     childControls.forEach(update)

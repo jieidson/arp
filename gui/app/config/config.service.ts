@@ -5,7 +5,7 @@ import {
 
 import { Config } from '@arp/shared'
 
-import { equalsValidator, maxValue, maxSum } from '../shared/utils/validators'
+import { equalsValidator, maxValue, sumEqual } from '../shared/utils/validators'
 
 export interface ConfigSection {
   id: string
@@ -46,9 +46,31 @@ const SECTIONS: ConfigSection[] = [
           },
         ],
       },
+    ],
+  },
+  {
+    id: 'time',
+    title: 'Time',
+    groups: [
       {
-        id: 'crypto',
-        label: 'Cryptographic RNG',
+        id: 'days',
+        label: 'Ticks/Day',
+        controls: [
+          {
+            id: 'ticksPerDay',
+            type: 'number',
+            placeholder: 'Ticks Per Day',
+            default: 1440, // 60 minutes in hour * 24 hours
+            validators: [Validators.required, Validators.min(1)],
+          },
+          {
+            id: 'totalDays',
+            type: 'number',
+            placeholder: 'Total Days',
+            default: 30,
+            validators: [Validators.required, Validators.min(1)],
+          },
+        ],
       },
     ],
   },
@@ -56,26 +78,6 @@ const SECTIONS: ConfigSection[] = [
     id: 'arena',
     title: 'Arena',
     groups: [
-      {
-        id: 'simple-grid',
-        label: 'Simple Grid',
-        controls: [
-          {
-            id: 'width',
-            type: 'number',
-            placeholder: 'Width',
-            default: 5,
-            validators: [Validators.required, Validators.min(1)],
-          },
-          {
-            id: 'height',
-            type: 'number',
-            placeholder: 'Height',
-            default: 5,
-            validators: [Validators.required, Validators.min(1)],
-          },
-        ],
-      },
       {
         id: 'weighted-grid',
         label: 'Weighted Grid',
@@ -131,52 +133,15 @@ const SECTIONS: ConfigSection[] = [
     ],
   },
   {
-    id: 'morals',
+    id: 'moral',
     title: 'Moral Context',
     groups: [
-      {
-        id: 'random',
-        label: 'Random',
-        controls: [
-          {
-            id: 'lowPercent',
-            type: 'number',
-            placeholder: 'Low Moral Context %',
-            default: 40,
-            validators: [
-              Validators.required,
-              Validators.min(0),
-              Validators.max(100),
-            ],
-          },
-          {
-            id: 'radiusMean',
-            type: 'number',
-            placeholder: 'Mean Radius',
-            default: 0,
-            validators: [
-              Validators.required,
-              Validators.min(0),
-            ],
-          },
-          {
-            id: 'radiusStdDev',
-            type: 'number',
-            placeholder: 'Std. Dev. of Radius',
-            default: 0,
-            validators: [
-              Validators.required,
-              Validators.min(0),
-            ],
-          },
-        ],
-      },
       {
         id: 'major-minor',
         label: 'Major/Minor Streets',
         controls: [
           {
-            id: 'majorMajorPercent',
+            id: 'majorMajor',
             type: 'number',
             placeholder: 'Major/Major Intersection %',
             default: 60,
@@ -187,7 +152,7 @@ const SECTIONS: ConfigSection[] = [
             ],
           },
           {
-            id: 'majorMinorPercent',
+            id: 'majorMinor',
             type: 'number',
             placeholder: 'Major/Minor Intersection %',
             default: 20,
@@ -198,7 +163,7 @@ const SECTIONS: ConfigSection[] = [
             ],
           },
           {
-            id: 'minorMinorPercent',
+            id: 'minorMinor',
             type: 'number',
             placeholder: 'Minor/Minor Intersection %',
             default: 20,
@@ -230,7 +195,260 @@ const SECTIONS: ConfigSection[] = [
           },
         ],
         validators: [
-          maxSum(100, 'majorMajorPercent', 'majorMinorPercent', 'minorMinorPercent'),
+          sumEqual(100, 'majorMajor', 'majorMinor', 'minorMinor'),
+        ],
+      },
+    ],
+  },
+  {
+    id: 'agent',
+    title: 'Agent Distribution',
+    groups: [
+      {
+        id: 'normal',
+        label: 'Civilan/Offender/Police',
+        controls: [
+          {
+            id: 'civilian',
+            type: 'number',
+            placeholder: 'Civilians',
+            default: 8,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'offender',
+            type: 'number',
+            placeholder: 'Offenders',
+            default: 2,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'police',
+            type: 'number',
+            placeholder: 'Police',
+            default: 2,
+            validators: [Validators.required, Validators.min(0)],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'activity',
+    title: 'Activities',
+    groups: [
+      {
+        id: 'activity',
+        label: 'Home + Activities',
+        controls: [
+          {
+            id: 'sleepMean',
+            type: 'number',
+            placeholder: 'Sleep Ticks Mean',
+            default: 720,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'sleepStdDev',
+            type: 'number',
+            placeholder: 'Sleep Ticks Std. Dev.',
+            default: 144,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'countMean',
+            type: 'number',
+            placeholder: 'Activity Location Count Mean',
+            default: 1,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'countStdDev',
+            type: 'number',
+            placeholder: 'Activity Location Count Std. Dev.',
+            default: 2,
+            validators: [Validators.required, Validators.min(0)],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'workspace',
+    title: 'Workspace',
+    groups: [
+      {
+        id: 'major-minor-moral',
+        label: 'Major/Minor Streets w/Morals',
+        controls: [
+          {
+            id: 'majorMajorLow',
+            type: 'number',
+            placeholder: 'Major/Major Low Morals',
+            default: 15,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'majorMajorHigh',
+            type: 'number',
+            placeholder: 'Major/Major High Morals',
+            default: 20,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'majorMinorLow',
+            type: 'number',
+            placeholder: 'Major/Minor Low Morals',
+            default: 15,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'majorMinorHigh',
+            type: 'number',
+            placeholder: 'Major/Minor High Morals',
+            default: 20,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'minorMinorLow',
+            type: 'number',
+            placeholder: 'Minor/Minor Low Morals',
+            default: 10,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'minorMinorHigh',
+            type: 'number',
+            placeholder: 'Minor/Minor High Morals',
+            default: 20,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+        ],
+        validators: [sumEqual(100, 'majorMajorLow', 'majorMajorHigh',
+          'majorMinorLow', 'majorMinorHigh', 'minorMinorLow',
+          'minorMinorHigh')],
+      },
+    ],
+  },
+  {
+    id: 'economy',
+    title: 'Economy',
+    groups: [
+      {
+        id: 'employment',
+        label: 'Employment',
+        controls: [
+          {
+            id: 'unemployment',
+            type: 'number',
+            placeholder: 'Initial Unemployment Rate',
+            default: 7,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'hiringRate',
+            type: 'number',
+            placeholder: 'Hiring Rate per Year',
+            default: 3,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'firingRate',
+            type: 'number',
+            placeholder: 'Firing Rate per Year',
+            default: 3,
+            validators: [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(100),
+            ],
+          },
+          {
+            id: 'wealthMean',
+            type: 'number',
+            placeholder: 'Initial Wealth Mean',
+            default: 50,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'wealthStdDev',
+            type: 'number',
+            placeholder: 'Initial Wealth Std. Dev.',
+            default: 20,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'payRate',
+            type: 'number',
+            placeholder: 'Income per Pay Period',
+            default: 5,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'payPeriod',
+            type: 'number',
+            placeholder: 'Ticks of Pay Period',
+            default: 20160, // 60 seconds * 24 hours * 14 days
+            validators: [Validators.required, Validators.min(0)],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'offender',
+    title: 'Offender Behavior',
+    groups: [
+      {
+        id: 'offender',
+        label: 'Robber',
+        controls: [
+          {
+            id: 'amount',
+            type: 'number',
+            placeholder: 'Amount taken per robbery',
+            default: 1,
+            validators: [Validators.required, Validators.min(0)],
+          },
+          {
+            id: 'cooldown',
+            type: 'number',
+            placeholder: 'Robbery cooldown',
+            default: 60,
+            validators: [Validators.required, Validators.min(0)],
+          },
         ],
       },
     ],

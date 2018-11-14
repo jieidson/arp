@@ -5,6 +5,6 @@
     <ng-container *ngSwitchCase="'match'">This field does not match.</ng-container>
     <ng-container *ngSwitchCase="'min'">Minimum for this field is {{ error.value.min }}</ng-container>
     <ng-container *ngSwitchCase="'max'">Maximum for this field is {{ error.value.max }}</ng-container>
-    <ng-container *ngSwitchCase="'maxSum'">The sum of these fields exceeds {{ error.value.max }}</ng-container>
+    <ng-container *ngSwitchCase="'sumEqual'">Sum of these fields must equal {{ error.value.equal }}</ng-container>
   </ng-container>
 </ng-container>

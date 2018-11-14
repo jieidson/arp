@@ -1,32 +1,34 @@
 export interface Config {
   rng: RNGConfig
+  time: TimeConfig
   arena: ArenaConfig
-  morals: MoralContextConfig
-  workSpaces: WorkSpaceConfig
+  moral: MoralContextConfig
+
+  agent: AgentDistributionConfig
+  activity: ActivityConfig
+  workspace: WorkspaceConfig
+  economy: EconomyConfig
+  offender: OffenderConfig
 }
 
-// RNG Configuration
+/**** Random Number Generator Config ******************************************/
 
-export interface MersenneTwisterRNGConfig {
+export interface RNGConfig {
   type: 'mersenne-twister'
   seed: number
 }
 
-export interface CryptoRNGConfig {
-  type: 'crypto'
+/**** Time Config *************************************************************/
+
+export interface TimeConfig {
+  type: 'days'
+  ticksPerDay: number
+  totalDays: number
 }
 
-export type RNGConfig = MersenneTwisterRNGConfig | CryptoRNGConfig
+/**** Arena Config ************************************************************/
 
-// Arena Configuration
-
-export interface SimpleGridArenaConfig {
-  type: 'simple-grid'
-  width: number
-  height: number
-}
-
-export interface WeightedGridArenaConfig {
+export interface ArenaConfig {
   type: 'weighted-grid'
   width: number
   height: number
@@ -44,44 +46,46 @@ export interface WeightedGridArenaConfig {
   majorWeight: number
 }
 
-export type ArenaConfig = SimpleGridArenaConfig | WeightedGridArenaConfig
+/**** Moral Context Distribution Config ***************************************/
 
-// Moral Context Configuration
-
-export interface RandomMoralContextConfig {
-  type: 'random'
-  // Percent of nodes which are centers of low moral context
-  lowPercent: number
-  radiusMean: number
-  radiusStdDev: number
-}
-
-export interface MajorMinorMoralContextConfig {
+export interface MoralContextConfig {
   type: 'major-minor'
 
-  majorMajorPercent: number
-  majorMinorPercent: number
-  minorMinorPercent: number
+  majorMajor: number
+  majorMinor: number
+  minorMinor: number
 
   radiusMean: number
   radiusStdDev: number
 }
 
-export type MoralContextConfig = RandomMoralContextConfig
+/**** Agent Distribution Config ***********************************************/
 
-// Work Space Configuration
+export interface AgentDistributionConfig {
+  type: 'normal'
 
-export interface RandomWorkSpaceConfig {
-  type: 'random'
+  civilian: number
+  offender: number
+  police: number
 }
 
-export interface MoralWorkSpaceConfig {
-  type: 'moral'
+/**** Activity Config *********************************************************/
 
-  lowPercent: number
+export interface ActivityConfig {
+  type: 'activity'
+
+  // Time an agent spends at home
+  sleepMean: number
+  sleepStdDev: number
+
+  // Number of additional activity locations an agent has
+  countMean: number
+  countStdDev: number
 }
 
-export interface MajorMinorMoralWorkSpaceConfig {
+/**** Workspace Config ********************************************************/
+
+export interface WorkspaceConfig {
   type: 'major-minor-moral'
 
   majorMajorLow: number
@@ -92,4 +96,27 @@ export interface MajorMinorMoralWorkSpaceConfig {
   minorMinorHigh: number
 }
 
-export type WorkSpaceConfig = RandomWorkSpaceConfig | MoralWorkSpaceConfig | MajorMinorMoralWorkSpaceConfig
+/**** Economy Config **********************************************************/
+
+export interface EconomyConfig {
+  type: 'employment'
+
+  unemployment: number
+  hiringRate: number
+  firingRate: number
+
+  wealthMean: number
+  wealthStdDev: number
+
+  payRate: number
+  payPeriod: number
+}
+
+/**** Offender Config *********************************************************/
+
+export interface OffenderConfig {
+  type: 'robber'
+
+  amount: number
+  cooldown: number
+}
