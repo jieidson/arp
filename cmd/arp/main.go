@@ -2,11 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/jieidson/arp/config"
+	"github.com/jieidson/arp/provider"
 )
 
 func main() {
@@ -42,6 +44,13 @@ func main() {
 		}
 
 		configs = append(configs, cfg)
+	}
+
+	for _, config := range configs {
+		p := provider.New(config)
+		arena := p.Arena()
+
+		fmt.Print(arena.ToDot())
 	}
 
 }

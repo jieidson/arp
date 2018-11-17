@@ -3,7 +3,7 @@ package config
 // Config represents a configuration for a single run of the simulator.
 type Config struct {
 	RNG struct {
-		Seed int
+		Seed int64
 	}
 
 	Time struct {
@@ -11,16 +11,7 @@ type Config struct {
 		TotalDays   uint
 	}
 
-	Arena struct {
-		Width  uint
-		Height uint
-
-		MajorX uint
-		MajorY uint
-
-		MinorWeight uint
-		MajorWeight uint
-	}
+	Arena ArenaConfig
 
 	Moral struct {
 		MajorMajorLow uint
@@ -70,4 +61,16 @@ type Config struct {
 		Amount   uint
 		Cooldown uint
 	}
+}
+
+// ArenaConfig represents the configuration of the arena.
+type ArenaConfig struct {
+	Width  uint
+	Height uint
+
+	MajorX uint
+	MajorY uint
+
+	MinorWeight uint
+	MajorWeight uint
 }
