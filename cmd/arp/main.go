@@ -6,10 +6,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/jieidson/arp/config"
 	"github.com/jieidson/arp/provider"
 )
+
+func init() {
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage of ARP: %s <config> [<config> ...]\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+}
 
 func main() {
 	var outputBaseDir string
@@ -29,7 +38,12 @@ func main() {
 		return
 	}
 
-	configs := make([]config.Config, 0, flag.NArg())
+	if flag.NArg() == 0 {
+		flag.Usage()
+		return
+	}
+
+	configs := make(map[string]config.Config, flag.NArg())
 
 	for _, arg := range flag.Args() {
 		cfg, err := config.FromTOML(arg)
@@ -43,14 +57,25 @@ func main() {
 			return
 		}
 
-		configs = append(configs, cfg)
+		basename := path.Base(arg)
+		name := strings.TrimSuffix(basename, path.Ext(basename))
+
+		configs[name] = cfg
 	}
 
-	for _, config := range configs {
-		p := provider.New(config)
-		arena := p.Arena()
+	for name, cfg := range configs {
+		p := provider.New(name, outputBaseDir, cfg)
 
-		fmt.Print(arena.ToDot())
+		if err := config.ToTOML(p.Files().File("config.toml"), p.Config); err != nil {
+			log.Fatalln("failed to write config file:", err)
+			return
+		}
+
+		arena := p.Arena()
+		if err := p.Files().WriteFileString("arena.dot", arena.ToDot()); err != nil {
+			log.Fatalln("failed to write arena file:", err)
+			return
+		}
 	}
 
 }

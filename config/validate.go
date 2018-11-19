@@ -2,11 +2,16 @@ package config
 
 import (
 	"fmt"
+	"time"
 )
 
 // Validate ensures all values in a configuration are consistent, and a
 // simulation can be started from it.
 func (c Config) Validate() error {
+	if c.RNG.Seed == 0 {
+		c.RNG.Seed = time.Now().Unix()
+	}
+
 	if c.Time.TicksPerDay < 1 {
 		return fmt.Errorf("time.ticksPerDay must be greater than 1")
 	}

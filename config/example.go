@@ -1,11 +1,13 @@
 package config
 
+// ExampleConfig is a sample TOML file with documented options.
 const ExampleConfig = `# Example ARP Simulator Configuration File
 
 [rng]
 
   # Seed for the random number generator. The simulator is deterministic, runs
   # with the same parameters (should) generate the same output.
+  # If left blank, or equal to zero, a seed based on the current time is chosen.
   seed = 1234
 
 
