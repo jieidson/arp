@@ -1,12 +1,11 @@
-package arena
+package sim
 
 import (
 	"github.com/jieidson/arp/config"
-	"github.com/jieidson/arp/rng"
 )
 
 // MajorStreetsGrid generates an arena with major and minor streets.
-func MajorStreetsGrid(c config.ArenaConfig, rng *rng.RNG) *Arena {
+func MajorStreetsGrid(c config.ArenaConfig, rng *RNG) *Arena {
 	nodes := make([]*Node, c.Width*c.Height)
 
 	// Construct each arena node
@@ -39,7 +38,7 @@ func MajorStreetsGrid(c config.ArenaConfig, rng *rng.RNG) *Arena {
 			if y+1 < c.Height {
 				downi := (y+1)*c.Width + x
 				downNode := nodes[downi]
-				edge := link(node, downNode)
+				edge := Link(node, downNode)
 
 				if inIntSlice(verticalMajors, int(x)) {
 					edge.Weight = c.MajorWeight
@@ -54,7 +53,7 @@ func MajorStreetsGrid(c config.ArenaConfig, rng *rng.RNG) *Arena {
 			if x+1 < c.Width {
 				righti := y*c.Width + (x + 1)
 				rightNode := nodes[righti]
-				edge := link(node, rightNode)
+				edge := Link(node, rightNode)
 
 				// If this row is a major street, set its weight appropriately.
 				if inIntSlice(horizontalMajors, int(y)) {

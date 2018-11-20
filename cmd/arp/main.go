@@ -8,9 +8,10 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
+	"github.com/jieidson/arp"
 	"github.com/jieidson/arp/config"
-	"github.com/jieidson/arp/provider"
 )
 
 func init() {
@@ -21,6 +22,10 @@ func init() {
 }
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	var outputBaseDir string
 	var writeConfig string
 
@@ -32,15 +37,16 @@ func main() {
 		if _, err := os.Stat(writeConfig); os.IsNotExist(err) {
 			ioutil.WriteFile(writeConfig, []byte(config.ExampleConfig), 0644)
 			log.Println("wrote example config file:", writeConfig)
+			return 0
 		} else {
 			log.Fatalf("config file already exists, not overwriting")
+			return 1
 		}
-		return
 	}
 
 	if flag.NArg() == 0 {
 		flag.Usage()
-		return
+		return 0
 	}
 
 	configs := make(map[string]config.Config, flag.NArg())
@@ -49,12 +55,12 @@ func main() {
 		cfg, err := config.FromTOML(arg)
 		if err != nil {
 			log.Fatalf("error reading config file %s: %v", arg, err)
-			return
+			return 1
 		}
 
 		if err := cfg.Validate(); err != nil {
 			log.Fatalf("failed to validate config %s: %v", arg, err)
-			return
+			return 1
 		}
 
 		basename := path.Base(arg)
@@ -63,19 +69,41 @@ func main() {
 		configs[name] = cfg
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(len(configs))
+
 	for name, cfg := range configs {
-		p := provider.New(name, outputBaseDir, cfg)
+		go simulate(name, outputBaseDir, cfg, &wg)
+	}
 
-		if err := config.ToTOML(p.Files().File("config.toml"), p.Config); err != nil {
-			log.Fatalln("failed to write config file:", err)
-			return
-		}
+	wg.Wait()
 
-		arena := p.Arena()
-		if err := p.Files().WriteFileString("arena.dot", arena.ToDot()); err != nil {
-			log.Fatalln("failed to write arena file:", err)
-			return
+	return 0
+}
+
+func simulate(name, outputBase string, cfg config.Config, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	log.Println("starting simulation run:", name)
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println(name, "fatal error:", err)
 		}
+		log.Println("ending simulation run:", name)
+	}()
+
+	p := arp.NewProvider(name, outputBase, cfg)
+	defer p.Close()
+
+	if err := config.ToTOML(p.Files().File("config.toml"), cfg); err != nil {
+		log.Println("failed to write config file:", err)
+		return
+	}
+
+	arena := p.Arena()
+	if err := p.Files().WriteFileString("arena.dot", arena.ToDot()); err != nil {
+		log.Println("failed to write arena file:", err)
+		return
 	}
 
 }

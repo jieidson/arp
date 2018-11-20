@@ -1,4 +1,4 @@
-package arena
+package sim
 
 import (
 	"fmt"
@@ -14,7 +14,25 @@ type Arena struct {
 	Edges []*Edge
 }
 
-func link(a, b *Node) *Edge {
+// A Node is a location in the arena.
+type Node struct {
+	ID uint
+	X  uint
+	Y  uint
+
+	edges []*Edge
+}
+
+// An Edge is a bi-directional link between two Nodes in the arena.
+type Edge struct {
+	A *Node
+	B *Node
+
+	Weight uint
+}
+
+// Link creates an edge between two nodes.
+func Link(a, b *Node) *Edge {
 	edge := &Edge{A: a, B: b}
 
 	a.edges = append(a.edges, edge)

@@ -1,4 +1,4 @@
-package provider
+package sim
 
 import (
 	"fmt"
@@ -30,6 +30,11 @@ func NewFiles(base, name string) (*Files, error) {
 // File returns the path to a file in the output directory.
 func (f *Files) File(name string) string {
 	return filepath.Join(f.OutDir, name)
+}
+
+// CreateFile creates a new file in the output directory.
+func (f *Files) CreateFile(name string) (*os.File, error) {
+	return os.Create(f.File(name))
 }
 
 // WriteFile writes the given data to a file.

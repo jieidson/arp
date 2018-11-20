@@ -1,4 +1,4 @@
-package rng
+package sim
 
 import (
 	"math/rand"
@@ -11,7 +11,7 @@ import (
 type RNG rand.Rand
 
 // New creates a new instance of the RNG.
-func New(seed int64) *RNG {
+func NewRNG(seed int64) *RNG {
 	rng := rand.New(mt19937.New())
 	rng.Seed(seed)
 
