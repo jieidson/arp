@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const timestampFormat = "2006-01-02.15:04:05"
+const timestampFormat = "2006-01-02.15-04-05"
 
 // Files is a structure that manages output files.
 type Files struct {
