@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jieidson/arp"
 	"github.com/jieidson/arp/config"
+	"github.com/jieidson/arp/sim"
 )
 
 func init() {
@@ -69,30 +69,38 @@ func run() int {
 		configs[name] = cfg
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(configs))
-
-	for name, cfg := range configs {
-		go simulate(name, outputBaseDir, cfg, &wg)
-	}
-
-	wg.Wait()
+	runConfigs(configs, outputBaseDir)
 
 	return 0
 }
 
-func simulate(name, outputBase string, cfg config.Config, wg *sync.WaitGroup) {
-	defer wg.Done()
+func runConfigs(configs map[string]config.Config, baseDir string) {
+	for name, cfg := range configs {
+		simulate(name, baseDir, cfg)
+	}
+}
 
+func runConfigsParallel(configs map[string]config.Config, baseDir string) {
+	var wg sync.WaitGroup
+	wg.Add(len(configs))
+
+	for name, cfg := range configs {
+		go func(name string, cfg config.Config) {
+			defer wg.Done()
+			simulate(name, baseDir, cfg)
+		}(name, cfg)
+	}
+
+	wg.Wait()
+}
+
+func simulate(name, outputBase string, cfg config.Config) {
 	log.Println("starting simulation run:", name)
 	defer func() {
-		if err := recover(); err != nil {
-			log.Println(name, "fatal error:", err)
-		}
 		log.Println("ending simulation run:", name)
 	}()
 
-	p := arp.NewProvider(name, outputBase, cfg)
+	p := sim.NewProvider(name, outputBase, cfg)
 	defer p.Close()
 
 	if err := config.ToTOML(p.Files().File("config.toml"), cfg); err != nil {
@@ -106,4 +114,8 @@ func simulate(name, outputBase string, cfg config.Config, wg *sync.WaitGroup) {
 		return
 	}
 
+	if err := p.Simulator().Loop(); err != nil {
+		log.Println("failed to run simulation loop:", err)
+		return
+	}
 }

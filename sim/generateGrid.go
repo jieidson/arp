@@ -9,10 +9,15 @@ func MajorStreetsGrid(c config.ArenaConfig, rng *RNG) *Arena {
 	nodes := make([]*Node, c.Width*c.Height)
 
 	// Construct each arena node
-	for y := uint(0); y < c.Height; y++ {
-		for x := uint(0); x < c.Width; x++ {
+	for y := uint64(0); y < c.Height; y++ {
+		for x := uint64(0); x < c.Width; x++ {
 			i := y*c.Width + x
-			nodes[i] = &Node{ID: i, X: x, Y: y}
+			nodes[i] = &Node{
+				ID:     i,
+				X:      x,
+				Y:      y,
+				Agents: make(map[*Agent]bool),
+			}
 		}
 	}
 
@@ -29,8 +34,8 @@ func MajorStreetsGrid(c config.ArenaConfig, rng *RNG) *Arena {
 
 	// Link them together in a grid
 	var edges []*Edge
-	for y := uint(0); y < c.Height; y++ {
-		for x := uint(0); x < c.Width; x++ {
+	for y := uint64(0); y < c.Height; y++ {
+		for x := uint64(0); x < c.Width; x++ {
 			i := y*c.Width + x
 			node := nodes[i]
 

@@ -10,7 +10,7 @@ import (
 // algorithm.
 type RNG rand.Rand
 
-// New creates a new instance of the RNG.
+// NewRNG creates a new instance of the RNG.
 func NewRNG(seed int64) *RNG {
 	rng := rand.New(mt19937.New())
 	rng.Seed(seed)
@@ -18,7 +18,8 @@ func NewRNG(seed int64) *RNG {
 	return (*RNG)(rng)
 }
 
-// Int64 returns a random int64 between [min, max].
+// Int64 returns a random int64 between [min, max), inclusive of min, exclusive
+// of max.
 func (r *RNG) Int64(min, max int64) int64 {
 	rng := (*rand.Rand)(r)
 	return rng.Int63n(max-min) + min
