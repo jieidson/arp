@@ -66,20 +66,26 @@ func (s *Simulator) Tick() error {
 		agent.Action(s.Provider)
 	}
 
-	for _, agent := range s.Agents {
-		data := agent.Log(s.Provider)
-		data[ColumnAgentTimestep] = s.CurrentTick
+	agentDataWriter := s.Provider.AgentDataWriter()
+	var agentDataRow AgentDataRow
+	agentDataRow.Timestep = s.CurrentTick
 
-		if err := data.Write(s.Provider.AgentDataWriter()); err != nil {
+	for _, agent := range s.Agents {
+		agent.Log(s.Provider, &agentDataRow)
+
+		if err := agentDataRow.Write(agentDataWriter); err != nil {
 			return fmt.Errorf("failed to write agent data: %v", err)
 		}
 	}
 
-	for _, node := range s.Provider.Arena().Nodes {
-		data := node.Log(s.Provider)
-		data[ColumnNodeTimestep] = s.CurrentTick
+	nodeDataWriter := s.Provider.NodeDataWriter()
+	var nodeDataRow NodeDataRow
+	nodeDataRow.Timestep = s.CurrentTick
 
-		if err := data.Write(s.Provider.NodeDataWriter()); err != nil {
+	for _, node := range s.Provider.Arena().Nodes {
+		node.Log(s.Provider, &nodeDataRow)
+
+		if err := nodeDataRow.Write(nodeDataWriter); err != nil {
 			return fmt.Errorf("failed to write node data: %v", err)
 		}
 	}

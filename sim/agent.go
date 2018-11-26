@@ -81,21 +81,17 @@ func (a *Agent) Action(p *Provider) {
 }
 
 // Log causes this agent to execute all of its log behaviors.
-func (a *Agent) Log(p *Provider) AgentDataRow {
-	row := make(AgentDataRow)
+func (a *Agent) Log(p *Provider, row *AgentDataRow) {
+	row.ID = a.ID
+	row.Kind = a.Kind.Ordinal()
 
-	row[ColumnAgentID] = a.ID
-	row[ColumnAgentKind] = a.Kind.Ordinal()
-
-	row[ColumnAgentLocationID] = a.Location.ID
-	row[ColumnAgentLocationX] = a.Location.X
-	row[ColumnAgentLocationY] = a.Location.Y
+	row.LocationID = a.Location.ID
+	row.X = a.Location.X
+	row.Y = a.Location.Y
 
 	for _, behavior := range a.Behaviors {
 		behavior.Log(a, p, row)
 	}
-
-	return row
 }
 
 // NewPoliceAgent creates a police agent.

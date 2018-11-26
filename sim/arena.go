@@ -44,16 +44,12 @@ func (n *Node) Leave(a *Agent) {
 }
 
 // Log logs data for one timestep in the simulation.
-func (n *Node) Log(p *Provider) NodeDataRow {
-	row := make(NodeDataRow)
+func (n *Node) Log(p *Provider, row *NodeDataRow) {
+	row.ID = n.ID
+	row.X = n.X
+	row.Y = n.Y
 
-	row[ColumnNodeID] = n.ID
-	row[ColumnNodeX] = n.X
-	row[ColumnNodeY] = n.Y
-
-	row[ColumnNodeNAgents] = len(n.Agents)
-
-	return row
+	row.NAgents = uint64(len(n.Agents))
 }
 
 // An Edge is a bi-directional link between two Nodes in the arena.

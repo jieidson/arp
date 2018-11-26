@@ -13,7 +13,7 @@ type Behavior interface {
 	Action(agent *Agent, p *Provider)
 
 	// Log collects data about the agent at the end of every tick.
-	Log(agent *Agent, p *Provider, row AgentDataRow)
+	Log(agent *Agent, p *Provider, row *AgentDataRow)
 }
 
 // BaseBehavior is a base behavior that does nothing
@@ -29,7 +29,7 @@ func (b *BaseBehavior) Move(agent *Agent, p *Provider) {}
 func (b *BaseBehavior) Action(agent *Agent, p *Provider) {}
 
 // Log collects data about the agent at the end of every tick.
-func (b *BaseBehavior) Log(agent *Agent, p *Provider, row AgentDataRow) {}
+func (b *BaseBehavior) Log(agent *Agent, p *Provider, row *AgentDataRow) {}
 
 // PoliceBehavior causes an agent to pick a random starting location, and move
 // about randomly.
@@ -54,21 +54,16 @@ func (b *PoliceBehavior) Init(agent *Agent, p *Provider) {
 func (b *PoliceBehavior) Move(agent *Agent, p *Provider) {
 	edges := agent.Location.Edges
 
-	// Save the current location so we can log it later.
-	from := agent.Location
-
 	// Pick a random edge.
 	index := p.RNG().Int64(0, int64(len(edges)))
 	edge := edges[index]
 
 	// Walk down the edge
-	to := edge.Follow(agent)
-
-	p.Logger().Println("agent", agent, "move", from, "->", to)
+	edge.Follow(agent)
 }
 
 // Action doesn't do anything for police agents.
 func (b *PoliceBehavior) Action(agent *Agent, p *Provider) {}
 
 // Log doesn't do anything for police agents.
-func (b *PoliceBehavior) Log(agent *Agent, p *Provider, row AgentDataRow) {}
+func (b *PoliceBehavior) Log(agent *Agent, p *Provider, row *AgentDataRow) {}

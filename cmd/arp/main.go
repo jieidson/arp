@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime/pprof"
 	"strings"
 	"sync"
 
@@ -28,9 +29,11 @@ func main() {
 func run() int {
 	var outputBaseDir string
 	var writeConfig string
+	var cpuProfile string
 
 	flag.StringVar(&outputBaseDir, "out", "", "Base directory for output files.")
 	flag.StringVar(&writeConfig, "writeConfig", "", "Write an example config file to the specified file name.")
+	flag.StringVar(&cpuProfile, "cpu", "", "Write a CPU profile to the specified file.")
 	flag.Parse()
 
 	if writeConfig != "" {
@@ -67,6 +70,17 @@ func run() int {
 		name := strings.TrimSuffix(basename, path.Ext(basename))
 
 		configs[name] = cfg
+	}
+
+	if cpuProfile != "" {
+		f, err := os.Create(cpuProfile)
+		if err != nil {
+			log.Fatalln("failed to create CPU profile file:", err)
+			return 1
+		}
+		pprof.StartCPUProfile(f)
+		defer f.Close()
+		defer pprof.StopCPUProfile()
 	}
 
 	runConfigs(configs, outputBaseDir)

@@ -1,7 +1,7 @@
 package sim
 
 import (
-	"encoding/csv"
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -24,8 +24,8 @@ type Provider struct {
 	rng       *RNG
 	simulator *Simulator
 
-	agentDataWriter *csv.Writer
-	nodeDataWriter  *csv.Writer
+	agentDataWriter *bufio.Writer
+	nodeDataWriter  *bufio.Writer
 }
 
 // NewProvider creates a new service provider.
@@ -39,6 +39,17 @@ func NewProvider(name, outputBase string, cfg config.Config) *Provider {
 
 // Close releases any resources used by this provider.
 func (p *Provider) Close() {
+	if p.agentDataWriter != nil {
+		if err := p.agentDataWriter.Flush(); err != nil {
+			p.Logger().Println("failed to flush agent data writer:", err)
+		}
+	}
+	if p.nodeDataWriter != nil {
+		if err := p.nodeDataWriter.Flush(); err != nil {
+			p.Logger().Println("failed to flush node data writer:", err)
+		}
+	}
+
 	for _, f := range p.openFiles {
 		f.Close()
 	}
@@ -114,30 +125,30 @@ func (p *Provider) Simulator() *Simulator {
 }
 
 // AgentDataWriter returns the CSV file for writing agent data.
-func (p *Provider) AgentDataWriter() *csv.Writer {
+func (p *Provider) AgentDataWriter() *bufio.Writer {
 	if p.agentDataWriter == nil {
-		csvFile, err := p.Files().CreateFile("agents.csv")
+		dataFile, err := p.Files().CreateFile("agents.csv")
 		if err != nil {
 			panic(fmt.Errorf("failed to create agent data file: %v", err))
 		}
 
-		p.openFiles = append(p.openFiles, csvFile)
-		p.agentDataWriter = csv.NewWriter(csvFile)
+		p.openFiles = append(p.openFiles, dataFile)
+		p.agentDataWriter = bufio.NewWriter(dataFile)
 	}
 
 	return p.agentDataWriter
 }
 
 // NodeDataWriter returns the CSV file for writing intersection data.
-func (p *Provider) NodeDataWriter() *csv.Writer {
+func (p *Provider) NodeDataWriter() *bufio.Writer {
 	if p.nodeDataWriter == nil {
-		csvFile, err := p.Files().CreateFile("intersections.csv")
+		dataFile, err := p.Files().CreateFile("intersections.csv")
 		if err != nil {
 			panic(fmt.Errorf("failed to create intersection data file: %v", err))
 		}
 
-		p.openFiles = append(p.openFiles, csvFile)
-		p.nodeDataWriter = csv.NewWriter(csvFile)
+		p.openFiles = append(p.openFiles, dataFile)
+		p.nodeDataWriter = bufio.NewWriter(dataFile)
 	}
 
 	return p.nodeDataWriter

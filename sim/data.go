@@ -1,112 +1,105 @@
 package sim
 
 import (
-	"encoding/csv"
-	"fmt"
-)
-
-// AgentDataColumn is a single cell of data in a row in the agent data file.
-type AgentDataColumn int
-
-// Agent data file columns.
-const (
-	ColumnAgentTimestep AgentDataColumn = iota
-
-	ColumnAgentID
-	ColumnAgentKind
-
-	ColumnAgentLocationID
-	ColumnAgentLocationX
-	ColumnAgentLocationY
+	"bufio"
+	"reflect"
+	"strconv"
 )
 
 // AgentDataRow is a row of data in the agent data file.
-type AgentDataRow map[AgentDataColumn]interface{}
+type AgentDataRow struct {
+	Timestep uint64
 
-// WriteAgentDataHeader writes a header row to a CSV file.
-func WriteAgentDataHeader(w *csv.Writer) error {
-	var record CSVRecord
+	ID   uint64
+	Kind uint64
 
-	record.Add("Timestep")
-
-	record.Add("ID")
-	record.Add("Kind")
-
-	record.Add("LocationID")
-	record.Add("LocationX")
-	record.Add("LocationY")
-
-	return w.Write(record)
+	LocationID uint64
+	X          uint64
+	Y          uint64
 }
 
 // Write writes this row to a CSV file.
-func (r AgentDataRow) Write(w *csv.Writer) error {
-	var record CSVRecord
+func (r AgentDataRow) Write(w *bufio.Writer) error {
+	return writeRow(w, []string{
+		strconv.FormatUint(r.Timestep, 10),
 
-	record.Add(r[ColumnAgentTimestep])
+		strconv.FormatUint(r.ID, 10),
+		strconv.FormatUint(r.Kind, 10),
 
-	record.Add(r[ColumnAgentID])
-	record.Add(r[ColumnAgentKind])
-
-	record.Add(r[ColumnAgentLocationID])
-	record.Add(r[ColumnAgentLocationX])
-	record.Add(r[ColumnAgentLocationY])
-
-	return w.Write(record)
+		strconv.FormatUint(r.LocationID, 10),
+		strconv.FormatUint(r.X, 10),
+		strconv.FormatUint(r.Y, 10),
+	})
 }
-
-// NodeDataColumn is a single cell of data in a row in the intersections data
-// file.
-type NodeDataColumn int
-
-// Node data file columns.
-const (
-	ColumnNodeTimestep NodeDataColumn = iota
-
-	ColumnNodeID
-	ColumnNodeX
-	ColumnNodeY
-
-	ColumnNodeNAgents
-)
 
 // NodeDataRow is a row of data in the intersections data file.
-type NodeDataRow map[NodeDataColumn]interface{}
+type NodeDataRow struct {
+	Timestep uint64
 
-// WriteNodeDataHeader writes a header row to a CSV file.
-func WriteNodeDataHeader(w *csv.Writer) error {
-	var record CSVRecord
+	ID uint64
 
-	record.Add("Timestep")
+	X uint64
+	Y uint64
 
-	record.Add("ID")
-	record.Add("X")
-	record.Add("Y")
-
-	record.Add("NAgents")
-
-	return w.Write(record)
+	NAgents uint64
 }
 
 // Write writes this row to a CSV file.
-func (r NodeDataRow) Write(w *csv.Writer) error {
-	var record CSVRecord
+func (r NodeDataRow) Write(w *bufio.Writer) error {
+	return writeRow(w, []string{
+		strconv.FormatUint(r.Timestep, 10),
 
-	record.Add(r[ColumnNodeTimestep])
+		strconv.FormatUint(r.ID, 10),
 
-	record.Add(r[ColumnNodeID])
-	record.Add(r[ColumnNodeX])
-	record.Add(r[ColumnNodeY])
+		strconv.FormatUint(r.X, 10),
+		strconv.FormatUint(r.Y, 10),
 
-	record.Add(r[ColumnNodeNAgents])
-
-	return w.Write(record)
+		strconv.FormatUint(r.NAgents, 10),
+	})
 }
 
-// CSVRecord represents a row in a CSV file.
-type CSVRecord []string
+// WriteAgentDataHeader writes a CSV header of the agent data row.
+func WriteAgentDataHeader(w *bufio.Writer) error {
+	return writeDataHeader(w, AgentDataRow{})
+}
 
-// Add adds a cell to this record.
-func (r *CSVRecord) Add(x interface{}) {
-	*r = append(*r, fmt.Sprintf("%v", x))
+// WriteNodeDataHeader writes a CSV header of the node data row.
+func WriteNodeDataHeader(w *bufio.Writer) error {
+	return writeDataHeader(w, NodeDataRow{})
+}
+
+// writeDataHeader writes a CSV header for the given type.
+func writeDataHeader(w *bufio.Writer, x interface{}) error {
+	v := reflect.ValueOf(x)
+	t := v.Type()
+
+	for i := 0; i < v.NumField(); i++ {
+		if _, err := w.WriteString(t.Field(i).Name); err != nil {
+			return err
+		}
+		if i < v.NumField()-1 {
+			if err := w.WriteByte(','); err != nil {
+				return err
+			}
+		}
+	}
+
+	return w.WriteByte('\n')
+}
+
+func writeRow(w *bufio.Writer, row []string) error {
+	for i, field := range row {
+		if _, err := w.WriteString(field); err != nil {
+			return err
+		}
+
+		if i < len(row)-1 {
+			if err := w.WriteByte(','); err != nil {
+				return err
+			}
+
+		}
+	}
+
+	return w.WriteByte('\n')
 }
