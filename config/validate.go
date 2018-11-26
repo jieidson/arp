@@ -7,7 +7,7 @@ import (
 
 // Validate ensures all values in a configuration are consistent, and a
 // simulation can be started from it.
-func (c Config) Validate() error {
+func (c *Config) Validate() error {
 	if c.RNG.Seed == 0 {
 		c.RNG.Seed = time.Now().Unix()
 	}
