@@ -50,12 +50,20 @@ func (r *RNG) PermN(n, size int) []int {
 	return r.Perm(n)[:size]
 }
 
+// PermRate returns, as a slice of ints, a pseudo-random permutation of the
+// intergers [0,n).  The amount returned will be rate% of n.
+func (r *RNG) PermRate(n, rate int) []int {
+	count := int(float64(n) * (float64(rate) / 100))
+	return r.PermN(n, count)
+}
+
 // Node returns a random node from a slice of nodes.
 func (r *RNG) Node(nodes []*Node) *Node {
 	i := r.Int64(0, int64(len(nodes)))
 	return nodes[i]
 }
 
+// Edge returns a random edge from a slice of edges.
 func (r *RNG) Edge(edges []*Edge) *Edge {
 	i := r.Int64(0, int64(len(edges)))
 	return edges[i]

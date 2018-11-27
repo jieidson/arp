@@ -2,6 +2,7 @@ package sim
 
 import (
 	"github.com/jieidson/arp/config"
+	"math"
 )
 
 // GridArena generates a grid shaped arena.
@@ -135,27 +136,25 @@ func MoralContextArena(c config.Config, rng *RNG) *Arena {
 		}
 	}
 
+	// Helper function to pick a radius for each low moral context assignment.
+	getRadius := func() int {
+		n := rng.Normal(float64(c.Moral.RadiusMean), float64(c.Moral.RadiusStdDev))
+		return int(math.Round(n))
+	}
+
+	// Helper function to mark nodes as low moral context.
+	markLow := func(nodes []*Node, rate uint64) {
+		for _, i := range rng.PermRate(len(nodes), int(rate)) {
+			arena.Nodes[i].Walk(getRadius(), func(n *Node) {
+				n.Morals = LowMoralContext
+			})
+		}
+	}
+
 	// Mark a percentage of them as low moral context.
-	majorMajorRate := float64(c.Moral.MajorMajorLow) / 100.0
-	majorMajorCount := int(float64(len(majorMajor)) * majorMajorRate)
-
-	majorMinorRate := float64(c.Moral.MajorMinorLow) / 100.0
-	majorMinorCount := int(float64(len(majorMinor)) * majorMinorRate)
-
-	minorMinorRate := float64(c.Moral.MinorMinorLow) / 100.0
-	minorMinorCount := int(float64(len(minorMinor)) * minorMinorRate)
-
-	for _, i := range rng.PermN(len(majorMajor), majorMajorCount) {
-		arena.Nodes[i].Morals = LowMoralContext
-	}
-
-	for _, i := range rng.PermN(len(majorMinor), majorMinorCount) {
-		arena.Nodes[i].Morals = LowMoralContext
-	}
-
-	for _, i := range rng.PermN(len(minorMinor), minorMinorCount) {
-		arena.Nodes[i].Morals = LowMoralContext
-	}
+	markLow(majorMajor, c.Moral.MajorMajorLow)
+	markLow(majorMinor, c.Moral.MajorMinorLow)
+	markLow(minorMinor, c.Moral.MinorMinorLow)
 
 	return arena
 }

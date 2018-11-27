@@ -66,6 +66,32 @@ func (n *Node) String() string {
 	return fmt.Sprintf("N%d (%d, %d)", n.ID, n.X, n.Y)
 }
 
+// Walk calls fn for each node in distance steps from this node, including this
+// node.
+func (n *Node) Walk(distance int, fn func(*Node)) {
+	visited := make(map[*Node]bool)
+	walkRecurse(n, distance, fn, visited)
+}
+
+func walkRecurse(n *Node, distance int, fn func(*Node), visited map[*Node]bool) {
+	if visited[n] {
+		return
+	}
+
+	fn(n)
+	visited[n] = true
+
+	if distance > 0 {
+		for _, edge := range n.Edges {
+			if n == edge.B {
+				edge.A.Walk(distance-1, fn)
+			} else {
+				edge.B.Walk(distance-1, fn)
+			}
+		}
+	}
+}
+
 // Log logs data for one timestep in the simulation.
 func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	row.ID = n.ID
