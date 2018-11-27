@@ -8,7 +8,7 @@ import (
 // Simulator holds the agents in a simulation.
 type Simulator struct {
 	Provider *Provider
-	Agents   []*Agent
+	Agents   []Agent
 
 	CurrentTick uint64
 }
@@ -20,7 +20,7 @@ func NewSimulator(p *Provider) *Simulator {
 
 	sim := &Simulator{
 		Provider: p,
-		Agents:   make([]*Agent, 0, totalAgents),
+		Agents:   make([]Agent, 0, totalAgents),
 	}
 
 	sim.generatePolice(c)

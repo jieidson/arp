@@ -33,19 +33,6 @@ func (n *Node) String() string {
 	return fmt.Sprintf("N%d (%d, %d)", n.ID, n.X, n.Y)
 }
 
-// Enter adds an agent to this node.
-func (n *Node) Enter(agent *Agent) {
-	agent.locationElement = n.Agents.PushBack(agent)
-	agent.Location = n
-}
-
-// Leave removes an agent from this node.
-func (n *Node) Leave(agent *Agent) {
-	n.Agents.Remove(agent.locationElement)
-	agent.locationElement = nil
-	agent.Location = nil
-}
-
 // Log logs data for one timestep in the simulation.
 func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	row.ID = n.ID
@@ -61,23 +48,6 @@ type Edge struct {
 	B *Node
 
 	Weight uint64
-}
-
-// Follow moves an agent across an edge, returning the destination node.
-func (e *Edge) Follow(agent *Agent) *Node {
-	if agent.Location == e.A {
-		e.A.Leave(agent)
-		e.B.Enter(agent)
-		return e.B
-	}
-
-	if agent.Location == e.B {
-		e.B.Leave(agent)
-		e.A.Enter(agent)
-		return e.A
-	}
-
-	panic("tried to move agent through non-adjacent edge")
 }
 
 // Link creates an edge between two nodes.

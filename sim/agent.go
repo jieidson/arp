@@ -2,7 +2,6 @@ package sim
 
 import (
 	"container/list"
-	"fmt"
 )
 
 // AgentKind describes the type of an agent.
@@ -41,67 +40,71 @@ func (t AgentKind) Ordinal() uint64 {
 	panic("unexpected agent kind")
 }
 
-// An Agent is a location and collection of behavior.
-type Agent struct {
-	ID   uint64
-	Kind AgentKind
+// An Agent is an entity that can move and perform actions during a simulation.
+type Agent interface {
+	// Init is run once when the simulation starts.
+	Init(p *Provider)
 
-	Location  *Node
-	Behaviors []Behavior
+	// Move is run in the first phase of every tick in agent ID order.
+	Move(p *Provider)
+
+	// Action is run in the second phase of every tick in random order.
+	Action(p *Provider)
+
+	// Log collects data about the agent at the end of every tick.
+	Log(p *Provider, row *AgentDataRow)
+}
+
+type baseAgent struct {
+	ID uint64
+
+	Location *Node
 
 	locationElement *list.Element
 }
 
-// NewAgent creates a new Agent.
-func NewAgent(behaviors ...Behavior) *Agent {
-	return &Agent{Behaviors: behaviors}
+// Init is run once when the simulation starts.
+func (agent *baseAgent) Init(p *Provider) {}
+
+// Move is run in the first phase of every tick in agent ID order.
+func (agent *baseAgent) Move(p *Provider) {}
+
+// Action is run in the second phase of every tick in random order.
+func (agent *baseAgent) Action(p *Provider) {}
+
+// Log collects data about the agent at the end of every tick.
+func (agent *baseAgent) Log(p *Provider, row *AgentDataRow) {
+	row.ID = agent.ID
+
+	row.LocationID = agent.Location.ID
+	row.X = agent.Location.X
+	row.Y = agent.Location.Y
 }
 
-// String returns a string representation of this agent.
-func (a *Agent) String() string {
-	return fmt.Sprintf("A%d (%v)", a.ID, a.Kind)
+func (agent *baseAgent) enter(node *Node) {
+	agent.locationElement = node.Agents.PushBack(agent)
+	agent.Location = node
 }
 
-// Init causes this agent to execute all of its init behaviors.
-func (a *Agent) Init(p *Provider) {
-	for _, behavior := range a.Behaviors {
-		behavior.Init(a, p)
+func (agent *baseAgent) leave(node *Node) {
+	node.Agents.Remove(agent.locationElement)
+	agent.locationElement = nil
+	agent.Location = nil
+}
+
+// follow moves an agent across an edge, returning the destination node.
+func (agent *baseAgent) follow(edge *Edge) *Node {
+	if agent.Location == edge.A {
+		agent.leave(edge.A)
+		agent.enter(edge.B)
+		return edge.B
 	}
-}
 
-// Move causes this agent to execute all of its move behaviors.
-func (a *Agent) Move(p *Provider) {
-	for _, behavior := range a.Behaviors {
-		behavior.Move(a, p)
+	if agent.Location == edge.B {
+		agent.leave(edge.B)
+		agent.enter(edge.A)
+		return edge.A
 	}
-}
 
-// Action causes this agent to execute all of its action behaviors.
-func (a *Agent) Action(p *Provider) {
-	for _, behavior := range a.Behaviors {
-		behavior.Action(a, p)
-	}
-}
-
-// Log causes this agent to execute all of its log behaviors.
-func (a *Agent) Log(p *Provider, row *AgentDataRow) {
-	row.ID = a.ID
-	row.Kind = a.Kind.Ordinal()
-
-	row.LocationID = a.Location.ID
-	row.X = a.Location.X
-	row.Y = a.Location.Y
-
-	for _, behavior := range a.Behaviors {
-		behavior.Log(a, p, row)
-	}
-}
-
-// NewPoliceAgent creates a police agent.
-func NewPoliceAgent(id uint64) *Agent {
-	return &Agent{
-		ID:        id,
-		Kind:      PoliceAgentKind,
-		Behaviors: []Behavior{&PoliceBehavior{}},
-	}
+	panic("tried to move agent through non-adjacent edge")
 }
