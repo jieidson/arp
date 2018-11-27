@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
 	"runtime/pprof"
 	"strings"
 	"sync"
@@ -30,10 +31,12 @@ func run() int {
 	var outputBaseDir string
 	var writeConfig string
 	var cpuProfile string
+	var memProfile string
 
 	flag.StringVar(&outputBaseDir, "out", "", "Base directory for output files.")
 	flag.StringVar(&writeConfig, "writeConfig", "", "Write an example config file to the specified file name.")
 	flag.StringVar(&cpuProfile, "cpu", "", "Write a CPU profile to the specified file.")
+	flag.StringVar(&memProfile, "mem", "", "Write a memory profile to the specified file.")
 	flag.Parse()
 
 	if writeConfig != "" {
@@ -84,6 +87,20 @@ func run() int {
 	}
 
 	runConfigs(configs, outputBaseDir)
+
+	if memProfile != "" {
+		f, err := os.Create(memProfile)
+		if err != nil {
+			log.Fatalln("failed to create memory profile file:", err)
+			return 1
+		}
+		defer f.Close()
+
+		runtime.GC()
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatalln("failed to write memory profile:", err)
+		}
+	}
 
 	return 0
 }
