@@ -45,8 +45,6 @@ func (b *PoliceBehavior) Init(agent *Agent, p *Provider) {
 
 	// Set it as the starting location
 	node.Enter(agent)
-
-	p.Logger().Println("agent", agent, "start", node)
 }
 
 // Move casues the police agent to pick a random edge at its current location

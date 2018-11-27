@@ -3,7 +3,6 @@ package sim
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jieidson/arp/config"
@@ -19,7 +18,7 @@ type Provider struct {
 
 	arena     *Arena
 	files     *Files
-	logger    *log.Logger
+	logger    *Logger
 	navigator *Navigator
 	rng       *RNG
 	simulator *Simulator
@@ -81,7 +80,7 @@ func (p *Provider) Files() *Files {
 }
 
 // Logger returns the logger for this simulator.
-func (p *Provider) Logger() *log.Logger {
+func (p *Provider) Logger() *Logger {
 	if p.logger == nil {
 		logFile, err := p.Files().CreateFile("log.txt")
 		if err != nil {
@@ -89,7 +88,7 @@ func (p *Provider) Logger() *log.Logger {
 		}
 
 		p.openFiles = append(p.openFiles, logFile)
-		p.logger = log.New(logFile, "", log.Ldate|log.Ltime)
+		p.logger = NewLogger(logFile)
 	}
 
 	return p.logger

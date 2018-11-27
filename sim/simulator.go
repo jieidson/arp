@@ -47,9 +47,17 @@ func (s *Simulator) Loop() error {
 		return fmt.Errorf("failed to write intersection data header: %v", err)
 	}
 
+	step := totalTicks / 100
+	percent := 0
+
 	for s.CurrentTick = 0; s.CurrentTick < totalTicks; s.CurrentTick++ {
 		if err := s.Tick(); err != nil {
 			return fmt.Errorf("failed to run tick: %v", err)
+		}
+
+		if s.CurrentTick%step == 0 {
+			s.Provider.Logger().Printf("%d%% complete (tick %d of %d)", percent, s.CurrentTick, totalTicks)
+			percent++
 		}
 	}
 
