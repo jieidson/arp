@@ -105,8 +105,10 @@ func (s *Simulator) movementPhase() {
 }
 
 func (s *Simulator) actionPhase() {
-	for _, agent := range s.Agents {
-		agent.Action(s.Provider)
+	// Agents perform actions in random order, to ensure the same agent doesn't
+	// always get to do an action before others.
+	for _, i := range s.Provider.RNG().Perm(len(s.Agents)) {
+		s.Agents[i].Action(s.Provider)
 	}
 }
 
