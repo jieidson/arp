@@ -15,6 +15,36 @@ type Arena struct {
 	Edges []*Edge
 }
 
+// Index returns the node index for a coordinate in the arena.
+func (a *Arena) Index(x, y uint64) uint64 {
+	return y*a.Width + x
+}
+
+// Node returns a node by coordinate in the arena.
+func (a *Arena) Node(x, y uint64) *Node {
+	return a.Nodes[a.Index(x, y)]
+}
+
+// MoralContext represents the morals of a node.
+type MoralContext int
+
+// The possible values for MoralContext.
+const (
+	HighMoralContext MoralContext = iota
+	LowMoralContext
+)
+
+// IntersectionKind represents whether a node is the intersection of a
+// major/major, major/minor, or minor/minor intersection.
+type IntersectionKind int
+
+// The possible values for IntersectionKind.
+const (
+	MinorMinorIntersection IntersectionKind = iota
+	MajorMinorIntersection
+	MajorMajorIntersection
+)
+
 // A Node is a location in the arena.
 type Node struct {
 	ID uint64
@@ -26,6 +56,9 @@ type Node struct {
 
 	// List of agents in this node.
 	Agents list.List
+
+	Intersection IntersectionKind
+	Morals       MoralContext
 }
 
 // String returns a string representation of this node.

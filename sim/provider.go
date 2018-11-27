@@ -60,7 +60,7 @@ func (p *Provider) Close() {
 func (p *Provider) Arena() *Arena {
 	if p.arena == nil {
 		p.Logger().Println("generating grid")
-		p.arena = MajorStreetsGrid(p.Config.Arena, p.RNG())
+		p.arena = MoralContextArena(p.Config, p.RNG())
 	}
 
 	return p.arena
