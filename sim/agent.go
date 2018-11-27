@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"container/list"
 	"fmt"
 )
 
@@ -47,6 +48,8 @@ type Agent struct {
 
 	Location  *Node
 	Behaviors []Behavior
+
+	locationElement *list.Element
 }
 
 // NewAgent creates a new Agent.

@@ -13,10 +13,9 @@ func MajorStreetsGrid(c config.ArenaConfig, rng *RNG) *Arena {
 		for x := uint64(0); x < c.Width; x++ {
 			i := y*c.Width + x
 			nodes[i] = &Node{
-				ID:     i,
-				X:      x,
-				Y:      y,
-				Agents: make(map[*Agent]bool),
+				ID: i,
+				X:  x,
+				Y:  y,
 			}
 		}
 	}

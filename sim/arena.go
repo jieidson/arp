@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"container/list"
 	"fmt"
 	"strings"
 )
@@ -23,8 +24,8 @@ type Node struct {
 	// Edges from this node.
 	Edges []*Edge
 
-	// Set of agents in this node.
-	Agents map[*Agent]bool
+	// List of agents in this node.
+	Agents list.List
 }
 
 // String returns a string representation of this node.
@@ -34,13 +35,15 @@ func (n *Node) String() string {
 
 // Enter adds an agent to this node.
 func (n *Node) Enter(agent *Agent) {
-	n.Agents[agent] = true
+	agent.locationElement = n.Agents.PushBack(agent)
 	agent.Location = n
 }
 
 // Leave removes an agent from this node.
-func (n *Node) Leave(a *Agent) {
-	delete(n.Agents, a)
+func (n *Node) Leave(agent *Agent) {
+	n.Agents.Remove(agent.locationElement)
+	agent.locationElement = nil
+	agent.Location = nil
 }
 
 // Log logs data for one timestep in the simulation.
@@ -49,7 +52,7 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	row.X = n.X
 	row.Y = n.Y
 
-	row.NAgents = uint64(len(n.Agents))
+	row.NAgents = uint64(n.Agents.Len())
 }
 
 // An Edge is a bi-directional link between two Nodes in the arena.
@@ -62,13 +65,13 @@ type Edge struct {
 
 // Follow moves an agent across an edge, returning the destination node.
 func (e *Edge) Follow(agent *Agent) *Node {
-	if e.A.Agents[agent] {
+	if agent.Location == e.A {
 		e.A.Leave(agent)
 		e.B.Enter(agent)
 		return e.B
 	}
 
-	if e.B.Agents[agent] {
+	if agent.Location == e.B {
 		e.B.Leave(agent)
 		e.A.Enter(agent)
 		return e.A
