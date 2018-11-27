@@ -44,8 +44,19 @@ func (r *RNG) Perm(n int) []int {
 	return rng.Perm(n)
 }
 
-// PermN returns, as a slice of n ints, a pseudo-random permutation of the
+// PermN returns, as a slice of size ints, a pseudo-random permutation of the
 // integers [0,n).
 func (r *RNG) PermN(n, size int) []int {
 	return r.Perm(n)[:size]
+}
+
+// Node returns a random node from a slice of nodes.
+func (r *RNG) Node(nodes []*Node) *Node {
+	i := r.Int64(0, int64(len(nodes)))
+	return nodes[i]
+}
+
+func (r *RNG) Edge(edges []*Edge) *Edge {
+	i := r.Int64(0, int64(len(edges)))
+	return edges[i]
 }

@@ -37,11 +37,8 @@ type PoliceBehavior struct{}
 
 // Init causes the police agent to pick a random starting location.
 func (b *PoliceBehavior) Init(agent *Agent, p *Provider) {
-	nodes := p.Arena().Nodes
-
 	// Pick a random node.
-	index := p.RNG().Int64(0, int64(len(nodes)))
-	node := nodes[index]
+	node := p.RNG().Node(p.Arena().Nodes)
 
 	// Set it as the starting location
 	node.Enter(agent)
@@ -50,11 +47,8 @@ func (b *PoliceBehavior) Init(agent *Agent, p *Provider) {
 // Move casues the police agent to pick a random edge at its current location
 // and travel down it.
 func (b *PoliceBehavior) Move(agent *Agent, p *Provider) {
-	edges := agent.Location.Edges
-
 	// Pick a random edge.
-	index := p.RNG().Int64(0, int64(len(edges)))
-	edge := edges[index]
+	edge := p.RNG().Edge(agent.Location.Edges)
 
 	// Walk down the edge
 	edge.Follow(agent)
