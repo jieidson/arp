@@ -14,6 +14,15 @@ func indexUint64(x, y, size uint64) uint64 {
 	return y*size + x
 }
 
+func inUint64Slice(s []uint64, x uint64) bool {
+	for _, i := range s {
+		if i == x {
+			return true
+		}
+	}
+	return false
+}
+
 func runParallel(count int, worker func(id, start, end int)) {
 	ncpu := runtime.NumCPU() - 1
 	increment := count / ncpu

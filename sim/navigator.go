@@ -1,7 +1,7 @@
 package sim
 
 import (
-	"log"
+	// "log"
 	"math"
 	"sync"
 )
@@ -25,7 +25,8 @@ func NewNavigator(arena *Arena) *Navigator {
 		Next:  make([]uint64, len(arena.Nodes)*len(arena.Nodes)),
 	}
 
-	floydWarshallParallel(navigator)
+	// floydWarshallParallel(navigator)
+	floydWarshall(navigator)
 
 	return navigator
 }
@@ -120,7 +121,49 @@ func floydWarshallParallel(n *Navigator) {
 
 				}
 			}
-			log.Println(id, "finished Z", z)
+			// log.Println(id, "finished Z", z)
 		}
 	})
+}
+
+func floydWarshall(n *Navigator) {
+	size := len(n.arena.Nodes)
+
+	// Record the distance between each pair of nodes that have an edge between
+	// them.
+	for _, edge := range n.arena.Edges {
+		ai := n.index(edge.B.ID, edge.A.ID)
+		bi := n.index(edge.A.ID, edge.B.ID)
+
+		if n.Dist[ai] > edge.Weight {
+			n.Dist[ai] = edge.Weight
+			n.Next[ai] = edge.B.ID
+		}
+
+		if n.Dist[bi] > edge.Weight {
+			n.Dist[bi] = edge.Weight
+			n.Next[bi] = edge.A.ID
+		}
+	}
+
+	// Build shortest-path matrix
+	for z := 0; z < size; z++ {
+		for x := 0; x < size; x++ {
+			for y := 0; y < size; y++ {
+
+				xyi := indexInt(x, y, size)
+				xzi := indexInt(x, z, size)
+				zyi := indexInt(z, y, size)
+
+				d := n.Dist[xzi] + n.Dist[zyi]
+
+				if d < n.Dist[xyi] {
+					n.Dist[xyi] = d
+					n.Next[xyi] = n.Next[xzi]
+				}
+
+			}
+		}
+		// log.Println(id, "finished Z", z)
+	}
 }

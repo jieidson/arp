@@ -19,14 +19,14 @@
 # The arena is a grid of nodes and edges.
 [arena]
 
-  width = 5
-  height = 5
+  width = 20
+  height = 20
 
   # Number of horizontal major streets.
-  majorX = 2
+  majorX = 5
 
   # Number of vertical major streets.
-  majorY = 2
+  majorY = 5
 
   # Edge weight of minor streets.
   minorWeight = 5
@@ -53,9 +53,9 @@
 [agent]
 
   # Number of agents in the simulation.
-  civilian = 8
-  offender = 2
-  police = 2
+  civilian = 100
+  offender = 25
+  police = 25
 
 
 [activity]

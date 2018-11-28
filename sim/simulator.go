@@ -23,9 +23,7 @@ func NewSimulator(p *Provider) *Simulator {
 		Agents:   make([]Agent, 0, totalAgents),
 	}
 
-	sim.generatePolice(c)
-	sim.generateCivilians(c)
-	sim.generateOffenders(c)
+	sim.generateAgents(c)
 
 	for _, agent := range sim.Agents {
 		agent.Init(p)
@@ -80,21 +78,56 @@ func (s *Simulator) tick() error {
 	return nil
 }
 
-func (s *Simulator) generatePolice(c config.Config) {
+func (s *Simulator) generateAgents(c config.Config) {
+	var id uint64
+	nextID := func() uint64 {
+		i := id
+		id++
+		return i
+	}
+
+	// Generate police agents
 	for i := uint64(0); i < c.Agent.Police; i++ {
-		s.Agents = append(s.Agents, NewPoliceAgent(uint64(len(s.Agents))))
+		s.Agents = append(s.Agents, NewPoliceAgent(nextID()))
 	}
-}
 
-func (s *Simulator) generateCivilians(c config.Config) {
+	// Keep a temporary separate list of just civilian and offender agents, so we
+	// can mark them as employed or not in a bit.
+	workforce := make([]*CivilianAgent, 0, c.Agent.Civilian+c.Agent.Offender)
+
+	// Generate civilian agents
 	for i := uint64(0); i < c.Agent.Civilian; i++ {
-		s.Agents = append(s.Agents, NewPoliceAgent(uint64(len(s.Agents))))
+		agent := NewCivilianAgent(uint64(len(s.Agents)))
+
+		s.Agents = append(s.Agents, agent)
+		workforce = append(workforce, agent)
 	}
+
+	// Generate offender agents
+	for i := uint64(0); i < c.Agent.Offender; i++ {
+		agent := NewOffenderAgent(uint64(len(s.Agents)))
+
+		s.Agents = append(s.Agents, agent)
+		workforce = append(workforce, &agent.CivilianAgent)
+	}
+
+	s.determineEmployment(workforce)
 }
 
-func (s *Simulator) generateOffenders(c config.Config) {
-	for i := uint64(0); i < c.Agent.Offender; i++ {
-		s.Agents = append(s.Agents, NewPoliceAgent(uint64(len(s.Agents))))
+func (s *Simulator) determineEmployment(workforce []*CivilianAgent) {
+	// First, mark everyone as employed
+	for _, agent := range workforce {
+		agent.Employed = true
+	}
+
+	// Figure out how many unemployed there should be.
+	unemploymentRate := float64(s.Provider.Config.Economy.Unemployment) / 100.0
+	// This conversion rounds towards zero.
+	unemployedCount := int(float64(len(workforce)) * unemploymentRate)
+
+	// Mark those agents as unemployed.
+	for _, i := range s.Provider.RNG().PermN(len(workforce), unemployedCount) {
+		workforce[i].Employed = false
 	}
 }
 

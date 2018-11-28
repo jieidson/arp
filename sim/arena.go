@@ -13,6 +13,14 @@ type Arena struct {
 
 	Nodes []*Node
 	Edges []*Edge
+
+	// Categories of nodes for easy access.
+	MajorMajorLow  []*Node
+	MajorMajorHigh []*Node
+	MajorMinorLow  []*Node
+	MajorMinorHigh []*Node
+	MinorMinorLow  []*Node
+	MinorMinorHigh []*Node
 }
 
 // Index returns the node index for a coordinate in the arena.
@@ -23,6 +31,37 @@ func (a *Arena) Index(x, y uint64) uint64 {
 // Node returns a node by coordinate in the arena.
 func (a *Arena) Node(x, y uint64) *Node {
 	return a.Nodes[a.Index(x, y)]
+}
+
+func (a *Arena) sortNodes() {
+	// Sort the nodes into categories for easy access
+	for _, node := range a.Nodes {
+		switch node.Morals {
+		case HighMoralContext:
+			switch node.Intersection {
+			case MajorMajorIntersection:
+				a.MajorMajorHigh = append(a.MajorMajorHigh, node)
+
+			case MajorMinorIntersection:
+				a.MajorMinorHigh = append(a.MajorMinorHigh, node)
+
+			case MinorMinorIntersection:
+				a.MinorMinorHigh = append(a.MinorMinorHigh, node)
+			}
+
+		case LowMoralContext:
+			switch node.Intersection {
+			case MajorMajorIntersection:
+				a.MajorMajorLow = append(a.MajorMajorLow, node)
+
+			case MajorMinorIntersection:
+				a.MajorMinorLow = append(a.MajorMinorLow, node)
+
+			case MinorMinorIntersection:
+				a.MinorMinorLow = append(a.MinorMinorLow, node)
+			}
+		}
+	}
 }
 
 // MoralContext represents the morals of a node.

@@ -9,7 +9,6 @@ import (
 	"path"
 	"runtime"
 	"runtime/pprof"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -146,16 +145,7 @@ func simulate(name, outputBase string, cfg config.Config) {
 		return
 	}
 
-	navigator := p.Navigator()
-	if err := p.Files().WriteFileString("distance.csv", matrixToString(navigator.Dist)); err != nil {
-		log.Println("failed to write distance matrix:", err)
-		return
-	}
-
-	if err := p.Files().WriteFileString("next-node.csv", matrixToString(navigator.Next)); err != nil {
-		log.Println("failed to write next node matrix:", err)
-		return
-	}
+	p.Navigator()
 
 	if err := p.Simulator().Loop(); err != nil {
 		log.Println("failed to run simulation loop:", err)
@@ -163,36 +153,77 @@ func simulate(name, outputBase string, cfg config.Config) {
 	}
 }
 
-func matrixToString(m [][]uint64) string {
-	var sb strings.Builder
+// navigator := p.Navigator()
 
-	// Write header row, first cell is blank
-	sb.WriteByte(',')
+// p.Logger().Println("writing navigation CSVs")
 
-	for i := range m[0] {
-		sb.WriteString(strconv.Itoa(i))
-		if i < len(m[0])-1 {
-			sb.WriteByte(',')
-		}
-	}
-	sb.WriteByte('\n')
+// if err := writeMatrix(p, "distance.csv", navigator.Dist, len(arena.Nodes)); err != nil {
+// 	log.Println("failed to write distance matrix:", err)
+// 	return
+// }
 
-	// Write each row
-	for i, row := range m {
-		// Write column number first
-		sb.WriteString(strconv.Itoa(i))
-		sb.WriteByte(',')
+// if err := writeMatrix(p, "next-node.csv", navigator.Next, len(arena.Nodes)); err != nil {
+// 	log.Println("failed to write next node matrix:", err)
+// 	return
+// }
+// }
 
-		for j, col := range row {
-			sb.WriteString(strconv.FormatUint(col, 10))
+// func writeMatrix(p *sim.Provider, n string, m []uint64, size int) error {
+// 	f, err := p.Files().CreateFile("distance.csv")
+// 	if err != nil {
+// 		return fmt.Errorf("failed to create file: %v", err)
+// 	}
+// 	defer f.Close()
 
-			if j < len(row)-1 {
-				sb.WriteByte(',')
-			}
-		}
+// 	w := bufio.NewWriter(f)
+// 	defer w.Flush()
 
-		sb.WriteByte('\n')
-	}
+// 	// Write header row, first cell is blank
+// 	if err := w.WriteByte(','); err != nil {
+// 		return err
+// 	}
 
-	return sb.String()
-}
+// 	for i := 0; i < size; i++ {
+// 		if _, err := w.WriteString(strconv.Itoa(i)); err != nil {
+// 			return err
+// 		}
+// 		if i < size-1 {
+// 			if err := w.WriteByte(','); err != nil {
+// 				return err
+// 			}
+// 		}
+// 	}
+// 	if err := w.WriteByte('\n'); err != nil {
+// 		return err
+// 	}
+
+// 	// Write each row
+// 	for y := 0; y < size; y++ {
+// 		// Write column number first
+// 		if _, err := w.WriteString(strconv.Itoa(y)); err != nil {
+// 			return err
+// 		}
+// 		if err := w.WriteByte(','); err != nil {
+// 			return err
+// 		}
+
+// 		for x := 0; x < size; x++ {
+// 			i := y*size + x
+// 			if _, err := w.WriteString(strconv.FormatUint(m[i], 10)); err != nil {
+// 				return err
+// 			}
+
+// 			if x < size-1 {
+// 				if err := w.WriteByte(','); err != nil {
+// 					return err
+// 				}
+// 			}
+// 		}
+
+// 		if err := w.WriteByte('\n'); err != nil {
+// 			return err
+// 		}
+// 	}
+
+// 	return nil
+// }

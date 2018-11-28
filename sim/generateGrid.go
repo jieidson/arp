@@ -153,14 +153,8 @@ func MoralContextArena(c config.Config, rng *RNG) *Arena {
 	markLow(majorMinor, c.Moral.MajorMinorLow)
 	markLow(minorMinor, c.Moral.MinorMinorLow)
 
-	return arena
-}
+	// Sort the nodes into categories for easy access
+	arena.sortNodes()
 
-func inUint64Slice(s []uint64, x uint64) bool {
-	for _, i := range s {
-		if i == x {
-			return true
-		}
-	}
-	return false
+	return arena
 }
