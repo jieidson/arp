@@ -126,8 +126,29 @@ func (a *Arena) ToDot() string {
 	builder.WriteString("graph {\n")
 
 	for _, node := range a.Nodes {
-		builder.WriteString(fmt.Sprintf("  N%d [pos=\"%d,-%d!\" shape=\"circle\"];\n",
-			node.ID, node.X, node.Y))
+		style := "solid"
+		switch node.Intersection {
+		case MajorMajorIntersection:
+			style = "bold"
+
+		case MajorMinorIntersection:
+			style = "solid"
+
+		case MinorMinorIntersection:
+			style = "dashed"
+		}
+
+		shape := "circle"
+		switch node.Morals {
+		case HighMoralContext:
+			shape = "circle"
+
+		case LowMoralContext:
+			shape = "box"
+		}
+
+		builder.WriteString(fmt.Sprintf("  N%d [pos=\"%d,-%d!\" shape=\"%s\" style=\"%s\"];\n",
+			node.ID, node.X, node.Y, shape, style))
 	}
 
 	builder.WriteString("\n")

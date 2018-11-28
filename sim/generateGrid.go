@@ -30,7 +30,6 @@ func GridArena(c config.ArenaConfig) *Arena {
 	}
 
 	// Link them together in a grid
-	var edges []*Edge
 	for y := uint64(0); y < c.Height; y++ {
 		for x := uint64(0); x < c.Width; x++ {
 			node := arena.Node(x, y)
@@ -38,13 +37,13 @@ func GridArena(c config.ArenaConfig) *Arena {
 			// If there is a node below this node, link it
 			if y+1 < c.Height {
 				downNode := arena.Node(x, y+1)
-				edges = append(edges, Link(node, downNode))
+				arena.Edges = append(arena.Edges, Link(node, downNode))
 			}
 
 			// If there is a node to the right of this node, link it
 			if x+1 < c.Width {
 				rightNode := arena.Node(x+1, y)
-				edges = append(edges, Link(node, rightNode))
+				arena.Edges = append(arena.Edges, Link(node, rightNode))
 			}
 		}
 	}
@@ -93,16 +92,14 @@ func MajorStreetGridArena(c config.ArenaConfig, rng *RNG) *Arena {
 		// Default to minor street
 		edge.Weight = c.MinorWeight
 
-		if edge.A.X == edge.B.X && inUint64Slice(horizontalMajors, edge.A.X) {
+		if edge.A.Y == edge.B.Y && inUint64Slice(horizontalMajors, edge.A.Y) {
 			// This is a horizontal edge, and a horizontal major street
 			edge.Weight = c.MajorWeight
 
-		} else if edge.A.Y == edge.B.Y && inUint64Slice(verticalMajors, edge.A.X) {
+		} else if edge.A.X == edge.B.X && inUint64Slice(verticalMajors, edge.A.X) {
 			// This is a vertical edge, and a vertical major street
 			edge.Weight = c.MajorWeight
 
-		} else {
-			panic("can't determine direction of edge")
 		}
 	}
 
@@ -145,7 +142,7 @@ func MoralContextArena(c config.Config, rng *RNG) *Arena {
 	// Helper function to mark nodes as low moral context.
 	markLow := func(nodes []*Node, rate uint64) {
 		for _, i := range rng.PermRate(len(nodes), int(rate)) {
-			arena.Nodes[i].Walk(getRadius(), func(n *Node) {
+			nodes[i].Walk(getRadius(), func(n *Node) {
 				n.Morals = LowMoralContext
 			})
 		}
