@@ -2,6 +2,8 @@ package sim
 
 import (
 	"math"
+	"runtime"
+	"sync"
 )
 
 // Navigator determines the shortest path between two nodes in an arena.
@@ -9,10 +11,10 @@ type Navigator struct {
 	arena *Arena
 
 	// Distance matrix.
-	Dist [][]uint64
+	Dist []uint64
 
 	// Table for next node ID in path between two nodes.
-	Next [][]uint64
+	Next []uint64
 }
 
 // NewNavigator creates a new Navigator from an Arena.
@@ -24,44 +26,78 @@ func NewNavigator(arena *Arena) *Navigator {
 	// Distance matrix
 	dist := initDistanceMatrix(arena.Nodes)
 
+	size := len(arena.Nodes)
+
 	// Table for next node in path between two nodes.
-	next := emptyMatrix(len(arena.Nodes))
+	next := make([]uint64, size*size)
 
 	// Record the distance between each pair of nodes that have an edge between
 	// them.
 	for _, edge := range arena.Edges {
-		aID := uint64(edge.A.ID)
-		bID := uint64(edge.B.ID)
+		ai := edge.B.ID*uint64(size) + edge.A.ID
+		bi := edge.A.ID*uint64(size) + edge.B.ID
 
-		if dist[aID][bID] > edge.Weight {
-			dist[aID][bID] = edge.Weight
-			next[aID][bID] = bID
+		if dist[ai] > edge.Weight {
+			dist[ai] = edge.Weight
+			next[ai] = edge.B.ID
 		}
 
-		if dist[bID][aID] > edge.Weight {
-			dist[bID][aID] = edge.Weight
-			next[bID][aID] = aID
+		if dist[bi] > edge.Weight {
+			dist[bi] = edge.Weight
+			next[bi] = edge.A.ID
 		}
 	}
 
 	// Build shortest-path matrix
-	for k := 0; k < len(arena.Nodes); k++ {
-		for i := 0; i < len(arena.Nodes); i++ {
-			for j := 0; j < len(arena.Nodes); j++ {
-				if dist[i][k]+dist[k][j] < dist[i][j] {
-					dist[i][j] = dist[i][k] + dist[k][j]
-					next[i][j] = next[i][k]
+	ncpu := runtime.NumCPU() - 1
+	increment := size / ncpu
+
+	var wg sync.WaitGroup
+	wg.Add(ncpu)
+
+	var lock sync.Mutex
+
+	for p := 0; p < ncpu; p++ {
+		start := increment * p
+		end := start + increment
+
+		if size%ncpu != 0 && p == ncpu-1 {
+			end = size
+		}
+
+		go func(p, start, end int) {
+			defer wg.Done()
+
+			for z := start; z < end; z++ {
+				for x := 0; x < size; x++ {
+					for y := 0; y < size; y++ {
+
+						xyi := y*size + x
+						xzi := z*size + x
+						zyi := y*size + z
+
+						lock.Lock()
+						d := dist[xzi] + dist[zyi]
+
+						if d < dist[xyi] {
+							dist[xyi] = d
+							next[xyi] = next[xzi]
+						}
+						lock.Unlock()
+					}
 				}
 			}
-		}
+		}(p, start, end)
 	}
+
+	wg.Wait()
 
 	return &Navigator{arena: arena, Dist: dist, Next: next}
 }
 
 // Distance returns the total distance between two nodes.
 func (n *Navigator) Distance(from, to *Node) uint64 {
-	return n.Dist[from.ID][to.ID]
+	return n.Dist[to.ID*uint64(len(n.arena.Nodes))+from.ID]
 }
 
 // NextEdge returns the next edge to travel down on the path from -> to.
@@ -70,7 +106,7 @@ func (n *Navigator) NextEdge(from, to *Node) *Edge {
 		return nil
 	}
 
-	nextID := n.Next[from.ID][to.ID]
+	nextID := n.Next[to.ID*uint64(len(n.arena.Nodes))+from.ID]
 
 	for _, edge := range from.Edges {
 		if edge.A.ID == nextID || edge.B.ID == nextID {
@@ -81,28 +117,21 @@ func (n *Navigator) NextEdge(from, to *Node) *Edge {
 	return nil
 }
 
-func initDistanceMatrix(nodes []*Node) [][]uint64 {
-	dist := make([][]uint64, len(nodes))
+func initDistanceMatrix(nodes []*Node) []uint64 {
+	dist := make([]uint64, len(nodes)*len(nodes))
 
-	for i := range dist {
-		dist[i] = make([]uint64, len(nodes))
+	for y := 0; y < len(nodes); y++ {
+		for x := 0; x < len(nodes); x++ {
+			i := y*len(nodes) + x
 
-		// The distance between every pair of nodes begins at "infinity".
-		for j := range dist[i] {
-			dist[i][j] = math.MaxInt64
+			// The distance between every pair of nodes begins at "infinity".
+			dist[i] = math.MaxUint64
+
 		}
 
 		// Except that every node is 0 away from itself.
-		dist[i][i] = 0
+		dist[y*len(nodes)+y] = 0
 	}
 
 	return dist
-}
-
-func emptyMatrix(size int) [][]uint64 {
-	m := make([][]uint64, size)
-	for i := range m {
-		m[i] = make([]uint64, size)
-	}
-	return m
 }
