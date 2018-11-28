@@ -1,8 +1,8 @@
 package sim
 
 import (
+	"log"
 	"math"
-	"runtime"
 	"sync"
 )
 
@@ -19,80 +19,15 @@ type Navigator struct {
 
 // NewNavigator creates a new Navigator from an Arena.
 func NewNavigator(arena *Arena) *Navigator {
-	// All-pairs shortest path algorithm
-	// https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
-	// Based on: https://github.com/cytoscape/cytoscape.js/blob/master/src/collection/algorithms/floyd-warshall.js
-
-	// Distance matrix
-	dist := initDistanceMatrix(arena.Nodes)
-
-	size := len(arena.Nodes)
-
-	// Table for next node in path between two nodes.
-	next := make([]uint64, size*size)
-
-	// Record the distance between each pair of nodes that have an edge between
-	// them.
-	for _, edge := range arena.Edges {
-		ai := edge.B.ID*uint64(size) + edge.A.ID
-		bi := edge.A.ID*uint64(size) + edge.B.ID
-
-		if dist[ai] > edge.Weight {
-			dist[ai] = edge.Weight
-			next[ai] = edge.B.ID
-		}
-
-		if dist[bi] > edge.Weight {
-			dist[bi] = edge.Weight
-			next[bi] = edge.A.ID
-		}
+	navigator := &Navigator{
+		arena: arena,
+		Dist:  initDistanceMatrix(arena.Nodes),
+		Next:  make([]uint64, len(arena.Nodes)*len(arena.Nodes)),
 	}
 
-	// Build shortest-path matrix
-	ncpu := runtime.NumCPU() - 1
-	increment := size / ncpu
+	floydWarshallParallel(navigator)
 
-	var wg sync.WaitGroup
-	wg.Add(ncpu)
-
-	var lock sync.Mutex
-
-	for p := 0; p < ncpu; p++ {
-		start := increment * p
-		end := start + increment
-
-		if size%ncpu != 0 && p == ncpu-1 {
-			end = size
-		}
-
-		go func(p, start, end int) {
-			defer wg.Done()
-
-			for z := start; z < end; z++ {
-				for x := 0; x < size; x++ {
-					for y := 0; y < size; y++ {
-
-						xyi := y*size + x
-						xzi := z*size + x
-						zyi := y*size + z
-
-						lock.Lock()
-						d := dist[xzi] + dist[zyi]
-
-						if d < dist[xyi] {
-							dist[xyi] = d
-							next[xyi] = next[xzi]
-						}
-						lock.Unlock()
-					}
-				}
-			}
-		}(p, start, end)
-	}
-
-	wg.Wait()
-
-	return &Navigator{arena: arena, Dist: dist, Next: next}
+	return navigator
 }
 
 // Distance returns the total distance between two nodes.
@@ -117,6 +52,10 @@ func (n *Navigator) NextEdge(from, to *Node) *Edge {
 	return nil
 }
 
+func (n *Navigator) index(a, b uint64) uint64 {
+	return indexUint64(a, b, uint64(len(n.arena.Nodes)))
+}
+
 func initDistanceMatrix(nodes []*Node) []uint64 {
 	dist := make([]uint64, len(nodes)*len(nodes))
 
@@ -134,4 +73,54 @@ func initDistanceMatrix(nodes []*Node) []uint64 {
 	}
 
 	return dist
+}
+
+// All-pairs shortest path algorithm
+// https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
+// Based on: https://github.com/cytoscape/cytoscape.js/blob/master/src/collection/algorithms/floyd-warshall.js
+func floydWarshallParallel(n *Navigator) {
+	size := len(n.arena.Nodes)
+
+	// Record the distance between each pair of nodes that have an edge between
+	// them.
+	for _, edge := range n.arena.Edges {
+		ai := n.index(edge.B.ID, edge.A.ID)
+		bi := n.index(edge.A.ID, edge.B.ID)
+
+		if n.Dist[ai] > edge.Weight {
+			n.Dist[ai] = edge.Weight
+			n.Next[ai] = edge.B.ID
+		}
+
+		if n.Dist[bi] > edge.Weight {
+			n.Dist[bi] = edge.Weight
+			n.Next[bi] = edge.A.ID
+		}
+	}
+
+	// Build shortest-path matrix
+	var lock sync.Mutex
+	runParallel(size, func(id, start, end int) {
+		for z := start; z < end; z++ {
+			for x := 0; x < size; x++ {
+				for y := 0; y < size; y++ {
+
+					xyi := indexInt(x, y, size)
+					xzi := indexInt(x, z, size)
+					zyi := indexInt(z, y, size)
+
+					lock.Lock()
+					d := n.Dist[xzi] + n.Dist[zyi]
+
+					if d < n.Dist[xyi] {
+						n.Dist[xyi] = d
+						n.Next[xyi] = n.Next[xzi]
+					}
+					lock.Unlock()
+
+				}
+			}
+			log.Println(id, "finished Z", z)
+		}
+	})
 }
