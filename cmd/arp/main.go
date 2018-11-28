@@ -9,6 +9,7 @@ import (
 	"path"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -145,8 +146,53 @@ func simulate(name, outputBase string, cfg config.Config) {
 		return
 	}
 
+	navigator := p.Navigator()
+	if err := p.Files().WriteFileString("distance.csv", matrixToString(navigator.Dist)); err != nil {
+		log.Println("failed to write distance matrix:", err)
+		return
+	}
+
+	if err := p.Files().WriteFileString("next-node.csv", matrixToString(navigator.Next)); err != nil {
+		log.Println("failed to write next node matrix:", err)
+		return
+	}
+
 	if err := p.Simulator().Loop(); err != nil {
 		log.Println("failed to run simulation loop:", err)
 		return
 	}
+}
+
+func matrixToString(m [][]uint64) string {
+	var sb strings.Builder
+
+	// Write header row, first cell is blank
+	sb.WriteByte(',')
+
+	for i := range m[0] {
+		sb.WriteString(strconv.Itoa(i))
+		if i < len(m[0])-1 {
+			sb.WriteByte(',')
+		}
+	}
+	sb.WriteByte('\n')
+
+	// Write each row
+	for i, row := range m {
+		// Write column number first
+		sb.WriteString(strconv.Itoa(i))
+		sb.WriteByte(',')
+
+		for j, col := range row {
+			sb.WriteString(strconv.FormatUint(col, 10))
+
+			if j < len(row)-1 {
+				sb.WriteByte(',')
+			}
+		}
+
+		sb.WriteByte('\n')
+	}
+
+	return sb.String()
 }

@@ -9,10 +9,10 @@ type Navigator struct {
 	arena *Arena
 
 	// Distance matrix.
-	dist [][]uint64
+	Dist [][]uint64
 
 	// Table for next node ID in path between two nodes.
-	next [][]uint64
+	Next [][]uint64
 }
 
 // NewNavigator creates a new Navigator from an Arena.
@@ -56,12 +56,12 @@ func NewNavigator(arena *Arena) *Navigator {
 		}
 	}
 
-	return &Navigator{arena: arena, dist: dist, next: next}
+	return &Navigator{arena: arena, Dist: dist, Next: next}
 }
 
 // Distance returns the total distance between two nodes.
 func (n *Navigator) Distance(from, to *Node) uint64 {
-	return n.dist[from.ID][to.ID]
+	return n.Dist[from.ID][to.ID]
 }
 
 // NextEdge returns the next edge to travel down on the path from -> to.
@@ -70,7 +70,7 @@ func (n *Navigator) NextEdge(from, to *Node) *Edge {
 		return nil
 	}
 
-	nextID := n.next[from.ID][to.ID]
+	nextID := n.Next[from.ID][to.ID]
 
 	for _, edge := range from.Edges {
 		if edge.A.ID == nextID || edge.B.ID == nextID {
