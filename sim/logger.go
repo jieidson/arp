@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"io"
 	"log"
 	"os"
 )
@@ -12,9 +13,9 @@ type Logger struct {
 }
 
 // NewLogger returns a new instance of a logger.
-func NewLogger(f *os.File) *Logger {
+func NewLogger(w io.Writer) *Logger {
 	return &Logger{
-		toFile:    log.New(f, "", log.Ldate|log.Ltime),
+		toFile:    log.New(w, "", log.Ldate|log.Ltime),
 		toConsole: log.New(os.Stderr, "", log.LstdFlags),
 	}
 }

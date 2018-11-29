@@ -48,13 +48,17 @@ func (s *Simulator) Loop() error {
 	step := totalTicks / 100
 	percent := 0
 
+	for step*100 < totalTicks {
+		step++
+	}
+
 	for s.CurrentTick = 0; s.CurrentTick < totalTicks; s.CurrentTick++ {
 		if err := s.tick(); err != nil {
 			return fmt.Errorf("failed to run tick: %v", err)
 		}
 
 		if s.CurrentTick%step == 0 {
-			s.Provider.Logger().Printf("%d%% complete (tick %d of %d)", percent, s.CurrentTick, totalTicks)
+			s.Provider.Logger().Printf("simulation %d%% complete (tick %d of %d)", percent, s.CurrentTick, totalTicks)
 			percent++
 		}
 	}

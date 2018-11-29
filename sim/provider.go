@@ -98,7 +98,7 @@ func (p *Provider) Logger() *Logger {
 func (p *Provider) Navigator() *Navigator {
 	if p.navigator == nil {
 		p.Logger().Println("generating navigation")
-		p.navigator = NewNavigator(p.Arena())
+		p.navigator = NewNavigator(p)
 	}
 	return p.navigator
 }

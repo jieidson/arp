@@ -19,7 +19,8 @@ type Navigator struct {
 }
 
 // NewNavigator creates a new Navigator from an Arena.
-func NewNavigator(arena *Arena) *Navigator {
+func NewNavigator(p *Provider) *Navigator {
+	arena := p.Arena()
 	navigator := &Navigator{
 		arena:    arena,
 		Dist:     initDistanceMatrix(arena.Nodes),
@@ -27,7 +28,8 @@ func NewNavigator(arena *Arena) *Navigator {
 		Next:     emptyMatrix(len(arena.Nodes)),
 	}
 
-	floydWarshall(navigator)
+	// floydWarshall(navigator, p)
+	floydWarshall2(navigator, p)
 
 	return navigator
 }
@@ -64,7 +66,7 @@ func emptyMatrix(size int) [][]uint64 {
 	storage := make([]uint64, size*size)
 	mat := make([][]uint64, size)
 
-	for i := 0; i < size; i++ {
+	for i := range mat {
 		n := i * size
 		mat[i] = storage[n : n+size]
 	}
@@ -88,114 +90,175 @@ func initDistanceMatrix(nodes []*Node) [][]uint64 {
 	return dist
 }
 
-func floydWarshall(nav *Navigator) {
+func floydWarshall(nav *Navigator, p *Provider) {
 	size := len(nav.arena.Nodes)
 
-	d := nav.Dist
-	n := nav.Next
-	e := nav.EdgeDist
+	dist := nav.Dist
+	next := nav.Next
+	edist := nav.EdgeDist
 
 	// Record the distance between each pair of nodes that have an edge between
 	// them.
 	for _, edge := range nav.arena.Edges {
-		if d[edge.A.ID][edge.B.ID] > edge.Weight {
-			d[edge.A.ID][edge.B.ID] = edge.Weight
-			n[edge.A.ID][edge.B.ID] = edge.B.ID
-			e[edge.A.ID][edge.B.ID] = 1
+		if dist[edge.A.ID][edge.B.ID] > edge.Weight {
+			dist[edge.A.ID][edge.B.ID] = edge.Weight
+			next[edge.A.ID][edge.B.ID] = edge.B.ID
+			edist[edge.A.ID][edge.B.ID] = 1
 		}
 
-		if d[edge.B.ID][edge.A.ID] > edge.Weight {
-			d[edge.B.ID][edge.A.ID] = edge.Weight
-			n[edge.B.ID][edge.A.ID] = edge.B.ID
-			e[edge.B.ID][edge.A.ID] = 1
+		if dist[edge.B.ID][edge.A.ID] > edge.Weight {
+			dist[edge.B.ID][edge.A.ID] = edge.Weight
+			next[edge.B.ID][edge.A.ID] = edge.A.ID
+			edist[edge.B.ID][edge.A.ID] = 1
 		}
+	}
+
+	step := size / 100
+	for step*100 < size {
+		step++
 	}
 
 	// Build shortest-path matrix
 	for k := 0; k < size; k++ {
 		for i := 0; i < size; i++ {
-			dIK := d[i][k]
+			dIK := dist[i][k]
+			if dIK == math.MaxUint64 {
+				continue
+			}
 
 			for j := 0; j < size; j++ {
-				ij := &d[i][j]
+				dKJ := dist[k][j]
+				if dKJ == math.MaxUint64 {
+					continue
+				}
 
-				dIKJ := dIK + d[k][j]
+				ij := &dist[i][j]
+				dIKJ := dIK + dKJ
+
 				if *ij > dIKJ {
 					*ij = dIKJ
-					n[i][j] = n[i][k]
-					e[i][j] = e[i][k] + e[k][j]
+					next[i][j] = next[i][k]
+					edist[i][j] = edist[i][k] + edist[k][j]
 				}
 
 			}
 		}
+
+		if k%step == 0 {
+			p.Logger().Printf("navigation table %.0f%% complete (%d of %d)",
+				float64(k)/float64(size)*100, k, size)
+		}
 	}
 }
 
-func floydWarshall2(nav *Navigator) {
+func floydWarshall2(nav *Navigator, p *Provider) {
 	size := len(nav.arena.Nodes)
 
-	d := nav.Dist
-	n := nav.Next
-	e := nav.EdgeDist
+	dist := nav.Dist
+	next := nav.Next
+	edist := nav.EdgeDist
 
 	// Record the distance between each pair of nodes that have an edge between
 	// them.
 	for _, edge := range nav.arena.Edges {
-		if d[edge.A.ID][edge.B.ID] > edge.Weight {
-			d[edge.A.ID][edge.B.ID] = edge.Weight
-			n[edge.A.ID][edge.B.ID] = edge.B.ID
-			e[edge.A.ID][edge.B.ID] = 1
+		if dist[edge.A.ID][edge.B.ID] > edge.Weight {
+			dist[edge.A.ID][edge.B.ID] = edge.Weight
+			next[edge.A.ID][edge.B.ID] = edge.B.ID
+			edist[edge.A.ID][edge.B.ID] = 1
 		}
 
-		if d[edge.B.ID][edge.A.ID] > edge.Weight {
-			d[edge.B.ID][edge.A.ID] = edge.Weight
-			n[edge.B.ID][edge.A.ID] = edge.B.ID
-			e[edge.B.ID][edge.A.ID] = 1
+		if dist[edge.B.ID][edge.A.ID] > edge.Weight {
+			dist[edge.B.ID][edge.A.ID] = edge.Weight
+			next[edge.B.ID][edge.A.ID] = edge.A.ID
+			edist[edge.B.ID][edge.A.ID] = 1
 		}
+	}
+
+	step := size / 100
+	for step*100 < size {
+		step++
 	}
 
 	// Build shortest-path matrix
 	for k := 0; k < size; k++ {
 		for i := 0; i < k; i++ {
-			dIK := d[i][k]
+			dIK := dist[i][k]
+
+			if dIK == math.MaxUint64 {
+				continue
+			}
 
 			for j := 0; j <= i; j++ {
-				ij := &d[i][j]
+				dKJ := dist[j][k]
+				if dKJ == math.MaxUint64 {
+					continue
+				}
 
-				dIKJ := dIK + d[j][k]
+				ij := &dist[i][j]
+				dIKJ := dIK + dKJ
+
 				if *ij > dIKJ {
 					*ij = dIKJ
-					n[i][j] = n[i][k]
-					e[i][j] = e[i][k] + e[j][k]
+					next[i][j] = next[i][k]
+					edist[i][j] = edist[i][k] + edist[j][k]
+
+					dist[j][i] = dIKJ
+					next[j][i] = next[i][k]
+					edist[j][i] = edist[i][k] + edist[j][k]
 				}
 			}
 		}
 
 		for i := k; i < size; i++ {
-			dKI := d[k][i]
+			dKI := dist[k][i]
+			if dKI == math.MaxUint64 {
+				continue
+			}
 
 			for j := 0; j < k; j++ {
-				ij := &d[i][j]
+				dKJ := dist[j][k]
+				if dKJ == math.MaxUint64 {
+					continue
+				}
 
-				dIKJ := dKI + d[j][k]
+				ij := &dist[i][j]
+				dIKJ := dKI + dKJ
+
 				if *ij > dIKJ {
 					*ij = dIKJ
-					n[i][j] = n[k][i]
-					e[i][j] = e[k][i] + e[j][k]
+					next[i][j] = next[k][i]
+					edist[i][j] = edist[k][i] + edist[j][k]
+
+					dist[j][i] = dIKJ
+					next[j][i] = next[k][i]
+					edist[j][i] = edist[k][i] + edist[j][k]
 				}
 			}
 
 			for j := k; j <= i; j++ {
-				ij := &d[i][j]
+				dKJ := dist[k][j]
+				if dKJ == math.MaxUint64 {
+					continue
+				}
 
-				dIKJ := dKI + d[k][j]
+				ij := &dist[i][j]
+				dIKJ := dKI + dKJ
+
 				if *ij > dIKJ {
 					*ij = dIKJ
-					n[i][j] = n[k][i]
-					e[i][j] = e[k][i] + e[k][j]
+					next[i][j] = next[k][i]
+					edist[i][j] = edist[k][i] + edist[k][j]
+
+					dist[j][i] = dIKJ
+					next[j][i] = next[k][i]
+					edist[j][i] = edist[k][i] + edist[k][j]
 				}
 			}
 		}
 
+		if k%step == 0 {
+			p.Logger().Printf("navigation table %.0f%% complete (%d of %d)",
+				float64(k)/float64(size)*100, k, size)
+		}
 	}
 }
