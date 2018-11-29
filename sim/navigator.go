@@ -10,8 +10,11 @@ import (
 type Navigator struct {
 	arena *Arena
 
-	// Distance matrix.
+	// Distance matrix, counting weights.
 	Dist []uint64
+
+	// Distance matrix, counting edges.
+	EdgeDist []uint64
 
 	// Table for next node ID in path between two nodes.
 	Next []uint64
@@ -20,9 +23,10 @@ type Navigator struct {
 // NewNavigator creates a new Navigator from an Arena.
 func NewNavigator(arena *Arena) *Navigator {
 	navigator := &Navigator{
-		arena: arena,
-		Dist:  initDistanceMatrix(arena.Nodes),
-		Next:  make([]uint64, len(arena.Nodes)*len(arena.Nodes)),
+		arena:    arena,
+		Dist:     initDistanceMatrix(arena.Nodes),
+		EdgeDist: initDistanceMatrix(arena.Nodes),
+		Next:     make([]uint64, len(arena.Nodes)*len(arena.Nodes)),
 	}
 
 	// floydWarshallParallel(navigator)
@@ -31,9 +35,15 @@ func NewNavigator(arena *Arena) *Navigator {
 	return navigator
 }
 
-// Distance returns the total distance between two nodes.
+// Distance returns the total distance (counting edge weights) between two
+// nodes.
 func (n *Navigator) Distance(from, to *Node) uint64 {
-	return n.Dist[to.ID*uint64(len(n.arena.Nodes))+from.ID]
+	return n.Dist[n.index(to.ID, from.ID)]
+}
+
+// EdgeDistance returns the total number of edges between two nodes.
+func (n *Navigator) EdgeDistance(from, to *Node) uint64 {
+	return n.EdgeDist[n.index(to.ID, from.ID)]
 }
 
 // NextEdge returns the next edge to travel down on the path from -> to.
@@ -91,11 +101,13 @@ func floydWarshallParallel(n *Navigator) {
 		if n.Dist[ai] > edge.Weight {
 			n.Dist[ai] = edge.Weight
 			n.Next[ai] = edge.B.ID
+			n.EdgeDist[ai] = 1
 		}
 
 		if n.Dist[bi] > edge.Weight {
 			n.Dist[bi] = edge.Weight
 			n.Next[bi] = edge.A.ID
+			n.EdgeDist[bi] = 1
 		}
 	}
 
@@ -116,6 +128,7 @@ func floydWarshallParallel(n *Navigator) {
 					if d < n.Dist[xyi] {
 						n.Dist[xyi] = d
 						n.Next[xyi] = n.Next[xzi]
+						n.EdgeDist[xyi] = n.EdgeDist[xzi] + n.EdgeDist[zyi]
 					}
 					lock.Unlock()
 
@@ -138,11 +151,13 @@ func floydWarshall(n *Navigator) {
 		if n.Dist[ai] > edge.Weight {
 			n.Dist[ai] = edge.Weight
 			n.Next[ai] = edge.B.ID
+			n.EdgeDist[ai] = 1
 		}
 
 		if n.Dist[bi] > edge.Weight {
 			n.Dist[bi] = edge.Weight
 			n.Next[bi] = edge.A.ID
+			n.EdgeDist[bi] = 1
 		}
 	}
 
@@ -160,6 +175,7 @@ func floydWarshall(n *Navigator) {
 				if d < n.Dist[xyi] {
 					n.Dist[xyi] = d
 					n.Next[xyi] = n.Next[xzi]
+					n.EdgeDist[xyi] = n.EdgeDist[xzi] + n.EdgeDist[zyi]
 				}
 
 			}

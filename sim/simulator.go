@@ -64,6 +64,11 @@ func (s *Simulator) Loop() error {
 
 // tick executes a single tick of the simulation.
 func (s *Simulator) tick() error {
+	// Check if it's the first tick of a new day.
+	if s.CurrentTick%s.Provider.Config.Time.TicksPerDay == 0 {
+		s.dayStartPhase()
+	}
+
 	s.movementPhase()
 	s.actionPhase()
 
@@ -128,6 +133,12 @@ func (s *Simulator) determineEmployment(workforce []*CivilianAgent) {
 	// Mark those agents as unemployed.
 	for _, i := range s.Provider.RNG().PermN(len(workforce), unemployedCount) {
 		workforce[i].Employed = false
+	}
+}
+
+func (s *Simulator) dayStartPhase() {
+	for _, agent := range s.Agents {
+		agent.DayStart(s.Provider)
 	}
 }
 

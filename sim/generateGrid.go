@@ -2,7 +2,6 @@ package sim
 
 import (
 	"github.com/jieidson/arp/config"
-	"math"
 )
 
 // GridArena generates a grid shaped arena.
@@ -135,8 +134,7 @@ func MoralContextArena(c config.Config, rng *RNG) *Arena {
 
 	// Helper function to pick a radius for each low moral context assignment.
 	getRadius := func() int {
-		n := rng.Normal(float64(c.Moral.RadiusMean), float64(c.Moral.RadiusStdDev))
-		return int(math.Round(n))
+		return int(rng.NormalUint64(c.Moral.RadiusMean, c.Moral.RadiusStdDev))
 	}
 
 	// Helper function to mark nodes as low moral context.

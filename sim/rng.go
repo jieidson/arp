@@ -26,16 +26,44 @@ func (r *RNG) Int64(min, max int64) int64 {
 	return rng.Int63n(max-min) + min
 }
 
+// Uint64 returns a random uint64 between [min, max), inclusive of min,
+// exclusive of max.
+func (r *RNG) Uint64(min, max uint64) uint64 {
+	rng := (*rand.Rand)(r)
+
+	x := max - min
+
+	if x < math.MaxInt64 {
+		return uint64(rand.Int63n(int64(x+1))) + min
+	}
+
+	y := rng.Uint64()
+	for y > x {
+		y = rng.Uint64()
+	}
+
+	return y
+}
+
 // Float64 returns a random float64 vetween [min, max].
 func (r *RNG) Float64(min, max float64) float64 {
 	rng := (*rand.Rand)(r)
 	return min + rng.Float64()*(max-min)
 }
 
-// Normal returns a random float using a normal distribution.
-func (r *RNG) Normal(mean, stddev float64) float64 {
+// NormalFloat64 returns a random float64 using a normal distribution.
+func (r *RNG) NormalFloat64(mean, stddev float64) float64 {
 	rng := (*rand.Rand)(r)
 	return (rng.NormFloat64() * stddev) + mean
+}
+
+// NormalUint64 returns a random uint64 using a normal distribution.
+func (r *RNG) NormalUint64(mean, stddev uint64) uint64 {
+	x := math.Round(r.NormalFloat64(float64(mean), float64(stddev)))
+	if x < 0 {
+		return 0
+	}
+	return uint64(x)
 }
 
 // Perm returns, as a slice of n ints, a pseudo-random permutation of the

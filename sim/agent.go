@@ -45,6 +45,9 @@ type Agent interface {
 	// Init is run once when the simulation starts.
 	Init(p *Provider)
 
+	// DayStart is run on the first tick of each simulation day.
+	DayStart(p *Provider)
+
 	// Move is run in the first phase of every tick in agent ID order.
 	Move(p *Provider)
 
@@ -65,6 +68,9 @@ type baseAgent struct {
 
 // Init is run once when the simulation starts.
 func (agent *baseAgent) Init(p *Provider) {}
+
+// DayStart is run on the first tick of each simulation day.
+func (agent *baseAgent) DayStart(p *Provider) {}
 
 // Move is run in the first phase of every tick in agent ID order.
 func (agent *baseAgent) Move(p *Provider) {}
