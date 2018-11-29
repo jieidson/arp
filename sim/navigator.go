@@ -1,9 +1,7 @@
 package sim
 
 import (
-	// "log"
 	"math"
-	"sync"
 )
 
 // Navigator determines the shortest path between two nodes in an arena.
@@ -11,13 +9,13 @@ type Navigator struct {
 	arena *Arena
 
 	// Distance matrix, counting weights.
-	Dist []uint64
+	Dist [][]uint64
 
 	// Distance matrix, counting edges.
-	EdgeDist []uint64
+	EdgeDist [][]uint64
 
 	// Table for next node ID in path between two nodes.
-	Next []uint64
+	Next [][]uint64
 }
 
 // NewNavigator creates a new Navigator from an Arena.
@@ -26,10 +24,9 @@ func NewNavigator(arena *Arena) *Navigator {
 		arena:    arena,
 		Dist:     initDistanceMatrix(arena.Nodes),
 		EdgeDist: initDistanceMatrix(arena.Nodes),
-		Next:     make([]uint64, len(arena.Nodes)*len(arena.Nodes)),
+		Next:     emptyMatrix(len(arena.Nodes)),
 	}
 
-	// floydWarshallParallel(navigator)
 	floydWarshall(navigator)
 
 	return navigator
@@ -38,12 +35,12 @@ func NewNavigator(arena *Arena) *Navigator {
 // Distance returns the total distance (counting edge weights) between two
 // nodes.
 func (n *Navigator) Distance(from, to *Node) uint64 {
-	return n.Dist[n.index(to.ID, from.ID)]
+	return n.Dist[from.ID][to.ID]
 }
 
 // EdgeDistance returns the total number of edges between two nodes.
 func (n *Navigator) EdgeDistance(from, to *Node) uint64 {
-	return n.EdgeDist[n.index(to.ID, from.ID)]
+	return n.EdgeDist[from.ID][to.ID]
 }
 
 // NextEdge returns the next edge to travel down on the path from -> to.
@@ -52,7 +49,7 @@ func (n *Navigator) NextEdge(from, to *Node) *Edge {
 		return nil
 	}
 
-	nextID := n.Next[to.ID*uint64(len(n.arena.Nodes))+from.ID]
+	nextID := n.Next[to.ID][from.ID]
 
 	for _, edge := range from.Edges {
 		if edge.A.ID == nextID || edge.B.ID == nextID {
@@ -63,123 +60,142 @@ func (n *Navigator) NextEdge(from, to *Node) *Edge {
 	return nil
 }
 
-func (n *Navigator) index(a, b uint64) uint64 {
-	return indexUint64(a, b, uint64(len(n.arena.Nodes)))
+func emptyMatrix(size int) [][]uint64 {
+	storage := make([]uint64, size*size)
+	mat := make([][]uint64, size)
+
+	for i := 0; i < size; i++ {
+		n := i * size
+		mat[i] = storage[n : n+size]
+	}
+
+	return mat
 }
 
-func initDistanceMatrix(nodes []*Node) []uint64 {
-	dist := make([]uint64, len(nodes)*len(nodes))
+func initDistanceMatrix(nodes []*Node) [][]uint64 {
+	dist := emptyMatrix(len(nodes))
 
-	for y := 0; y < len(nodes); y++ {
-		for x := 0; x < len(nodes); x++ {
-			i := y*len(nodes) + x
-
+	for i := 0; i < len(nodes); i++ {
+		for j := 0; j < len(nodes); j++ {
 			// The distance between every pair of nodes begins at "infinity".
-			dist[i] = math.MaxUint64
-
+			dist[i][j] = math.MaxUint64
 		}
 
 		// Except that every node is 0 away from itself.
-		dist[y*len(nodes)+y] = 0
+		dist[i][i] = 0
 	}
 
 	return dist
 }
 
-// All-pairs shortest path algorithm
-// https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
-// Based on: https://github.com/cytoscape/cytoscape.js/blob/master/src/collection/algorithms/floyd-warshall.js
-func floydWarshallParallel(n *Navigator) {
-	size := len(n.arena.Nodes)
+func floydWarshall(nav *Navigator) {
+	size := len(nav.arena.Nodes)
+
+	d := nav.Dist
+	n := nav.Next
+	e := nav.EdgeDist
 
 	// Record the distance between each pair of nodes that have an edge between
 	// them.
-	for _, edge := range n.arena.Edges {
-		ai := n.index(edge.B.ID, edge.A.ID)
-		bi := n.index(edge.A.ID, edge.B.ID)
-
-		if n.Dist[ai] > edge.Weight {
-			n.Dist[ai] = edge.Weight
-			n.Next[ai] = edge.B.ID
-			n.EdgeDist[ai] = 1
+	for _, edge := range nav.arena.Edges {
+		if d[edge.A.ID][edge.B.ID] > edge.Weight {
+			d[edge.A.ID][edge.B.ID] = edge.Weight
+			n[edge.A.ID][edge.B.ID] = edge.B.ID
+			e[edge.A.ID][edge.B.ID] = 1
 		}
 
-		if n.Dist[bi] > edge.Weight {
-			n.Dist[bi] = edge.Weight
-			n.Next[bi] = edge.A.ID
-			n.EdgeDist[bi] = 1
+		if d[edge.B.ID][edge.A.ID] > edge.Weight {
+			d[edge.B.ID][edge.A.ID] = edge.Weight
+			n[edge.B.ID][edge.A.ID] = edge.B.ID
+			e[edge.B.ID][edge.A.ID] = 1
 		}
 	}
 
 	// Build shortest-path matrix
-	var lock sync.Mutex
-	runParallel(size, func(id, start, end int) {
-		for z := start; z < end; z++ {
-			for x := 0; x < size; x++ {
-				for y := 0; y < size; y++ {
+	for k := 0; k < size; k++ {
+		for i := 0; i < size; i++ {
+			dIK := d[i][k]
 
-					xyi := indexInt(x, y, size)
-					xzi := indexInt(x, z, size)
-					zyi := indexInt(z, y, size)
+			for j := 0; j < size; j++ {
+				ij := &d[i][j]
 
-					lock.Lock()
-					d := n.Dist[xzi] + n.Dist[zyi]
-
-					if d < n.Dist[xyi] {
-						n.Dist[xyi] = d
-						n.Next[xyi] = n.Next[xzi]
-						n.EdgeDist[xyi] = n.EdgeDist[xzi] + n.EdgeDist[zyi]
-					}
-					lock.Unlock()
-
+				dIKJ := dIK + d[k][j]
+				if *ij > dIKJ {
+					*ij = dIKJ
+					n[i][j] = n[i][k]
+					e[i][j] = e[i][k] + e[k][j]
 				}
+
 			}
-			// log.Println(id, "finished Z", z)
 		}
-	})
+	}
 }
 
-func floydWarshall(n *Navigator) {
-	size := len(n.arena.Nodes)
+func floydWarshall2(nav *Navigator) {
+	size := len(nav.arena.Nodes)
+
+	d := nav.Dist
+	n := nav.Next
+	e := nav.EdgeDist
 
 	// Record the distance between each pair of nodes that have an edge between
 	// them.
-	for _, edge := range n.arena.Edges {
-		ai := n.index(edge.B.ID, edge.A.ID)
-		bi := n.index(edge.A.ID, edge.B.ID)
-
-		if n.Dist[ai] > edge.Weight {
-			n.Dist[ai] = edge.Weight
-			n.Next[ai] = edge.B.ID
-			n.EdgeDist[ai] = 1
+	for _, edge := range nav.arena.Edges {
+		if d[edge.A.ID][edge.B.ID] > edge.Weight {
+			d[edge.A.ID][edge.B.ID] = edge.Weight
+			n[edge.A.ID][edge.B.ID] = edge.B.ID
+			e[edge.A.ID][edge.B.ID] = 1
 		}
 
-		if n.Dist[bi] > edge.Weight {
-			n.Dist[bi] = edge.Weight
-			n.Next[bi] = edge.A.ID
-			n.EdgeDist[bi] = 1
+		if d[edge.B.ID][edge.A.ID] > edge.Weight {
+			d[edge.B.ID][edge.A.ID] = edge.Weight
+			n[edge.B.ID][edge.A.ID] = edge.B.ID
+			e[edge.B.ID][edge.A.ID] = 1
 		}
 	}
 
 	// Build shortest-path matrix
-	for z := 0; z < size; z++ {
-		for x := 0; x < size; x++ {
-			for y := 0; y < size; y++ {
+	for k := 0; k < size; k++ {
+		for i := 0; i < k; i++ {
+			dIK := d[i][k]
 
-				xyi := indexInt(x, y, size)
-				xzi := indexInt(x, z, size)
-				zyi := indexInt(z, y, size)
+			for j := 0; j <= i; j++ {
+				ij := &d[i][j]
 
-				d := n.Dist[xzi] + n.Dist[zyi]
-
-				if d < n.Dist[xyi] {
-					n.Dist[xyi] = d
-					n.Next[xyi] = n.Next[xzi]
-					n.EdgeDist[xyi] = n.EdgeDist[xzi] + n.EdgeDist[zyi]
+				dIKJ := dIK + d[j][k]
+				if *ij > dIKJ {
+					*ij = dIKJ
+					n[i][j] = n[i][k]
+					e[i][j] = e[i][k] + e[j][k]
 				}
-
 			}
 		}
-		// log.Println(id, "finished Z", z)
+
+		for i := k; i < size; i++ {
+			dKI := d[k][i]
+
+			for j := 0; j < k; j++ {
+				ij := &d[i][j]
+
+				dIKJ := dKI + d[j][k]
+				if *ij > dIKJ {
+					*ij = dIKJ
+					n[i][j] = n[k][i]
+					e[i][j] = e[k][i] + e[j][k]
+				}
+			}
+
+			for j := k; j <= i; j++ {
+				ij := &d[i][j]
+
+				dIKJ := dKI + d[k][j]
+				if *ij > dIKJ {
+					*ij = dIKJ
+					n[i][j] = n[k][i]
+					e[i][j] = e[k][i] + e[k][j]
+				}
+			}
+		}
+
 	}
 }

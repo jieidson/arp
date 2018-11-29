@@ -1,7 +1,6 @@
 package sim
 
 import (
-	"log"
 	"runtime"
 	"sync"
 )
@@ -37,8 +36,6 @@ func runParallel(count int, worker func(id, start, end int)) {
 		if count%ncpu != 0 && p == ncpu-1 {
 			end = count
 		}
-
-		log.Printf("Start=%d End=%d", start, end)
 
 		go func(p, start, end int) {
 			defer wg.Done()
