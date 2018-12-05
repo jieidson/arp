@@ -28,8 +28,8 @@ func NewNavigator(p *Provider) *Navigator {
 		Next:     emptyMatrix(len(arena.Nodes)),
 	}
 
-	// floydWarshall(navigator, p)
-	floydWarshall2(navigator, p)
+	floydWarshall(navigator, p)
+	// floydWarshall2(navigator, p)
 
 	return navigator
 }
@@ -51,7 +51,7 @@ func (n *Navigator) NextEdge(from, to *Node) *Edge {
 		return nil
 	}
 
-	nextID := n.Next[to.ID][from.ID]
+	nextID := n.Next[from.ID][to.ID]
 
 	for _, edge := range from.Edges {
 		if edge.A.ID == nextID || edge.B.ID == nextID {
@@ -180,6 +180,7 @@ func floydWarshall2(nav *Navigator, p *Provider) {
 	}
 
 	// Build shortest-path matrix
+	// From: https://stackoverflow.com/a/2038779
 	for k := 0; k < size; k++ {
 		for i := 0; i < k; i++ {
 			dIK := dist[i][k]

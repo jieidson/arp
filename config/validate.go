@@ -37,14 +37,14 @@ func (c *Config) Validate() error {
 	}
 
 	moralSum := c.Moral.MajorMajorLow + c.Moral.MajorMinorLow + c.Moral.MinorMinorLow
-	if moralSum != 100 {
+	if moralSum != 100 && (c.Arena.MajorX > 0 || c.Arena.MajorY > 0) {
 		return fmt.Errorf("moral context percentages must add up to 100%% (currently: %d%%)", moralSum)
 	}
 
 	workspaceSum := c.Workspace.MajorMajorLow + c.Workspace.MajorMajorHigh +
 		c.Workspace.MajorMinorLow + c.Workspace.MajorMinorHigh +
 		c.Workspace.MinorMinorLow + c.Workspace.MinorMinorHigh
-	if workspaceSum != 100 {
+	if workspaceSum != 100 && (c.Arena.MajorX > 0 || c.Arena.MajorY > 0) {
 		return fmt.Errorf("workspace distribution percentages must add up to 100%% (currently: %d%%)", workspaceSum)
 	}
 

@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+const maxActivityPlanningTries = 5
+
 // NewCivilianAgent creates a new Civilian agent.
 func NewCivilianAgent(id uint64) *CivilianAgent {
 	return &CivilianAgent{baseAgent: baseAgent{ID: id}}
@@ -41,54 +43,21 @@ func (agent *CivilianAgent) Init(p *Provider) {
 	// Set it as the starting location
 	agent.enter(agent.Home)
 
+	// If the agent is employed, choose a work location
 	if agent.Employed {
-		agent.chooseWork(p)
+		// Ensure that the work location is not the same as their home location.
+		for agent.Work == nil || agent.Work == agent.Home {
+			agent.chooseWork(p)
+		}
 	}
 }
 
 // DayStart is run on the first tick of each simulation day.
 func (agent *CivilianAgent) DayStart(p *Provider) {
-	rng := p.RNG()
+	sleepTime, busyTime := agent.planActivities(p)
+	agent.scheduleDay(p, sleepTime, busyTime)
 
-	var sleepTime uint64
-	busyTime := uint64(math.MaxUint64)
-	tries := 0
-
-	for busyTime > p.Config.Time.TicksPerDay {
-		if tries > 5 {
-			panic("agent cannot determine reasonable activities within day")
-		}
-
-		sleepTime = rng.NormalUint64(
-			p.Config.Activity.SleepMean, p.Config.Activity.SleepStdDev)
-
-		agent.chooseActivities(p)
-
-		// Total time for sleep and traveling to each activity. Assuming traveling one
-		// edge a tick.
-		busyTime = agent.totalBusyTime(p, sleepTime)
-
-		tries++
-	}
-
-	agent.MorningSleep = rng.Uint64(0, sleepTime)
-	agent.EveningSleep = sleepTime - agent.MorningSleep
-
-	activityTime := p.Config.Time.TicksPerDay - sleepTime - busyTime
-
-	if agent.Employed {
-		// Pick a random amount of time to be at work, at least one tick, and leave at
-		// least one tick for each activity.
-		agent.WorkBusy = rng.Uint64(1, activityTime-uint64(len(agent.Activities)))
-		activityTime -= agent.WorkBusy
-	}
-
-	agent.ActivitiesBusy = agent.ActivitiesBusy[:0]
-	for i := range agent.Activities {
-		time := rng.Uint64(1, activityTime-uint64(len(agent.Activities)-i))
-		agent.ActivitiesBusy = append(agent.ActivitiesBusy, time)
-	}
-
+	// Choose today's first target
 	if agent.Work != nil {
 		agent.Target = agent.Work
 	} else if len(agent.Activities) > 0 {
@@ -96,7 +65,13 @@ func (agent *CivilianAgent) DayStart(p *Provider) {
 	}
 
 	agent.IsActive = false
-	agent.AlarmTick = p.Simulator().CurrentTick + agent.MorningSleep
+
+	if agent.Target != nil {
+		agent.AlarmTick = p.Simulator().CurrentTick + agent.MorningSleep
+	} else {
+		// If agent has nothing to do all day today, just sleep.
+		agent.AlarmTick = p.Simulator().CurrentTick + p.Config.Time.TicksPerDay
+	}
 }
 
 // Move is run in the first phase of every tick in agent ID order.
@@ -109,6 +84,27 @@ func (agent *CivilianAgent) Move(p *Provider) {
 		return
 	}
 
+	edge := p.Navigator().NextEdge(agent.Location, agent.Target)
+	agent.follow(edge)
+}
+
+// Action is run in the second phase of every tick in random order.
+func (agent *CivilianAgent) Action(p *Provider) {
+	if !agent.IsActive {
+		return
+	}
+
+	// If the agent hasn't reached it's target yet, don't take an action.
+	if agent.Location != agent.Target {
+		return
+	}
+
+	// The agent reached it's target, become inactive
+	agent.IsActive = false
+	target, busyTicks := agent.pickNextTarget()
+
+	agent.Target = target
+	agent.AlarmTick = p.Simulator().CurrentTick + busyTicks
 }
 
 // Log collects data about the agent at the end of every tick.
@@ -156,8 +152,32 @@ func (agent *CivilianAgent) chooseWork(p *Provider) {
 
 	// Pick a random node from the the chosen category.
 	agent.Work = p.RNG().Node(workspaces)
+}
 
-	// TODO: Make sure work location is not home location.
+func (agent *CivilianAgent) planActivities(p *Provider) (uint64, uint64) {
+	var tries int
+	var sleepTime, busyTime uint64
+
+	busyTime = math.MaxUint64
+
+	for busyTime > p.Config.Time.TicksPerDay {
+		if tries > 5 {
+			panic("agent cannot determine reasonable activities within day")
+		}
+
+		sleepTime := p.RNG().NormalUint64(
+			p.Config.Activity.SleepMean, p.Config.Activity.SleepStdDev)
+
+		agent.chooseActivities(p)
+
+		// Total time for sleep and traveling to each activity. Assuming traveling one
+		// edge a tick.
+		busyTime = agent.totalBusyTime(p, sleepTime)
+
+		tries++
+	}
+
+	return sleepTime, busyTime
 }
 
 func (agent *CivilianAgent) chooseActivities(p *Provider) {
@@ -218,4 +238,53 @@ func (agent *CivilianAgent) totalBusyTime(p *Provider, sleepTime uint64) uint64 
 	}
 
 	return totalTime
+}
+
+func (agent *CivilianAgent) scheduleDay(p *Provider, sleepTime, busyTime uint64) {
+	agent.MorningSleep = p.RNG().Uint64(0, sleepTime)
+	agent.EveningSleep = sleepTime - agent.MorningSleep
+
+	activityTime := p.Config.Time.TicksPerDay - sleepTime - busyTime
+
+	if agent.Employed {
+		// Pick a random amount of time to be at work, at least one tick, and leave at
+		// least one tick for each activity.
+		agent.WorkBusy = p.RNG().Uint64(1, activityTime-uint64(len(agent.Activities)))
+		activityTime -= agent.WorkBusy
+	}
+
+	agent.ActivitiesBusy = agent.ActivitiesBusy[:0]
+	for i := range agent.Activities {
+		time := p.RNG().Uint64(1, activityTime-uint64(len(agent.Activities)-i))
+		agent.ActivitiesBusy = append(agent.ActivitiesBusy, time)
+	}
+}
+
+func (agent *CivilianAgent) pickNextTarget() (*Node, uint64) {
+	if agent.Location == agent.Home {
+		// The agent just got home for the night, remain inactive until tomorrow.
+		return nil, 0
+	}
+
+	if agent.Location == agent.Work {
+		// The agent just got to work, stay there for the planned time.
+		// After work, go to the first activity location, or home if there are none.
+		if len(agent.Activities) > 0 {
+			return agent.Activities[0], agent.WorkBusy
+		}
+		return agent.Home, agent.WorkBusy
+	}
+
+	// The agent just got to an activity location.
+	for i, activity := range agent.Activities {
+		if agent.Location == activity {
+			// If at the last activity, go home, otherwise go to the next one.
+			if i == len(agent.Activities)-1 {
+				return agent.Home, agent.ActivitiesBusy[i]
+			}
+			return agent.Activities[i+1], agent.ActivitiesBusy[i]
+		}
+	}
+
+	return nil, 0
 }

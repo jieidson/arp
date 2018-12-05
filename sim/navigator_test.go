@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/jieidson/arp/config"
@@ -9,29 +10,35 @@ import (
 const gridSize = 25
 
 func BenchmarkFloydWarshall(b *testing.B) {
-	arena := GridArena(config.ArenaConfig{
-		Width:  gridSize,
-		Height: gridSize,
-	})
+	p := Provider{
+		arena: GridArena(config.ArenaConfig{
+			Width:  gridSize,
+			Height: gridSize,
+		}),
+		logger: NewLogger(ioutil.Discard),
+	}
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		navigator := NewNavigator(arena)
-		floydWarshall(navigator)
+		navigator := NewNavigator(&p)
+		floydWarshall(navigator, &p)
 	}
 }
 
 func BenchmarkFloydWarshall2(b *testing.B) {
-	arena := GridArena(config.ArenaConfig{
-		Width:  gridSize,
-		Height: gridSize,
-	})
+	p := Provider{
+		arena: GridArena(config.ArenaConfig{
+			Width:  gridSize,
+			Height: gridSize,
+		}),
+		logger: NewLogger(ioutil.Discard),
+	}
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		navigator := NewNavigator(arena)
-		floydWarshall2(navigator)
+		navigator := NewNavigator(&p)
+		floydWarshall2(navigator, &p)
 	}
 }

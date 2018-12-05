@@ -19,14 +19,14 @@
 # The arena is a grid of nodes and edges.
 [arena]
 
-  width = 20
-  height = 20
+  width = 30
+  height = 30
 
   # Number of horizontal major streets.
-  majorX = 5
+  majorX = 10
 
   # Number of vertical major streets.
-  majorY = 5
+  majorY = 10
 
   # Edge weight of minor streets.
   minorWeight = 5

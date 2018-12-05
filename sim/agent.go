@@ -2,6 +2,7 @@ package sim
 
 import (
 	"container/list"
+	"fmt"
 )
 
 // AgentKind describes the type of an agent.
@@ -85,6 +86,10 @@ func (agent *baseAgent) Log(p *Provider, row *AgentDataRow) {
 	row.LocationID = agent.Location.ID
 	row.X = agent.Location.X
 	row.Y = agent.Location.Y
+}
+
+func (agent *baseAgent) String() string {
+	return fmt.Sprintf("A%d", agent.ID)
 }
 
 func (agent *baseAgent) enter(node *Node) {
