@@ -132,16 +132,15 @@ func walkRecurse(n *Node, distance int, fn func(*Node), visited map[*Node]bool) 
 }
 
 // Enter adds the agent to this node.
-func (n *Node) Enter(agent Agent) {
-	el := n.Agents.PushBack(agent)
-	agent.setLocation(n, el)
+func (n *Node) Enter(agent *Agent) {
+	agent.locationElement = n.Agents.PushBack(agent)
+	agent.Location = n
 }
 
 // Leave removes the agent from this node.
-func (n *Node) Leave(agent Agent) {
-	_, el := agent.getLocation()
-	n.Agents.Remove(el)
-	agent.setLocation(nil, nil)
+func (n *Node) Leave(agent *Agent) {
+	n.Agents.Remove(agent.locationElement)
+	agent.Location = nil
 }
 
 // Log logs data for one timestep in the simulation.
@@ -172,15 +171,14 @@ func Link(a, b *Node) *Edge {
 }
 
 // Follow moves an agent from one node to another along an edge.
-func (edge *Edge) Follow(agent Agent) *Node {
-	location, _ := agent.getLocation()
-	if location == edge.A {
+func (edge *Edge) Follow(agent *Agent) *Node {
+	if agent.Location == edge.A {
 		edge.A.Leave(agent)
 		edge.B.Enter(agent)
 		return edge.B
 	}
 
-	if location == edge.B {
+	if agent.Location == edge.B {
 		edge.B.Leave(agent)
 		edge.A.Enter(agent)
 		return edge.A

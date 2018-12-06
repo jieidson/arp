@@ -9,7 +9,7 @@ import (
 // Simulator holds the agents in a simulation.
 type Simulator struct {
 	Provider *Provider
-	Agents   []Agent
+	Agents   []*Agent
 
 	CurrentTick uint64
 }
@@ -21,7 +21,7 @@ func NewSimulator(p *Provider) *Simulator {
 
 	sim := &Simulator{
 		Provider: p,
-		Agents:   make([]Agent, 0, totalAgents),
+		Agents:   make([]*Agent, 0, totalAgents),
 	}
 
 	sim.generateAgents(c)
@@ -103,28 +103,30 @@ func (s *Simulator) generateAgents(c config.Config) {
 
 	// Keep a temporary separate list of just civilian and offender agents, so we
 	// can mark them as employed or not in a bit.
-	workforce := make([]*CivilianAgent, 0, c.Agent.Civilian+c.Agent.Offender)
+	workforce := make([]*CivilianBehavior, 0, c.Agent.Civilian+c.Agent.Offender)
 
 	// Generate civilian agents
 	for i := uint64(0); i < c.Agent.Civilian; i++ {
 		agent := NewCivilianAgent(uint64(len(s.Agents)))
+		civilian, _ := agent.Civilian()
 
 		s.Agents = append(s.Agents, agent)
-		workforce = append(workforce, agent)
+		workforce = append(workforce, civilian)
 	}
 
 	// Generate offender agents
 	for i := uint64(0); i < c.Agent.Offender; i++ {
 		agent := NewOffenderAgent(uint64(len(s.Agents)))
+		civilian, _ := agent.Civilian()
 
 		s.Agents = append(s.Agents, agent)
-		workforce = append(workforce, &agent.CivilianAgent)
+		workforce = append(workforce, civilian)
 	}
 
 	s.determineEmployment(workforce)
 }
 
-func (s *Simulator) determineEmployment(workforce []*CivilianAgent) {
+func (s *Simulator) determineEmployment(workforce []*CivilianBehavior) {
 	// First, mark everyone as employed
 	for _, agent := range workforce {
 		agent.Employed = true

@@ -1,17 +1,19 @@
 package sim
 
 // NewPoliceAgent creates a new Police agent.
-func NewPoliceAgent(id uint64) *PoliceAgent {
-	return &PoliceAgent{baseAgent: baseAgent{ID: id}}
+func NewPoliceAgent(id uint64) *Agent {
+	return &Agent{
+		ID:       id,
+		Kind:     PoliceAgentKind,
+		Behavior: []Behavior{&PoliceBehavior{}},
+	}
 }
 
-// A PoliceAgent picks a random starting location, and moves about randomly.
-type PoliceAgent struct{ baseAgent }
+// PoliceBehavior picks a random starting location, and moves about randomly.
+type PoliceBehavior struct{}
 
 // Init causes the police agent to pick a random starting location.
-func (agent *PoliceAgent) Init(p *Provider) {
-	agent.baseAgent.Init(p)
-
+func (police *PoliceBehavior) Init(p *Provider, agent *Agent) {
 	// Pick a random node.
 	node := p.RNG().Node(p.Arena().Nodes)
 
@@ -19,11 +21,12 @@ func (agent *PoliceAgent) Init(p *Provider) {
 	node.Enter(agent)
 }
 
+// DayStart is run on the first tick of each simulation day.
+func (police *PoliceBehavior) DayStart(p *Provider, agent *Agent) {}
+
 // Move casues the police agent to pick a random edge at its current location
 // and travel down it.
-func (agent *PoliceAgent) Move(p *Provider) {
-	agent.baseAgent.Move(p)
-
+func (police *PoliceBehavior) Move(p *Provider, agent *Agent) {
 	// Pick a random edge.
 	edge := p.RNG().Edge(agent.Location.Edges)
 
@@ -31,9 +34,8 @@ func (agent *PoliceAgent) Move(p *Provider) {
 	edge.Follow(agent)
 }
 
-// Log collects data about the agent at the end of every tick.
-func (agent *PoliceAgent) Log(p *Provider, row *AgentDataRow) {
-	agent.baseAgent.Log(p, row)
+// Action is run in the second phase of every tick in random order.
+func (police *PoliceBehavior) Action(p *Provider, agent *Agent) {}
 
-	row.Kind = uint64(PoliceAgentKind)
-}
+// Log collects data about the agent at the end of every tick.
+func (police *PoliceBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {}

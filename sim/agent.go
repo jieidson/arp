@@ -41,65 +41,106 @@ func (t AgentKind) Ordinal() uint64 {
 	panic("unexpected agent kind")
 }
 
-// An Agent is an entity that can move and perform actions during a simulation.
-type Agent interface {
-	// Init is run once when the simulation starts.
-	Init(p *Provider)
-
-	// DayStart is run on the first tick of each simulation day.
-	DayStart(p *Provider)
-
-	// Move is run in the first phase of every tick in agent ID order.
-	Move(p *Provider)
-
-	// Action is run in the second phase of every tick in random order.
-	Action(p *Provider)
-
-	// Log collects data about the agent at the end of every tick.
-	Log(p *Provider, row *AgentDataRow)
-
-	setLocation(node *Node, el *list.Element)
-	getLocation() (*Node, *list.Element)
-}
-
-type baseAgent struct {
-	ID uint64
-
+// An Agent is an entity in the arena, with a set of behavior.
+type Agent struct {
+	ID       uint64
+	Kind     AgentKind
 	Location *Node
+	Behavior []Behavior
 
 	locationElement *list.Element
 }
 
 // Init is run once when the simulation starts.
-func (agent *baseAgent) Init(p *Provider) {}
+func (agent *Agent) Init(p *Provider) {
+	for _, behavior := range agent.Behavior {
+		behavior.Init(p, agent)
+	}
+}
 
 // DayStart is run on the first tick of each simulation day.
-func (agent *baseAgent) DayStart(p *Provider) {}
+func (agent *Agent) DayStart(p *Provider) {
+	for _, behavior := range agent.Behavior {
+		behavior.DayStart(p, agent)
+	}
+}
 
 // Move is run in the first phase of every tick in agent ID order.
-func (agent *baseAgent) Move(p *Provider) {}
+func (agent *Agent) Move(p *Provider) {
+	for _, behavior := range agent.Behavior {
+		behavior.Move(p, agent)
+	}
+}
 
 // Action is run in the second phase of every tick in random order.
-func (agent *baseAgent) Action(p *Provider) {}
+func (agent *Agent) Action(p *Provider) {
+	for _, behavior := range agent.Behavior {
+		behavior.Action(p, agent)
+	}
+}
 
 // Log collects data about the agent at the end of every tick.
-func (agent *baseAgent) Log(p *Provider, row *AgentDataRow) {
+func (agent *Agent) Log(p *Provider, row *AgentDataRow) {
 	row.ID = agent.ID
+	row.Kind = uint64(agent.Kind)
 
 	row.LocationID = agent.Location.ID
 	row.X = agent.Location.X
 	row.Y = agent.Location.Y
+
+	for _, behavior := range agent.Behavior {
+		behavior.Log(p, agent, row)
+	}
 }
 
-func (agent *baseAgent) String() string {
+func (agent *Agent) String() string {
 	return fmt.Sprintf("A%d", agent.ID)
 }
 
-func (agent *baseAgent) setLocation(node *Node, el *list.Element) {
-	agent.Location = node
-	agent.locationElement = el
+// Police retrieves the police behavior from this agent.
+func (agent *Agent) Police() (*PoliceBehavior, bool) {
+	for _, behavior := range agent.Behavior {
+		if police, ok := behavior.(*PoliceBehavior); ok {
+			return police, true
+		}
+	}
+	return nil, false
 }
 
-func (agent *baseAgent) getLocation() (*Node, *list.Element) {
-	return agent.Location, agent.locationElement
+// Civilian retrieves the civilian behavior from this agent.
+func (agent *Agent) Civilian() (*CivilianBehavior, bool) {
+	for _, behavior := range agent.Behavior {
+		if civilian, ok := behavior.(*CivilianBehavior); ok {
+			return civilian, true
+		}
+	}
+	return nil, false
+}
+
+// Offender retrieves the offender behavior from this agent.
+func (agent *Agent) Offender() (*OffenderBehavior, bool) {
+	for _, behavior := range agent.Behavior {
+		if offender, ok := behavior.(*OffenderBehavior); ok {
+			return offender, true
+		}
+	}
+	return nil, false
+}
+
+// Behavior describes a subset of agent functionality.
+type Behavior interface {
+	// Init is run once when the simulation starts.
+	Init(p *Provider, agent *Agent)
+
+	// DayStart is run on the first tick of each simulation day.
+	DayStart(p *Provider, agent *Agent)
+
+	// Move is run in the first phase of every tick in agent ID order.
+	Move(p *Provider, agent *Agent)
+
+	// Action is run in the second phase of every tick in random order.
+	Action(p *Provider, agent *Agent)
+
+	// Log collects data about the agent at the end of every tick.
+	Log(p *Provider, agent *Agent, row *AgentDataRow)
 }

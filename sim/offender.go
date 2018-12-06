@@ -1,69 +1,68 @@
 package sim
 
 // NewOffenderAgent creates a new Offender agent.
-func NewOffenderAgent(id uint64) *OffenderAgent {
-	return &OffenderAgent{
-		CivilianAgent: CivilianAgent{
-			baseAgent: baseAgent{ID: id},
+func NewOffenderAgent(id uint64) *Agent {
+	return &Agent{
+		ID:   id,
+		Kind: OffenderAgentKind,
+		Behavior: []Behavior{
+			&CivilianBehavior{},
+			&OffenderBehavior{},
 		},
 	}
 }
 
-// OffenderAgent implements offender agent behavior.
-type OffenderAgent struct {
-	// An offender inherits all the behavior of a civilian agent.
-	CivilianAgent
-
+// OffenderBehavior implements offender agent behavior.
+type OffenderBehavior struct {
 	Offended bool
 	Cooldown uint64
 }
 
-// Move is run in the first phase of every tick in agent ID order.
-func (agent *OffenderAgent) Move(p *Provider) {
-	agent.CivilianAgent.Move(p)
+// Init is run once when the simulation starts.
+func (offender *OffenderBehavior) Init(p *Provider, agent *Agent) {}
 
-	if agent.Cooldown > 0 {
-		agent.Cooldown--
+// DayStart is run on the first tick of each simulation day.
+func (offender *OffenderBehavior) DayStart(p *Provider, agent *Agent) {}
+
+// Move is run in the first phase of every tick in agent ID order.
+func (offender *OffenderBehavior) Move(p *Provider, agent *Agent) {
+	if offender.Cooldown > 0 {
+		offender.Cooldown--
 	}
 }
 
 // Action is run in the second phase of every tick in random order.
-func (agent *OffenderAgent) Action(p *Provider) {
-	agent.CivilianAgent.Action(p)
-
-	if !agent.IsActive {
+func (offender *OffenderBehavior) Action(p *Provider, agent *Agent) {
+	civilian, _ := agent.Civilian()
+	if !civilian.IsActive {
 		return
 	}
 
-	agent.gatherTargets()
+	offender.gatherTargets(agent)
 }
 
 // Log collects data about the agent at the end of every tick.
-func (agent *OffenderAgent) Log(p *Provider, row *AgentDataRow) {
-	agent.CivilianAgent.Log(p, row)
+func (offender *OffenderBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {}
 
-	row.Kind = uint64(OffenderAgentKind)
-}
-
-func (agent *OffenderAgent) gatherTargets() []Agent {
-	var targets []Agent
+func (offender *OffenderBehavior) gatherTargets(agent *Agent) []*Agent {
+	var targets []*Agent
 
 	for el := agent.Location.Agents.Front(); el != nil; el = el.Next() {
-		target := el.Value.(Agent)
+		target := el.Value.(*Agent)
 
 		if agent == target {
 			continue
 		}
 
-		if _, ok := target.(*PoliceAgent); ok {
+		if _, ok := target.Police(); ok {
 			return nil
 		}
 
-		if offender, ok := target.(*OffenderAgent); ok && offender.Offended {
+		if offender, ok := target.Offender(); ok && offender.Offended {
 			return nil
 		}
 
-		if base := target.(*CivilianAgent); !base.IsActive {
+		if civilian, ok := target.Civilian(); ok && !civilian.IsActive {
 			continue
 		}
 

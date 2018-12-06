@@ -7,14 +7,16 @@ import (
 const maxActivityPlanningTries = 5
 
 // NewCivilianAgent creates a new Civilian agent.
-func NewCivilianAgent(id uint64) *CivilianAgent {
-	return &CivilianAgent{baseAgent: baseAgent{ID: id}}
+func NewCivilianAgent(id uint64) *Agent {
+	return &Agent{
+		ID:       id,
+		Kind:     CivilianAgentKind,
+		Behavior: []Behavior{&CivilianBehavior{}},
+	}
 }
 
-// CivilianAgent implements normal civilian agent behavior.
-type CivilianAgent struct {
-	baseAgent
-
+// CivilianBehavior implements normal civilian agent behavior.
+type CivilianBehavior struct {
 	Employed bool
 
 	Home       *Node
@@ -34,87 +36,81 @@ type CivilianAgent struct {
 }
 
 // Init causes the civilian agent to randomly choose a home location.
-func (agent *CivilianAgent) Init(p *Provider) {
-	agent.baseAgent.Init(p)
-
+func (civilian *CivilianBehavior) Init(p *Provider, agent *Agent) {
 	// Pick a random node for the home location.
-	agent.Home = p.RNG().Node(p.Arena().Nodes)
+	civilian.Home = p.RNG().Node(p.Arena().Nodes)
 
 	// Set it as the starting location
-	agent.Home.Enter(agent)
+	civilian.Home.Enter(agent)
 
 	// If the agent is employed, choose a work location
-	if agent.Employed {
+	if civilian.Employed {
 		// Ensure that the work location is not the same as their home location.
-		for agent.Work == nil || agent.Work == agent.Home {
-			agent.chooseWork(p)
+		for civilian.Work == nil || civilian.Work == civilian.Home {
+			civilian.chooseWork(p)
 		}
 	}
 }
 
 // DayStart is run on the first tick of each simulation day.
-func (agent *CivilianAgent) DayStart(p *Provider) {
-	sleepTime, busyTime := agent.planActivities(p)
-	agent.scheduleDay(p, sleepTime, busyTime)
+func (civilian *CivilianBehavior) DayStart(p *Provider, agent *Agent) {
+	sleepTime, busyTime := civilian.planActivities(p)
+	civilian.scheduleDay(p, sleepTime, busyTime)
 
 	// Choose today's first target
-	if agent.Work != nil {
-		agent.Target = agent.Work
-	} else if len(agent.Activities) > 0 {
-		agent.Target = agent.Activities[0]
+	if civilian.Work != nil {
+		civilian.Target = civilian.Work
+	} else if len(civilian.Activities) > 0 {
+		civilian.Target = civilian.Activities[0]
 	}
 
-	agent.IsActive = false
+	civilian.IsActive = false
 
-	if agent.Target != nil {
-		agent.AlarmTick = p.Simulator().CurrentTick + agent.MorningSleep
+	if civilian.Target != nil {
+		civilian.AlarmTick = p.Simulator().CurrentTick + civilian.MorningSleep
 	} else {
 		// If agent has nothing to do all day today, just sleep.
-		agent.AlarmTick = p.Simulator().CurrentTick + p.Config.Time.TicksPerDay
+		civilian.AlarmTick = p.Simulator().CurrentTick + p.Config.Time.TicksPerDay
 	}
 }
 
 // Move is run in the first phase of every tick in agent ID order.
-func (agent *CivilianAgent) Move(p *Provider) {
-	if p.Simulator().CurrentTick == agent.AlarmTick {
-		agent.IsActive = true
+func (civilian *CivilianBehavior) Move(p *Provider, agent *Agent) {
+	if p.Simulator().CurrentTick == civilian.AlarmTick {
+		civilian.IsActive = true
 	}
 
-	if !agent.IsActive {
+	if !civilian.IsActive {
 		return
 	}
 
-	edge := p.Navigator().NextEdge(agent.Location, agent.Target)
+	edge := p.Navigator().NextEdge(agent.Location, civilian.Target)
 	edge.Follow(agent)
 }
 
 // Action is run in the second phase of every tick in random order.
-func (agent *CivilianAgent) Action(p *Provider) {
-	if !agent.IsActive {
+func (civilian *CivilianBehavior) Action(p *Provider, agent *Agent) {
+	if !civilian.IsActive {
 		return
 	}
 
 	// If the agent hasn't reached it's target yet, don't take an action.
-	if agent.Location != agent.Target {
+	if agent.Location != civilian.Target {
 		return
 	}
 
 	// The agent reached it's target, become inactive
-	agent.IsActive = false
-	target, busyTicks := agent.pickNextTarget()
+	civilian.IsActive = false
+	target, busyTicks := civilian.pickNextTarget(agent)
 
-	agent.Target = target
-	agent.AlarmTick = p.Simulator().CurrentTick + busyTicks
+	civilian.Target = target
+	civilian.AlarmTick = p.Simulator().CurrentTick + busyTicks
 }
 
 // Log collects data about the agent at the end of every tick.
-func (agent *CivilianAgent) Log(p *Provider, row *AgentDataRow) {
-	agent.baseAgent.Log(p, row)
+func (civilian *CivilianBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {}
 
-	row.Kind = uint64(CivilianAgentKind)
-}
-
-func (agent *CivilianAgent) chooseWork(p *Provider) {
+func (civilian *CivilianBehavior) chooseWork(p *Provider) {
 	cfg := p.Config.Workspace
 	arena := p.Arena()
 
@@ -151,10 +147,10 @@ func (agent *CivilianAgent) chooseWork(p *Provider) {
 	}
 
 	// Pick a random node from the the chosen category.
-	agent.Work = p.RNG().Node(workspaces)
+	civilian.Work = p.RNG().Node(workspaces)
 }
 
-func (agent *CivilianAgent) planActivities(p *Provider) (uint64, uint64) {
+func (civilian *CivilianBehavior) planActivities(p *Provider) (uint64, uint64) {
 	var tries int
 	var sleepTime, busyTime uint64
 
@@ -168,11 +164,11 @@ func (agent *CivilianAgent) planActivities(p *Provider) (uint64, uint64) {
 		sleepTime := p.RNG().NormalUint64(
 			p.Config.Activity.SleepMean, p.Config.Activity.SleepStdDev)
 
-		agent.chooseActivities(p)
+		civilian.chooseActivities(p)
 
 		// Total time for sleep and traveling to each activity. Assuming traveling one
 		// edge a tick.
-		busyTime = agent.totalBusyTime(p, sleepTime)
+		busyTime = civilian.totalBusyTime(p, sleepTime)
 
 		tries++
 	}
@@ -180,109 +176,109 @@ func (agent *CivilianAgent) planActivities(p *Provider) (uint64, uint64) {
 	return sleepTime, busyTime
 }
 
-func (agent *CivilianAgent) chooseActivities(p *Provider) {
+func (civilian *CivilianBehavior) chooseActivities(p *Provider) {
 	cfg := p.Config.Activity
 	arena := p.Arena()
 	rng := p.RNG()
 
 	activityCount := rng.NormalUint64(cfg.CountMean, cfg.CountStdDev)
 
-	agent.Activities = agent.Activities[:0]
+	civilian.Activities = civilian.Activities[:0]
 
 	for _, i := range rng.Perm(len(arena.Nodes)) {
-		if uint64(len(agent.Activities)) == activityCount {
+		if uint64(len(civilian.Activities)) == activityCount {
 			break
 		}
 
 		node := arena.Nodes[i]
 
 		// Don't want home or work as an activity location.
-		if node == agent.Home || node == agent.Work {
+		if node == civilian.Home || node == civilian.Work {
 			continue
 		}
 
-		agent.Activities = append(agent.Activities, node)
+		civilian.Activities = append(civilian.Activities, node)
 	}
 
-	if uint64(len(agent.Activities)) != activityCount {
+	if uint64(len(civilian.Activities)) != activityCount {
 		panic("couldn't fill activity locations")
 	}
 }
 
-func (agent *CivilianAgent) totalBusyTime(p *Provider, sleepTime uint64) uint64 {
+func (civilian *CivilianBehavior) totalBusyTime(p *Provider, sleepTime uint64) uint64 {
 	navigator := p.Navigator()
 	totalTime := sleepTime
 
 	// Assume at least one tick spent at work and each activity, so +1 to each
 	// count.
 
-	if agent.Work != nil {
-		totalTime += navigator.EdgeDistance(agent.Home, agent.Work) + 1
+	if civilian.Work != nil {
+		totalTime += navigator.EdgeDistance(civilian.Home, civilian.Work) + 1
 	}
 
-	if len(agent.Activities) > 0 {
-		if agent.Work != nil {
-			totalTime += navigator.EdgeDistance(agent.Work, agent.Activities[0]) + 1
+	if len(civilian.Activities) > 0 {
+		if civilian.Work != nil {
+			totalTime += navigator.EdgeDistance(civilian.Work, civilian.Activities[0]) + 1
 		} else {
-			totalTime += navigator.EdgeDistance(agent.Home, agent.Activities[0]) + 1
+			totalTime += navigator.EdgeDistance(civilian.Home, civilian.Activities[0]) + 1
 		}
 
-		for i := 1; i < len(agent.Activities); i++ {
-			lastNode := agent.Activities[i-1]
-			node := agent.Activities[i]
+		for i := 1; i < len(civilian.Activities); i++ {
+			lastNode := civilian.Activities[i-1]
+			node := civilian.Activities[i]
 			totalTime += navigator.EdgeDistance(lastNode, node) + 1
 		}
 
 		totalTime += navigator.EdgeDistance(
-			agent.Activities[len(agent.Activities)-1], agent.Home)
+			civilian.Activities[len(civilian.Activities)-1], civilian.Home)
 	}
 
 	return totalTime
 }
 
-func (agent *CivilianAgent) scheduleDay(p *Provider, sleepTime, busyTime uint64) {
-	agent.MorningSleep = p.RNG().Uint64(0, sleepTime)
-	agent.EveningSleep = sleepTime - agent.MorningSleep
+func (civilian *CivilianBehavior) scheduleDay(p *Provider, sleepTime, busyTime uint64) {
+	civilian.MorningSleep = p.RNG().Uint64(0, sleepTime)
+	civilian.EveningSleep = sleepTime - civilian.MorningSleep
 
 	activityTime := p.Config.Time.TicksPerDay - sleepTime - busyTime
 
-	if agent.Employed {
+	if civilian.Employed {
 		// Pick a random amount of time to be at work, at least one tick, and leave at
 		// least one tick for each activity.
-		agent.WorkBusy = p.RNG().Uint64(1, activityTime-uint64(len(agent.Activities)))
-		activityTime -= agent.WorkBusy
+		civilian.WorkBusy = p.RNG().Uint64(1, activityTime-uint64(len(civilian.Activities)))
+		activityTime -= civilian.WorkBusy
 	}
 
-	agent.ActivitiesBusy = agent.ActivitiesBusy[:0]
-	for i := range agent.Activities {
-		time := p.RNG().Uint64(1, activityTime-uint64(len(agent.Activities)-i))
-		agent.ActivitiesBusy = append(agent.ActivitiesBusy, time)
+	civilian.ActivitiesBusy = civilian.ActivitiesBusy[:0]
+	for i := range civilian.Activities {
+		time := p.RNG().Uint64(1, activityTime-uint64(len(civilian.Activities)-i))
+		civilian.ActivitiesBusy = append(civilian.ActivitiesBusy, time)
 	}
 }
 
-func (agent *CivilianAgent) pickNextTarget() (*Node, uint64) {
-	if agent.Location == agent.Home {
+func (civilian *CivilianBehavior) pickNextTarget(agent *Agent) (*Node, uint64) {
+	if agent.Location == civilian.Home {
 		// The agent just got home for the night, remain inactive until tomorrow.
 		return nil, 0
 	}
 
-	if agent.Location == agent.Work {
+	if agent.Location == civilian.Work {
 		// The agent just got to work, stay there for the planned time.
 		// After work, go to the first activity location, or home if there are none.
-		if len(agent.Activities) > 0 {
-			return agent.Activities[0], agent.WorkBusy
+		if len(civilian.Activities) > 0 {
+			return civilian.Activities[0], civilian.WorkBusy
 		}
-		return agent.Home, agent.WorkBusy
+		return civilian.Home, civilian.WorkBusy
 	}
 
 	// The agent just got to an activity location.
-	for i, activity := range agent.Activities {
+	for i, activity := range civilian.Activities {
 		if agent.Location == activity {
 			// If at the last activity, go home, otherwise go to the next one.
-			if i == len(agent.Activities)-1 {
-				return agent.Home, agent.ActivitiesBusy[i]
+			if i == len(civilian.Activities)-1 {
+				return civilian.Home, civilian.ActivitiesBusy[i]
 			}
-			return agent.Activities[i+1], agent.ActivitiesBusy[i]
+			return civilian.Activities[i+1], civilian.ActivitiesBusy[i]
 		}
 	}
 
