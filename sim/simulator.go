@@ -2,6 +2,7 @@ package sim
 
 import (
 	"fmt"
+
 	"github.com/jieidson/arp/config"
 )
 

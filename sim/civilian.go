@@ -41,7 +41,7 @@ func (agent *CivilianAgent) Init(p *Provider) {
 	agent.Home = p.RNG().Node(p.Arena().Nodes)
 
 	// Set it as the starting location
-	agent.enter(agent.Home)
+	agent.Home.Enter(agent)
 
 	// If the agent is employed, choose a work location
 	if agent.Employed {
@@ -85,7 +85,7 @@ func (agent *CivilianAgent) Move(p *Provider) {
 	}
 
 	edge := p.Navigator().NextEdge(agent.Location, agent.Target)
-	agent.follow(edge)
+	edge.Follow(agent)
 }
 
 // Action is run in the second phase of every tick in random order.

@@ -57,6 +57,9 @@ type Agent interface {
 
 	// Log collects data about the agent at the end of every tick.
 	Log(p *Provider, row *AgentDataRow)
+
+	setLocation(node *Node, el *list.Element)
+	getLocation() (*Node, *list.Element)
 }
 
 type baseAgent struct {
@@ -92,30 +95,11 @@ func (agent *baseAgent) String() string {
 	return fmt.Sprintf("A%d", agent.ID)
 }
 
-func (agent *baseAgent) enter(node *Node) {
-	agent.locationElement = node.Agents.PushBack(agent)
+func (agent *baseAgent) setLocation(node *Node, el *list.Element) {
 	agent.Location = node
+	agent.locationElement = el
 }
 
-func (agent *baseAgent) leave(node *Node) {
-	node.Agents.Remove(agent.locationElement)
-	agent.locationElement = nil
-	agent.Location = nil
-}
-
-// follow moves an agent across an edge, returning the destination node.
-func (agent *baseAgent) follow(edge *Edge) *Node {
-	if agent.Location == edge.A {
-		agent.leave(edge.A)
-		agent.enter(edge.B)
-		return edge.B
-	}
-
-	if agent.Location == edge.B {
-		agent.leave(edge.B)
-		agent.enter(edge.A)
-		return edge.A
-	}
-
-	panic("tried to move agent through non-adjacent edge")
+func (agent *baseAgent) getLocation() (*Node, *list.Element) {
+	return agent.Location, agent.locationElement
 }

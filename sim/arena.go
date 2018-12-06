@@ -131,6 +131,19 @@ func walkRecurse(n *Node, distance int, fn func(*Node), visited map[*Node]bool) 
 	}
 }
 
+// Enter adds the agent to this node.
+func (n *Node) Enter(agent Agent) {
+	el := n.Agents.PushBack(agent)
+	agent.setLocation(n, el)
+}
+
+// Leave removes the agent from this node.
+func (n *Node) Leave(agent Agent) {
+	_, el := agent.getLocation()
+	n.Agents.Remove(el)
+	agent.setLocation(nil, nil)
+}
+
 // Log logs data for one timestep in the simulation.
 func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	row.ID = n.ID
@@ -156,6 +169,24 @@ func Link(a, b *Node) *Edge {
 	b.Edges = append(b.Edges, edge)
 
 	return edge
+}
+
+// Follow moves an agent from one node to another along an edge.
+func (edge *Edge) Follow(agent Agent) *Node {
+	location, _ := agent.getLocation()
+	if location == edge.A {
+		edge.A.Leave(agent)
+		edge.B.Enter(agent)
+		return edge.B
+	}
+
+	if location == edge.B {
+		edge.B.Leave(agent)
+		edge.A.Enter(agent)
+		return edge.A
+	}
+
+	panic("tried to move agent through non-adjacent edge")
 }
 
 // ToDot returns a Graphviz DOT file representing the graph.

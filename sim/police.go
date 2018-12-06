@@ -16,7 +16,7 @@ func (agent *PoliceAgent) Init(p *Provider) {
 	node := p.RNG().Node(p.Arena().Nodes)
 
 	// Set it as the starting location
-	agent.enter(node)
+	node.Enter(agent)
 }
 
 // Move casues the police agent to pick a random edge at its current location
@@ -28,7 +28,7 @@ func (agent *PoliceAgent) Move(p *Provider) {
 	edge := p.RNG().Edge(agent.Location.Edges)
 
 	// Walk down the edge
-	agent.follow(edge)
+	edge.Follow(agent)
 }
 
 // Log collects data about the agent at the end of every tick.
