@@ -51,10 +51,21 @@ func (r *RNG) Float64(min, max float64) float64 {
 	return min + rng.Float64()*(max-min)
 }
 
+// Bool returns a random boolean.
+func (r *RNG) Bool() bool {
+	return r.Int64(0, 2) == 1
+}
+
 // NormalFloat64 returns a random float64 using a normal distribution.
 func (r *RNG) NormalFloat64(mean, stddev float64) float64 {
 	rng := (*rand.Rand)(r)
 	return (rng.NormFloat64() * stddev) + mean
+}
+
+// NormalInt64 returns a random int64 using a normal distribution.
+func (r *RNG) NormalInt64(mean, stddev int64) int64 {
+	x := math.Round(r.NormalFloat64(float64(mean), float64(stddev)))
+	return int64(x)
 }
 
 // NormalUint64 returns a random uint64 using a normal distribution.

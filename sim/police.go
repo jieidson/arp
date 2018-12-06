@@ -10,7 +10,7 @@ func NewPoliceAgent(id uint64) *Agent {
 }
 
 // PoliceBehavior picks a random starting location, and moves about randomly.
-type PoliceBehavior struct{}
+type PoliceBehavior struct{ baseBehavior }
 
 // Init causes the police agent to pick a random starting location.
 func (police *PoliceBehavior) Init(p *Provider, agent *Agent) {
@@ -33,9 +33,3 @@ func (police *PoliceBehavior) Move(p *Provider, agent *Agent) {
 	// Walk down the edge
 	edge.Follow(agent)
 }
-
-// Action is run in the second phase of every tick in random order.
-func (police *PoliceBehavior) Action(p *Provider, agent *Agent) {}
-
-// Log collects data about the agent at the end of every tick.
-func (police *PoliceBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {}

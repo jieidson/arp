@@ -33,6 +33,8 @@ type CivilianBehavior struct {
 
 	WorkBusy       uint64
 	ActivitiesBusy []uint64
+
+	Wealth int64
 }
 
 // Init causes the civilian agent to randomly choose a home location.
@@ -49,6 +51,13 @@ func (civilian *CivilianBehavior) Init(p *Provider, agent *Agent) {
 		for civilian.Work == nil || civilian.Work == civilian.Home {
 			civilian.chooseWork(p)
 		}
+	}
+
+	// Start with some amount of money.
+	civilian.Wealth = p.RNG().NormalInt64(
+		int64(p.Config.Economy.WealthMean), int64(p.Config.Economy.WealthStdDev))
+	if civilian.Wealth < 0 {
+		civilian.Wealth = 0
 	}
 }
 
