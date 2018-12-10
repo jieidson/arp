@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // AgentDataRow is a row of data in the agent data file.
@@ -14,8 +15,21 @@ type AgentDataRow struct {
 	Kind uint64
 
 	LocationID uint64
-	X          uint64
-	Y          uint64
+	X, Y       uint64
+
+	HomeID     uint64
+	WorkID     int64 // -1 will represent unemployed
+	Activities []uint64
+
+	AtRisk bool
+	Wealth uint64
+
+	EvaluatedTargets, FoundTargets, FoundTarget bool
+
+	TargetID     uint64
+	Guardianship int64
+	Suitability  int64
+	Robbed       bool
 }
 
 // Write writes this row to a CSV file.
@@ -29,6 +43,22 @@ func (r AgentDataRow) Write(w *bufio.Writer) error {
 		strconv.FormatUint(r.LocationID, 10),
 		strconv.FormatUint(r.X, 10),
 		strconv.FormatUint(r.Y, 10),
+
+		strconv.FormatUint(r.HomeID, 10),
+		strconv.FormatInt(r.WorkID, 10),
+
+		quotedUints(r.Activities),
+
+		strconv.FormatBool(r.AtRisk),
+		strconv.FormatUint(r.Wealth, 10),
+
+		strconv.FormatBool(r.EvaluatedTargets),
+		strconv.FormatBool(r.FoundTargets),
+		strconv.FormatBool(r.FoundTarget),
+		strconv.FormatUint(r.TargetID, 10),
+		strconv.FormatInt(r.Guardianship, 10),
+		strconv.FormatInt(r.Suitability, 10),
+		strconv.FormatBool(r.Robbed),
 	})
 }
 
@@ -41,7 +71,14 @@ type NodeDataRow struct {
 	X uint64
 	Y uint64
 
-	NAgents uint64
+	MoralContext int
+
+	NAgents    uint64
+	NLCPAgents uint64
+	NHCPAgents uint64
+	NPolice    uint64
+
+	Robbery bool
 }
 
 // Write writes this row to a CSV file.
@@ -54,7 +91,14 @@ func (r NodeDataRow) Write(w *bufio.Writer) error {
 		strconv.FormatUint(r.X, 10),
 		strconv.FormatUint(r.Y, 10),
 
+		strconv.Itoa(r.MoralContext),
+
 		strconv.FormatUint(r.NAgents, 10),
+		strconv.FormatUint(r.NLCPAgents, 10),
+		strconv.FormatUint(r.NHCPAgents, 10),
+		strconv.FormatUint(r.NPolice, 10),
+
+		strconv.FormatBool(r.Robbery),
 	})
 }
 
@@ -102,4 +146,21 @@ func writeRow(w *bufio.Writer, row []string) error {
 	}
 
 	return w.WriteByte('\n')
+}
+
+func quotedUints(xs []uint64) string {
+	var sb strings.Builder
+
+	sb.WriteByte('"')
+
+	for i, x := range xs {
+		sb.WriteString(strconv.FormatUint(x, 10))
+		if i < len(xs)-1 {
+			sb.WriteByte(',')
+		}
+	}
+
+	sb.WriteByte('"')
+
+	return sb.String()
 }

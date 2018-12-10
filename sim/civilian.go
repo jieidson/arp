@@ -117,7 +117,22 @@ func (civilian *CivilianBehavior) Action(p *Provider, agent *Agent) {
 }
 
 // Log collects data about the agent at the end of every tick.
-func (civilian *CivilianBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {}
+func (civilian *CivilianBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {
+	row.HomeID = civilian.Home.ID
+	if civilian.Work == nil {
+		row.WorkID = -1
+	} else {
+		row.WorkID = int64(civilian.Work.ID)
+	}
+
+	row.Activities = make([]uint64, len(civilian.Activities))
+	for i, activity := range civilian.Activities {
+		row.Activities[i] = activity.ID
+	}
+
+	row.AtRisk = civilian.IsActive
+	row.Wealth = uint64(civilian.Wealth)
+}
 
 func (civilian *CivilianBehavior) chooseWork(p *Provider) {
 	cfg := p.Config.Workspace

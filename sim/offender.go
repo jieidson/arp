@@ -19,13 +19,37 @@ type OffenderBehavior struct {
 
 	Offended bool
 	Cooldown uint64
+
+	// These is kept just to log it later.
+
+	EvaluatedTargets, FoundTargets, FoundTarget bool
+
+	TargetID     uint64
+	Guardianship int64
+	Suitability  int64
 }
 
 // Move is run in the first phase of every tick in agent ID order.
 func (offender *OffenderBehavior) Move(p *Provider, agent *Agent) {
+	offender.Offended = false
+	offender.EvaluatedTargets = false
+	offender.FoundTargets = false
+	offender.FoundTarget = false
+
 	if offender.Cooldown > 0 {
 		offender.Cooldown--
 	}
+}
+
+// Log collects data about the agent at the end of every tick.
+func (offender *OffenderBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {
+	row.Robbed = offender.Offended
+	row.EvaluatedTargets = offender.EvaluatedTargets
+	row.FoundTargets = offender.FoundTargets
+	row.FoundTarget = offender.FoundTarget
+	row.TargetID = offender.TargetID
+	row.Guardianship = offender.Guardianship
+	row.Suitability = offender.Suitability
 }
 
 // OffenderModel1Behavior implements offender agent behavior for sub-model 1.
@@ -38,13 +62,17 @@ func (model1 *OffenderModel1Behavior) Action(p *Provider, agent *Agent) {
 		return
 	}
 
+	offender, _ := agent.Offender()
+	offender.EvaluatedTargets = true
+
 	targets := model1.gatherTargets(agent)
 	if len(targets) == 0 {
 		return
 	}
+	offender.FoundTargets = true
 
-	guardianship := model1.calculateGuardianship(p, agent)
-	if guardianship > 1 {
+	offender.Guardianship = model1.calculateGuardianship(p, agent)
+	if offender.Guardianship > 1 {
 		return
 	}
 
@@ -53,13 +81,15 @@ func (model1 *OffenderModel1Behavior) Action(p *Provider, agent *Agent) {
 		// Wealthiest target has no money.
 		return
 	}
+	offender.FoundTarget = true
+	offender.TargetID = target.ID
 
-	suitability := model1.calculateSuitability(p, agent, target)
-	if suitability < 0 {
+	offender.Suitability = model1.calculateSuitability(p, agent, target)
+	if offender.Suitability < 0 {
 		return
 	}
 
-	if guardianship < 1 || p.RNG().Bool() {
+	if offender.Guardianship < 1 || p.RNG().Bool() {
 		model1.rob(p, agent, target)
 	}
 }
@@ -70,16 +100,16 @@ func (model1 *OffenderModel1Behavior) gatherTargets(agent *Agent) []*Agent {
 	for el := agent.Location.Agents.Front(); el != nil; el = el.Next() {
 		target := el.Value.(*Agent)
 
-		if agent == target {
-			continue
-		}
-
 		if _, ok := target.Police(); ok {
 			return nil
 		}
 
 		if offender, ok := target.Offender(); ok && offender.Offended {
 			return nil
+		}
+
+		if agent == target {
+			continue
 		}
 
 		if civilian, ok := target.Civilian(); ok && !civilian.IsActive {
@@ -172,5 +202,6 @@ func (model1 *OffenderModel1Behavior) rob(p *Provider, agent, target *Agent) {
 		panic("not really an offender")
 	}
 
+	offender.Offended = true
 	offender.Cooldown = p.Config.Offender.Cooldown
 }

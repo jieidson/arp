@@ -166,10 +166,10 @@ func (s *Simulator) actionPhase() {
 func (s *Simulator) logAgents() error {
 	writer := s.Provider.AgentDataWriter()
 
-	var row AgentDataRow
-	row.Timestep = s.CurrentTick
-
 	for _, agent := range s.Agents {
+		var row AgentDataRow
+		row.Timestep = s.CurrentTick
+
 		agent.Log(s.Provider, &row)
 
 		if err := row.Write(writer); err != nil {
@@ -183,10 +183,10 @@ func (s *Simulator) logAgents() error {
 func (s *Simulator) logNodes() error {
 	writer := s.Provider.NodeDataWriter()
 
-	var row NodeDataRow
-	row.Timestep = s.CurrentTick
-
 	for _, node := range s.Provider.Arena().Nodes {
+		var row NodeDataRow
+		row.Timestep = s.CurrentTick
+
 		node.Log(s.Provider, &row)
 
 		if err := row.Write(writer); err != nil {

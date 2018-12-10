@@ -149,7 +149,23 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	row.X = n.X
 	row.Y = n.Y
 
+	row.MoralContext = int(n.Morals)
+
 	row.NAgents = uint64(n.Agents.Len())
+
+	for el := n.Agents.Front(); el != nil; el = el.Next() {
+		if _, ok := el.Value.(*Agent).Police(); ok {
+			row.NPolice++
+		}
+		if offender, ok := el.Value.(*Agent).Offender(); ok {
+			row.NHCPAgents++
+			if offender.Offended {
+				row.Robbery = true
+			}
+		} else {
+			row.NLCPAgents++
+		}
+	}
 }
 
 // An Edge is a bi-directional link between two Nodes in the arena.
