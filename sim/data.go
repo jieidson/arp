@@ -72,6 +72,7 @@ type NodeDataRow struct {
 	Y uint64
 
 	MoralContext int
+	Kind         int
 
 	NAgents    uint64
 	NLCPAgents uint64
@@ -92,6 +93,7 @@ func (r NodeDataRow) Write(w *bufio.Writer) error {
 		strconv.FormatUint(r.Y, 10),
 
 		strconv.Itoa(r.MoralContext),
+		strconv.Itoa(r.Kind),
 
 		strconv.FormatUint(r.NAgents, 10),
 		strconv.FormatUint(r.NLCPAgents, 10),

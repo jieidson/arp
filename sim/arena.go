@@ -150,6 +150,7 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	row.Y = n.Y
 
 	row.MoralContext = int(n.Morals)
+	row.Kind = int(n.Intersection)
 
 	row.NAgents = uint64(n.Agents.Len())
 

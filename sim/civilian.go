@@ -63,10 +63,16 @@ func (civilian *CivilianBehavior) Init(p *Provider, agent *Agent) {
 
 // DayStart is run on the first tick of each simulation day.
 func (civilian *CivilianBehavior) DayStart(p *Provider, agent *Agent) {
-	sleepTime, busyTime := civilian.planActivities(p)
-	civilian.scheduleDay(p, sleepTime, busyTime)
+	if agent.Location != civilian.Home {
+		panic("civilian didn't start the day at home")
+	}
+
+	civilian.planDay(p)
+	civilian.scheduleDay(agent, p)
 
 	// Choose today's first target
+	civilian.Target = nil
+
 	if civilian.Work != nil {
 		civilian.Target = civilian.Work
 	} else if len(civilian.Activities) > 0 {
@@ -174,47 +180,46 @@ func (civilian *CivilianBehavior) chooseWork(p *Provider) {
 	civilian.Work = p.RNG().Node(workspaces)
 }
 
-func (civilian *CivilianBehavior) planActivities(p *Provider) (uint64, uint64) {
+func (civilian *CivilianBehavior) planDay(p *Provider) {
 	var tries int
-	var sleepTime, busyTime uint64
+	var minBusyTime uint64 = math.MaxUint64
 
-	busyTime = math.MaxUint64
-
-	for busyTime > p.Config.Time.TicksPerDay {
+	for minBusyTime > p.Config.Time.TicksPerDay {
 		if tries > 5 {
 			panic("agent cannot determine reasonable activities within day")
 		}
 
-		sleepTime := p.RNG().NormalUint64(
-			p.Config.Activity.SleepMean, p.Config.Activity.SleepStdDev)
-
 		civilian.chooseActivities(p)
 
-		// Total time for sleep and traveling to each activity. Assuming traveling one
-		// edge a tick.
-		busyTime = civilian.totalBusyTime(p, sleepTime)
+		sleepTime := p.RNG().
+			NormalUint64(p.Config.Activity.SleepMean, p.Config.Activity.SleepStdDev)
+		civilian.MorningSleep = p.RNG().Uint64(0, sleepTime)
+		civilian.EveningSleep = sleepTime - civilian.MorningSleep
 
+		minTravelTime := civilian.minimumTravelTime(p)
+
+		// Assume at least one tick spent at work and each activity, so +1 to each
+		// count.
+		minBusyTime = sleepTime + minTravelTime + uint64(len(civilian.Activities))
+		if civilian.Employed {
+			minBusyTime++
+		}
 		tries++
 	}
-
-	return sleepTime, busyTime
 }
 
 func (civilian *CivilianBehavior) chooseActivities(p *Provider) {
-	cfg := p.Config.Activity
-	arena := p.Arena()
-	rng := p.RNG()
-
-	activityCount := rng.NormalUint64(cfg.CountMean, cfg.CountStdDev)
+	activityCount := p.RNG().NormalUint64(
+		p.Config.Activity.CountMean, p.Config.Activity.CountStdDev)
 
 	civilian.Activities = civilian.Activities[:0]
 
-	for _, i := range rng.Perm(len(arena.Nodes)) {
+	for _, i := range p.RNG().Perm(len(p.Arena().Nodes)) {
 		if uint64(len(civilian.Activities)) == activityCount {
 			break
 		}
 
-		node := arena.Nodes[i]
+		node := p.Arena().Nodes[i]
 
 		// Don't want home or work as an activity location.
 		if node == civilian.Home || node == civilian.Work {
@@ -229,42 +234,42 @@ func (civilian *CivilianBehavior) chooseActivities(p *Provider) {
 	}
 }
 
-func (civilian *CivilianBehavior) totalBusyTime(p *Provider, sleepTime uint64) uint64 {
-	navigator := p.Navigator()
-	totalTime := sleepTime
-
-	// Assume at least one tick spent at work and each activity, so +1 to each
-	// count.
+func (civilian *CivilianBehavior) minimumTravelTime(p *Provider) uint64 {
+	var totalTime uint64
 
 	if civilian.Work != nil {
-		totalTime += navigator.EdgeDistance(civilian.Home, civilian.Work) + 1
+		totalTime += p.Navigator().EdgeDistance(civilian.Home, civilian.Work)
 	}
 
 	if len(civilian.Activities) > 0 {
 		if civilian.Work != nil {
-			totalTime += navigator.EdgeDistance(civilian.Work, civilian.Activities[0]) + 1
+			totalTime += p.Navigator().
+				EdgeDistance(civilian.Work, civilian.Activities[0])
 		} else {
-			totalTime += navigator.EdgeDistance(civilian.Home, civilian.Activities[0]) + 1
+			totalTime += p.Navigator().
+				EdgeDistance(civilian.Home, civilian.Activities[0])
 		}
 
 		for i := 1; i < len(civilian.Activities); i++ {
 			lastNode := civilian.Activities[i-1]
 			node := civilian.Activities[i]
-			totalTime += navigator.EdgeDistance(lastNode, node) + 1
+			totalTime += p.Navigator().EdgeDistance(lastNode, node)
 		}
 
-		totalTime += navigator.EdgeDistance(
+		totalTime += p.Navigator().EdgeDistance(
 			civilian.Activities[len(civilian.Activities)-1], civilian.Home)
+	} else if civilian.Work != nil {
+		totalTime += p.Navigator().EdgeDistance(
+			civilian.Work, civilian.Home)
 	}
 
 	return totalTime
 }
 
-func (civilian *CivilianBehavior) scheduleDay(p *Provider, sleepTime, busyTime uint64) {
-	civilian.MorningSleep = p.RNG().Uint64(0, sleepTime)
-	civilian.EveningSleep = sleepTime - civilian.MorningSleep
-
-	activityTime := p.Config.Time.TicksPerDay - sleepTime - busyTime
+func (civilian *CivilianBehavior) scheduleDay(agent *Agent, p *Provider) {
+	// time left in day for activities, after sleep and travel
+	activityTime := p.Config.Time.TicksPerDay - civilian.MorningSleep -
+		civilian.EveningSleep - civilian.minimumTravelTime(p)
 
 	if civilian.Employed {
 		// Pick a random amount of time to be at work, at least one tick, and leave at
@@ -275,8 +280,9 @@ func (civilian *CivilianBehavior) scheduleDay(p *Provider, sleepTime, busyTime u
 
 	civilian.ActivitiesBusy = civilian.ActivitiesBusy[:0]
 	for i := range civilian.Activities {
-		time := p.RNG().Uint64(1, activityTime-uint64(len(civilian.Activities)-i))
+		time := p.RNG().Uint64(1, activityTime-uint64(len(civilian.Activities)-i-1))
 		civilian.ActivitiesBusy = append(civilian.ActivitiesBusy, time)
+		activityTime -= time
 	}
 }
 
