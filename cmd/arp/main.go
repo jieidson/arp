@@ -18,6 +18,8 @@ import (
 	"github.com/jieidson/arp/sim"
 )
 
+var GitCommit string
+
 func init() {
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage of ARP: %s <config> [<config> ...]\n", os.Args[0])
@@ -136,6 +138,8 @@ func simulate(name, outputBase string, cfg config.Config) {
 	p := sim.NewProvider(name, outputBase, cfg)
 	defer p.Close()
 
+	p.Logger().Println("simulator commit:", GitCommit)
+
 	if err := config.ToTOML(p.Files().File("config.toml"), cfg); err != nil {
 		log.Println("failed to write config file:", err)
 		return
@@ -148,8 +152,6 @@ func simulate(name, outputBase string, cfg config.Config) {
 	}
 
 	navigator := p.Navigator()
-
-	p.Logger().Println("writing navigation CSVs")
 
 	if err := writeMatrix(p, "distance.csv", navigator.Dist); err != nil {
 		log.Println("failed to write distance matrix:", err)
