@@ -127,9 +127,6 @@ func (model1 *OffenderModel1Behavior) calculateGuardianship(p *Provider, agent *
 
 	for el := agent.Location.Agents.Front(); el != nil; el = el.Next() {
 		guardian := el.Value.(*Agent)
-		if agent == guardian {
-			continue
-		}
 		if civilian, ok := guardian.Civilian(); ok && !civilian.IsActive {
 			continue
 		}
