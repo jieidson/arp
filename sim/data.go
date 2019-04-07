@@ -24,12 +24,10 @@ type AgentDataRow struct {
 	AtRisk bool
 	Wealth uint64
 
-	EvaluatedTargets, FoundTargets, FoundTarget bool
-
+	State        uint64
 	TargetID     uint64
 	Guardianship int64
 	Suitability  int64
-	Robbed       bool
 }
 
 // Write writes this row to a CSV file.
@@ -52,13 +50,10 @@ func (r AgentDataRow) Write(w *bufio.Writer) error {
 		strconv.FormatBool(r.AtRisk),
 		strconv.FormatUint(r.Wealth, 10),
 
-		strconv.FormatBool(r.EvaluatedTargets),
-		strconv.FormatBool(r.FoundTargets),
-		strconv.FormatBool(r.FoundTarget),
+		strconv.FormatUint(r.State, 10),
 		strconv.FormatUint(r.TargetID, 10),
 		strconv.FormatInt(r.Guardianship, 10),
 		strconv.FormatInt(r.Suitability, 10),
-		strconv.FormatBool(r.Robbed),
 	})
 }
 

@@ -160,7 +160,7 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 		}
 		if offender, ok := el.Value.(*Agent).Offender(); ok {
 			row.NHCPAgents++
-			if offender.Offended {
+			if offender.State == RobbedOffenderState {
 				row.Robbery = true
 			}
 		} else {

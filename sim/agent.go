@@ -28,19 +28,6 @@ func (t AgentKind) String() string {
 	panic("unexpected agent kind")
 }
 
-// Ordinal returns an integer representation of an agent kind.
-func (t AgentKind) Ordinal() uint64 {
-	switch t {
-	case CivilianAgentKind:
-		return 0
-	case OffenderAgentKind:
-		return 1
-	case PoliceAgentKind:
-		return 2
-	}
-	panic("unexpected agent kind")
-}
-
 // An Agent is an entity in the arena, with a set of behavior.
 type Agent struct {
 	ID       uint64
