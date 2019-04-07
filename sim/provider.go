@@ -25,6 +25,9 @@ type Provider struct {
 
 	agentDataWriter *bufio.Writer
 	nodeDataWriter  *bufio.Writer
+
+	agentAggregateDataWriter *bufio.Writer
+	nodeAggregateDataWriter  *bufio.Writer
 }
 
 // NewProvider creates a new service provider.
@@ -46,6 +49,16 @@ func (p *Provider) Close() {
 	if p.nodeDataWriter != nil {
 		if err := p.nodeDataWriter.Flush(); err != nil {
 			p.Logger().Println("failed to flush node data writer:", err)
+		}
+	}
+	if p.agentAggregateDataWriter != nil {
+		if err := p.agentAggregateDataWriter.Flush(); err != nil {
+			p.Logger().Println("failed to flush aggregate agent data writer:", err)
+		}
+	}
+	if p.nodeAggregateDataWriter != nil {
+		if err := p.nodeAggregateDataWriter.Flush(); err != nil {
+			p.Logger().Println("failed to flush aggregate node data writer:", err)
 		}
 	}
 
@@ -151,4 +164,34 @@ func (p *Provider) NodeDataWriter() *bufio.Writer {
 	}
 
 	return p.nodeDataWriter
+}
+
+// AgentAggregateDataWriter returns the CSV file for writing agent aggregate data.
+func (p *Provider) AggregateAgentDataWriter() *bufio.Writer {
+	if p.agentAggregateDataWriter == nil {
+		dataFile, err := p.Files().CreateFile("aggregate-agents.csv")
+		if err != nil {
+			panic(fmt.Errorf("failed to create agent data file: %v", err))
+		}
+
+		p.openFiles = append(p.openFiles, dataFile)
+		p.agentAggregateDataWriter = bufio.NewWriter(dataFile)
+	}
+
+	return p.agentAggregateDataWriter
+}
+
+// NodeAggregateDataWriter returns the CSV file for writing agent aggregate data.
+func (p *Provider) AggregateNodeDataWriter() *bufio.Writer {
+	if p.nodeAggregateDataWriter == nil {
+		dataFile, err := p.Files().CreateFile("aggregate-intersections.csv")
+		if err != nil {
+			panic(fmt.Errorf("failed to create agent data file: %v", err))
+		}
+
+		p.openFiles = append(p.openFiles, dataFile)
+		p.nodeAggregateDataWriter = bufio.NewWriter(dataFile)
+	}
+
+	return p.nodeAggregateDataWriter
 }

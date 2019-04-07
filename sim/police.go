@@ -19,6 +19,8 @@ func (police *PoliceBehavior) Init(p *Provider, agent *Agent) {
 
 	// Set it as the starting location
 	node.Enter(agent)
+
+	node.TotalPolice++
 }
 
 // DayStart is run on the first tick of each simulation day.
@@ -32,4 +34,7 @@ func (police *PoliceBehavior) Move(p *Provider, agent *Agent) {
 
 	// Walk down the edge
 	edge.Follow(agent)
+
+	agent.TravelDistance++
+	agent.Location.TotalPolice++
 }

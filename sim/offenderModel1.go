@@ -157,4 +157,8 @@ func (model1 *OffenderModel1Behavior) rob(p *Provider, agent, target *Agent) {
 
 	offender.State = RobbedOffenderState
 	offender.Cooldown = p.Config.Offender.Cooldown
+
+	target.TotalVictimized++
+	agent.TotalOffended++
+	agent.Location.TotalRobberies++
 }

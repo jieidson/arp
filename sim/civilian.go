@@ -45,6 +45,12 @@ func (civilian *CivilianBehavior) Init(p *Provider, agent *Agent) {
 	// Set it as the starting location
 	civilian.Home.Enter(agent)
 
+	if _, ok := agent.Offender(); ok {
+		agent.Location.TotalHCP++
+	} else {
+		agent.Location.TotalLCP++
+	}
+
 	// If the agent is employed, choose a work location
 	if civilian.Employed {
 		// Ensure that the work location is not the same as their home location.
@@ -101,6 +107,13 @@ func (civilian *CivilianBehavior) Move(p *Provider, agent *Agent) {
 
 	edge := p.Navigator().NextEdge(agent.Location, civilian.Target)
 	edge.Follow(agent)
+
+	agent.TravelDistance++
+	if _, ok := agent.Offender(); ok {
+		agent.Location.TotalHCP++
+	} else {
+		agent.Location.TotalLCP++
+	}
 }
 
 // Action is run in the second phase of every tick in random order.
@@ -128,6 +141,7 @@ func (civilian *CivilianBehavior) Log(p *Provider, agent *Agent, row *AgentDataR
 	if civilian.Work == nil {
 		row.WorkID = -1
 	} else {
+		civilian.Work.JobSiteCount++
 		row.WorkID = int64(civilian.Work.ID)
 	}
 

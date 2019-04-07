@@ -98,6 +98,17 @@ type Node struct {
 
 	Intersection IntersectionKind
 	Morals       MoralContext
+
+	// Aggregate data to track until the end of the simulation
+
+	JobSiteCount uint64
+
+	TotalConvergences uint64
+	TotalNonRobberies uint64
+	TotalRobberies    uint64
+	TotalPolice       uint64
+	TotalLCP          uint64
+	TotalHCP          uint64
 }
 
 // String returns a string representation of this node.
@@ -152,21 +163,55 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	row.MoralContext = int(n.Morals)
 	row.Kind = int(n.Intersection)
 
-	row.NAgents = uint64(n.Agents.Len())
+	row.AgentCount = uint64(n.Agents.Len())
+	row.JobSiteCount = n.JobSiteCount
 
 	for el := n.Agents.Front(); el != nil; el = el.Next() {
-		if _, ok := el.Value.(*Agent).Police(); ok {
-			row.NPolice++
+		agent := el.Value.(*Agent)
+
+		if _, ok := agent.Police(); ok {
+			row.PoliceCount++
 		}
-		if offender, ok := el.Value.(*Agent).Offender(); ok {
-			row.NHCPAgents++
+
+		if offender, ok := agent.Offender(); ok {
+			row.HCPCount++
 			if offender.State == RobbedOffenderState {
 				row.Robbery = true
 			}
 		} else {
-			row.NLCPAgents++
+			row.LCPCount++
+		}
+
+		if civilian, ok := agent.Civilian(); ok && civilian.IsActive {
+			row.AtRiskCount++
 		}
 	}
+
+	if row.PoliceCount == 0 && (row.LCPCount+row.HCPCount >= 2) {
+		n.TotalConvergences++
+	}
+	if (row.LCPCount+row.HCPCount >= 2) && !row.Robbery {
+		n.TotalNonRobberies++
+	}
+
+	n.JobSiteCount = 0
+}
+
+// AggregateLog logs data at the end of the simulation.
+func (n *Node) AggregateLog(p *Provider, row *AggregateNodeDataRow) {
+	row.ID = n.ID
+	row.X = n.X
+	row.Y = n.Y
+
+	row.MoralContext = int(n.Morals)
+	row.Kind = int(n.Intersection)
+
+	row.TotalConvergences = n.TotalConvergences
+	row.TotalNonRobberies = n.TotalNonRobberies
+	row.TotalRobberies = n.TotalRobberies
+	row.TotalPolice = n.TotalPolice
+	row.TotalLCP = n.TotalLCP
+	row.TotalHCP = n.TotalHCP
 }
 
 // An Edge is a bi-directional link between two Nodes in the arena.

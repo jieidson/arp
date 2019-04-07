@@ -31,7 +31,7 @@ type AgentDataRow struct {
 }
 
 // Write writes this row to a CSV file.
-func (r AgentDataRow) Write(w *bufio.Writer) error {
+func (r *AgentDataRow) Write(w *bufio.Writer) error {
 	return writeRow(w, []string{
 		strconv.FormatUint(r.Timestep, 10),
 
@@ -69,16 +69,20 @@ type NodeDataRow struct {
 	MoralContext int
 	Kind         int
 
-	NAgents    uint64
-	NLCPAgents uint64
-	NHCPAgents uint64
-	NPolice    uint64
+	JobSiteCount uint64
+
+	AgentCount  uint64
+	LCPCount    uint64
+	HCPCount    uint64
+	PoliceCount uint64
+
+	AtRiskCount uint64
 
 	Robbery bool
 }
 
 // Write writes this row to a CSV file.
-func (r NodeDataRow) Write(w *bufio.Writer) error {
+func (r *NodeDataRow) Write(w *bufio.Writer) error {
 	return writeRow(w, []string{
 		strconv.FormatUint(r.Timestep, 10),
 
@@ -90,12 +94,72 @@ func (r NodeDataRow) Write(w *bufio.Writer) error {
 		strconv.Itoa(r.MoralContext),
 		strconv.Itoa(r.Kind),
 
-		strconv.FormatUint(r.NAgents, 10),
-		strconv.FormatUint(r.NLCPAgents, 10),
-		strconv.FormatUint(r.NHCPAgents, 10),
-		strconv.FormatUint(r.NPolice, 10),
+		strconv.FormatUint(r.AgentCount, 10),
+		strconv.FormatUint(r.LCPCount, 10),
+		strconv.FormatUint(r.HCPCount, 10),
+		strconv.FormatUint(r.PoliceCount, 10),
 
 		strconv.FormatBool(r.Robbery),
+	})
+}
+
+// AggregateAgentDataRow is a row of per-agent aggregate data.
+type AggregateAgentDataRow struct {
+	ID   uint64
+	Kind uint64
+
+	TravelDistance  uint64
+	TotalVictimized uint64
+	TotalOffended   uint64
+}
+
+// Write writes this row to a CSV file.
+func (r *AggregateAgentDataRow) Write(w *bufio.Writer) error {
+	return writeRow(w, []string{
+		strconv.FormatUint(r.ID, 10),
+		strconv.FormatUint(r.Kind, 10),
+
+		strconv.FormatUint(r.TravelDistance, 10),
+		strconv.FormatUint(r.TotalVictimized, 10),
+		strconv.FormatUint(r.TotalOffended, 10),
+	})
+}
+
+// AggregateNodeDataRow is a row of per-node aggregate data.
+type AggregateNodeDataRow struct {
+	ID uint64
+
+	X uint64
+	Y uint64
+
+	MoralContext int
+	Kind         int
+
+	TotalConvergences uint64
+	TotalNonRobberies uint64
+	TotalRobberies    uint64
+	TotalPolice       uint64
+	TotalLCP          uint64
+	TotalHCP          uint64
+}
+
+// Write writes this row to a CSV file.
+func (r *AggregateNodeDataRow) Write(w *bufio.Writer) error {
+	return writeRow(w, []string{
+		strconv.FormatUint(r.ID, 10),
+
+		strconv.FormatUint(r.X, 10),
+		strconv.FormatUint(r.Y, 10),
+
+		strconv.Itoa(r.MoralContext),
+		strconv.Itoa(r.Kind),
+
+		strconv.FormatUint(r.TotalConvergences, 10),
+		strconv.FormatUint(r.TotalNonRobberies, 10),
+		strconv.FormatUint(r.TotalRobberies, 10),
+		strconv.FormatUint(r.TotalPolice, 10),
+		strconv.FormatUint(r.TotalLCP, 10),
+		strconv.FormatUint(r.TotalHCP, 10),
 	})
 }
 
@@ -107,6 +171,16 @@ func WriteAgentDataHeader(w *bufio.Writer) error {
 // WriteNodeDataHeader writes a CSV header of the node data row.
 func WriteNodeDataHeader(w *bufio.Writer) error {
 	return writeDataHeader(w, NodeDataRow{})
+}
+
+// WriteAggregateAgentDataHeader writes a CSV header of the agent data row.
+func WriteAggregateAgentDataHeader(w *bufio.Writer) error {
+	return writeDataHeader(w, AggregateAgentDataRow{})
+}
+
+// WriteAggregateNodeDataHeader writes a CSV header of the node data row.
+func WriteAggregateNodeDataHeader(w *bufio.Writer) error {
+	return writeDataHeader(w, AggregateNodeDataRow{})
 }
 
 // writeDataHeader writes a CSV header for the given type.

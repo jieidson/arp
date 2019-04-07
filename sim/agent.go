@@ -35,6 +35,12 @@ type Agent struct {
 	Location *Node
 	Behavior []Behavior
 
+	// Aggregate data to track until the end of the simulation
+
+	TravelDistance  uint64
+	TotalVictimized uint64
+	TotalOffended   uint64
+
 	locationElement *list.Element
 }
 
@@ -78,6 +84,16 @@ func (agent *Agent) Log(p *Provider, row *AgentDataRow) {
 	for _, behavior := range agent.Behavior {
 		behavior.Log(p, agent, row)
 	}
+}
+
+// AggregateLog collects data about the agent at the end of the simulation.
+func (agent *Agent) AggregateLog(p *Provider, row *AggregateAgentDataRow) {
+	row.ID = agent.ID
+	row.Kind = uint64(agent.Kind)
+
+	row.TravelDistance = agent.TravelDistance
+	row.TotalVictimized = agent.TotalVictimized
+	row.TotalOffended = agent.TotalOffended
 }
 
 func (agent *Agent) String() string {

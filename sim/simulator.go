@@ -64,6 +64,22 @@ func (s *Simulator) Loop() error {
 		}
 	}
 
+	if err := WriteAggregateAgentDataHeader(s.Provider.AggregateAgentDataWriter()); err != nil {
+		return fmt.Errorf("failed to write aggregate agent data header: %v", err)
+	}
+
+	if err := WriteAggregateNodeDataHeader(s.Provider.AggregateNodeDataWriter()); err != nil {
+		return fmt.Errorf("failed to write aggregate node data header: %v", err)
+	}
+
+	if err := s.logAggregateAgents(); err != nil {
+		return err
+	}
+
+	if err := s.logAggregateNodes(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -188,6 +204,38 @@ func (s *Simulator) logNodes() error {
 		row.Timestep = s.CurrentTick
 
 		node.Log(s.Provider, &row)
+
+		if err := row.Write(writer); err != nil {
+			return fmt.Errorf("failed to write node data: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (s *Simulator) logAggregateAgents() error {
+	writer := s.Provider.AggregateAgentDataWriter()
+
+	for _, agent := range s.Agents {
+		var row AggregateAgentDataRow
+
+		agent.AggregateLog(s.Provider, &row)
+
+		if err := row.Write(writer); err != nil {
+			return fmt.Errorf("failed to write agent data: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (s *Simulator) logAggregateNodes() error {
+	writer := s.Provider.AggregateNodeDataWriter()
+
+	for _, node := range s.Provider.Arena().Nodes {
+		var row AggregateNodeDataRow
+
+		node.AggregateLog(s.Provider, &row)
 
 		if err := row.Write(writer); err != nil {
 			return fmt.Errorf("failed to write node data: %v", err)
