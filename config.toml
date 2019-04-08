@@ -4,7 +4,7 @@
 
   # Seed for the random number generator. The simulator is deterministic, runs
   # with the same parameters (should) generate the same output.
-  seed = 1234
+  seed = 100
 
 
 [time]
@@ -19,14 +19,14 @@
 # The arena is a grid of nodes and edges.
 [arena]
 
-  width = 30
-  height = 30
+  width = 25
+  height = 25
 
   # Number of horizontal major streets.
   majorX = 10
 
   # Number of vertical major streets.
-  majorY = 10
+  majorY = 5
 
   # Edge weight of minor streets.
   minorWeight = 5
@@ -53,9 +53,9 @@
 [agent]
 
   # Number of agents in the simulation.
-  civilian = 100
-  offender = 25
-  police = 25
+  civilian = 800
+  offender = 200
+  police = 50
 
 
 [activity]
@@ -102,6 +102,8 @@
 
 
 [offender]
+  # Which sub-model to use 1, 2, 3, 4, or 5.
+  model = 1
 
   # Amount stolen per robbery.
   amount = 1

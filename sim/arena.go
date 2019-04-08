@@ -103,12 +103,12 @@ type Node struct {
 
 	JobSiteCount uint64
 
-	TotalConvergences uint64
-	TotalNonRobberies uint64
-	TotalRobberies    uint64
-	TotalPolice       uint64
-	TotalLCP          uint64
-	TotalHCP          uint64
+	TotalConvergences  uint64
+	TotalOpportunities uint64
+	TotalRobberies     uint64
+	TotalPolice        uint64
+	TotalLCP           uint64
+	TotalHCP           uint64
 }
 
 // String returns a string representation of this node.
@@ -189,12 +189,11 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 
 	if row.PoliceCount == 0 && (row.LCPCount+row.HCPCount >= 2) {
 		n.TotalConvergences++
-	}
-	if (row.LCPCount+row.HCPCount >= 2) && !row.Robbery {
-		n.TotalNonRobberies++
-	}
 
-	n.JobSiteCount = 0
+		if !row.Robbery {
+			n.TotalOpportunities++
+		}
+	}
 }
 
 // AggregateLog logs data at the end of the simulation.
@@ -207,7 +206,7 @@ func (n *Node) AggregateLog(p *Provider, row *AggregateNodeDataRow) {
 	row.Kind = int(n.Intersection)
 
 	row.TotalConvergences = n.TotalConvergences
-	row.TotalNonRobberies = n.TotalNonRobberies
+	row.TotalOpportunities = n.TotalOpportunities
 	row.TotalRobberies = n.TotalRobberies
 	row.TotalPolice = n.TotalPolice
 	row.TotalLCP = n.TotalLCP

@@ -135,12 +135,12 @@ type AggregateNodeDataRow struct {
 	MoralContext int
 	Kind         int
 
-	TotalConvergences uint64
-	TotalNonRobberies uint64
-	TotalRobberies    uint64
-	TotalPolice       uint64
-	TotalLCP          uint64
-	TotalHCP          uint64
+	TotalConvergences  uint64
+	TotalOpportunities uint64
+	TotalRobberies     uint64
+	TotalPolice        uint64
+	TotalLCP           uint64
+	TotalHCP           uint64
 }
 
 // Write writes this row to a CSV file.
@@ -155,11 +155,57 @@ func (r *AggregateNodeDataRow) Write(w *bufio.Writer) error {
 		strconv.Itoa(r.Kind),
 
 		strconv.FormatUint(r.TotalConvergences, 10),
-		strconv.FormatUint(r.TotalNonRobberies, 10),
+		strconv.FormatUint(r.TotalOpportunities, 10),
 		strconv.FormatUint(r.TotalRobberies, 10),
 		strconv.FormatUint(r.TotalPolice, 10),
 		strconv.FormatUint(r.TotalLCP, 10),
 		strconv.FormatUint(r.TotalHCP, 10),
+	})
+}
+
+// TimestepDataRow is a row of per-timestep aggregate data.
+type TimestepDataRow struct {
+	Timestep uint64
+
+	TotalConvergences  uint64
+	TotalOpportunities uint64
+	TotalRobberies     uint64
+}
+
+// Write writes this row to a CSV file.
+func (r *TimestepDataRow) Write(w *bufio.Writer) error {
+	return writeRow(w, []string{
+		strconv.FormatUint(r.Timestep, 10),
+
+		strconv.FormatUint(r.TotalConvergences, 10),
+		strconv.FormatUint(r.TotalOpportunities, 10),
+		strconv.FormatUint(r.TotalRobberies, 10),
+	})
+}
+
+// OutcomesDataRow is a row of total outcomes data
+type OutcomesDataRow struct {
+	TotalRobberies       uint64
+	AverageNodeRobberies uint64
+
+	TotalOffenders uint64
+	TotalVictims   uint64
+
+	MajorMajorRobberies uint64
+	MajorMinorRobberies uint64
+	MinorMinorRobberies uint64
+}
+
+// Write writes this row to a CSV file.
+func (r *OutcomesDataRow) Write(w *bufio.Writer) error {
+	return writeRow(w, []string{
+		strconv.FormatUint(r.TotalRobberies, 10),
+		strconv.FormatUint(r.AverageNodeRobberies, 10),
+		strconv.FormatUint(r.TotalOffenders, 10),
+		strconv.FormatUint(r.TotalVictims, 10),
+		strconv.FormatUint(r.MajorMajorRobberies, 10),
+		strconv.FormatUint(r.MajorMinorRobberies, 10),
+		strconv.FormatUint(r.MinorMinorRobberies, 10),
 	})
 }
 
@@ -181,6 +227,16 @@ func WriteAggregateAgentDataHeader(w *bufio.Writer) error {
 // WriteAggregateNodeDataHeader writes a CSV header of the node data row.
 func WriteAggregateNodeDataHeader(w *bufio.Writer) error {
 	return writeDataHeader(w, AggregateNodeDataRow{})
+}
+
+// WriteTimestepDataHeader writes a CSV header of the node data row.
+func WriteTimestepDataHeader(w *bufio.Writer) error {
+	return writeDataHeader(w, TimestepDataRow{})
+}
+
+// WriteOutcomesDataHeader writes a CSV header of the node data row.
+func WriteOutcomesDataHeader(w *bufio.Writer) error {
+	return writeDataHeader(w, OutcomesDataRow{})
 }
 
 // writeDataHeader writes a CSV header for the given type.

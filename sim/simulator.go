@@ -12,6 +12,9 @@ type Simulator struct {
 	Agents   []*Agent
 
 	CurrentTick uint64
+
+	Offenders map[*Agent]bool
+	Victims   map[*Agent]bool
 }
 
 // NewSimulator instantiates all of the agents in a simulation.
@@ -22,6 +25,9 @@ func NewSimulator(p *Provider) *Simulator {
 	sim := &Simulator{
 		Provider: p,
 		Agents:   make([]*Agent, 0, totalAgents),
+
+		Offenders: make(map[*Agent]bool),
+		Victims:   make(map[*Agent]bool),
 	}
 
 	sim.generateAgents(c)
@@ -44,6 +50,10 @@ func (s *Simulator) Loop() error {
 
 	if err := WriteNodeDataHeader(s.Provider.NodeDataWriter()); err != nil {
 		return fmt.Errorf("failed to write intersection data header: %v", err)
+	}
+
+	if err := WriteTimestepDataHeader(s.Provider.TimestepDataWriter()); err != nil {
+		return fmt.Errorf("failed to write timestep data header: %v", err)
 	}
 
 	step := totalTicks / 100
@@ -72,11 +82,19 @@ func (s *Simulator) Loop() error {
 		return fmt.Errorf("failed to write aggregate node data header: %v", err)
 	}
 
+	if err := WriteOutcomesDataHeader(s.Provider.OutcomesDataWriter()); err != nil {
+		return fmt.Errorf("failed to write outcomes data header: %v", err)
+	}
+
 	if err := s.logAggregateAgents(); err != nil {
 		return err
 	}
 
 	if err := s.logAggregateNodes(); err != nil {
+		return err
+	}
+
+	if err := s.logOutcomes(); err != nil {
 		return err
 	}
 
@@ -132,7 +150,7 @@ func (s *Simulator) generateAgents(c config.Config) {
 
 	// Generate offender agents
 	for i := uint64(0); i < c.Agent.Offender; i++ {
-		agent := NewOffenderAgent(uint64(len(s.Agents)))
+		agent := NewOffenderAgent(uint64(len(s.Agents)), c.Offender.Model)
 		civilian, _ := agent.Civilian()
 
 		s.Agents = append(s.Agents, agent)
@@ -160,6 +178,9 @@ func (s *Simulator) determineEmployment(workforce []*CivilianBehavior) {
 }
 
 func (s *Simulator) dayStartPhase() {
+	for _, node := range s.Provider.Arena().Nodes {
+		node.JobSiteCount = 0
+	}
 	for _, agent := range s.Agents {
 		agent.DayStart(s.Provider)
 	}
@@ -197,13 +218,48 @@ func (s *Simulator) logAgents() error {
 }
 
 func (s *Simulator) logNodes() error {
-	writer := s.Provider.NodeDataWriter()
+	nodeWriter := s.Provider.NodeDataWriter()
+	tsWriter := s.Provider.TimestepDataWriter()
+
+	var tsRow TimestepDataRow
+	tsRow.Timestep = s.CurrentTick
 
 	for _, node := range s.Provider.Arena().Nodes {
-		var row NodeDataRow
-		row.Timestep = s.CurrentTick
+		var nodeRow NodeDataRow
+		nodeRow.Timestep = s.CurrentTick
 
-		node.Log(s.Provider, &row)
+		node.Log(s.Provider, &nodeRow)
+
+		if nodeRow.PoliceCount == 0 && (nodeRow.LCPCount+nodeRow.HCPCount >= 2) {
+			tsRow.TotalConvergences++
+			if !nodeRow.Robbery {
+				tsRow.TotalOpportunities++
+			}
+		}
+
+		if nodeRow.Robbery {
+			tsRow.TotalRobberies++
+		}
+
+		if err := nodeRow.Write(nodeWriter); err != nil {
+			return fmt.Errorf("failed to write node data: %v", err)
+		}
+	}
+
+	if err := tsRow.Write(tsWriter); err != nil {
+		return fmt.Errorf("failed to write node data: %v", err)
+	}
+
+	return nil
+}
+
+func (s *Simulator) logTimestep() error {
+	writer := s.Provider.TimestepDataWriter()
+
+	for _, node := range s.Provider.Arena().Nodes {
+		var row AggregateNodeDataRow
+
+		node.AggregateLog(s.Provider, &row)
 
 		if err := row.Write(writer); err != nil {
 			return fmt.Errorf("failed to write node data: %v", err)
@@ -242,5 +298,39 @@ func (s *Simulator) logAggregateNodes() error {
 		}
 	}
 
+	return nil
+}
+
+func (s *Simulator) logOutcomes() error {
+	writer := s.Provider.OutcomesDataWriter()
+
+	var row OutcomesDataRow
+
+	for _, node := range s.Provider.Arena().Nodes {
+		row.TotalRobberies += node.TotalRobberies
+
+		var field *uint64
+
+		switch node.Intersection {
+		case MajorMajorIntersection:
+			field = &row.MajorMajorRobberies
+		case MajorMinorIntersection:
+			field = &row.MajorMinorRobberies
+		case MinorMinorIntersection:
+			field = &row.MinorMinorRobberies
+		}
+
+		*field += node.TotalRobberies
+	}
+
+	row.AverageNodeRobberies = row.TotalRobberies /
+		uint64(len(s.Provider.Arena().Nodes))
+
+	row.TotalOffenders = uint64(len(s.Offenders))
+	row.TotalVictims = uint64(len(s.Victims))
+
+	if err := row.Write(writer); err != nil {
+		return fmt.Errorf("failed to write outcomes data: %v", err)
+	}
 	return nil
 }

@@ -161,4 +161,9 @@ func (model1 *OffenderModel1Behavior) rob(p *Provider, agent, target *Agent) {
 	target.TotalVictimized++
 	agent.TotalOffended++
 	agent.Location.TotalRobberies++
+
+	sim := p.Simulator()
+	sim.Offenders[agent] = true
+	sim.Victims[target] = true
+
 }

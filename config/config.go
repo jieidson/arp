@@ -58,6 +58,7 @@ type Config struct {
 	}
 
 	Offender struct {
+		Model    int
 		Amount   uint64
 		Cooldown uint64
 	}

@@ -14,7 +14,8 @@ type Provider struct {
 	BaseDir string
 	Config  config.Config
 
-	openFiles []*os.File
+	openFiles   []*os.File
+	openBuffers map[string]*bufio.Writer
 
 	arena     *Arena
 	files     *Files
@@ -33,32 +34,18 @@ type Provider struct {
 // NewProvider creates a new service provider.
 func NewProvider(name, outputBase string, cfg config.Config) *Provider {
 	return &Provider{
-		Name:    name,
-		BaseDir: outputBase,
-		Config:  cfg,
+		Name:        name,
+		BaseDir:     outputBase,
+		Config:      cfg,
+		openBuffers: make(map[string]*bufio.Writer),
 	}
 }
 
 // Close releases any resources used by this provider.
 func (p *Provider) Close() {
-	if p.agentDataWriter != nil {
-		if err := p.agentDataWriter.Flush(); err != nil {
-			p.Logger().Println("failed to flush agent data writer:", err)
-		}
-	}
-	if p.nodeDataWriter != nil {
-		if err := p.nodeDataWriter.Flush(); err != nil {
-			p.Logger().Println("failed to flush node data writer:", err)
-		}
-	}
-	if p.agentAggregateDataWriter != nil {
-		if err := p.agentAggregateDataWriter.Flush(); err != nil {
-			p.Logger().Println("failed to flush aggregate agent data writer:", err)
-		}
-	}
-	if p.nodeAggregateDataWriter != nil {
-		if err := p.nodeAggregateDataWriter.Flush(); err != nil {
-			p.Logger().Println("failed to flush aggregate node data writer:", err)
+	for _, w := range p.openBuffers {
+		if err := w.Flush(); err != nil {
+			p.Logger().Println("failed to flush file:", err)
 		}
 	}
 
@@ -66,6 +53,7 @@ func (p *Provider) Close() {
 		f.Close()
 	}
 
+	p.openBuffers = make(map[string]*bufio.Writer)
 	p.openFiles = []*os.File{}
 }
 
@@ -138,60 +126,47 @@ func (p *Provider) Simulator() *Simulator {
 
 // AgentDataWriter returns the CSV file for writing agent data.
 func (p *Provider) AgentDataWriter() *bufio.Writer {
-	if p.agentDataWriter == nil {
-		dataFile, err := p.Files().CreateFile("agents.csv")
-		if err != nil {
-			panic(fmt.Errorf("failed to create agent data file: %v", err))
-		}
-
-		p.openFiles = append(p.openFiles, dataFile)
-		p.agentDataWriter = bufio.NewWriter(dataFile)
-	}
-
-	return p.agentDataWriter
+	return p.makeWriter("agents.csv")
 }
 
 // NodeDataWriter returns the CSV file for writing intersection data.
 func (p *Provider) NodeDataWriter() *bufio.Writer {
-	if p.nodeDataWriter == nil {
-		dataFile, err := p.Files().CreateFile("intersections.csv")
-		if err != nil {
-			panic(fmt.Errorf("failed to create intersection data file: %v", err))
-		}
-
-		p.openFiles = append(p.openFiles, dataFile)
-		p.nodeDataWriter = bufio.NewWriter(dataFile)
-	}
-
-	return p.nodeDataWriter
+	return p.makeWriter("intersections.csv")
 }
 
-// AgentAggregateDataWriter returns the CSV file for writing agent aggregate data.
+// AggregateAgentDataWriter returns the CSV file for writing agent aggregate data.
 func (p *Provider) AggregateAgentDataWriter() *bufio.Writer {
-	if p.agentAggregateDataWriter == nil {
-		dataFile, err := p.Files().CreateFile("aggregate-agents.csv")
-		if err != nil {
-			panic(fmt.Errorf("failed to create agent data file: %v", err))
-		}
-
-		p.openFiles = append(p.openFiles, dataFile)
-		p.agentAggregateDataWriter = bufio.NewWriter(dataFile)
-	}
-
-	return p.agentAggregateDataWriter
+	return p.makeWriter("aggregate-agents.csv")
 }
 
-// NodeAggregateDataWriter returns the CSV file for writing agent aggregate data.
+// AggregateNodeDataWriter returns the CSV file for writing agent aggregate data.
 func (p *Provider) AggregateNodeDataWriter() *bufio.Writer {
-	if p.nodeAggregateDataWriter == nil {
-		dataFile, err := p.Files().CreateFile("aggregate-intersections.csv")
+	return p.makeWriter("aggregate-intersections.csv")
+}
+
+// TimestepDataWriter returns the CSV file for writing timestep data.
+func (p *Provider) TimestepDataWriter() *bufio.Writer {
+	return p.makeWriter("timesteps.csv")
+}
+
+// OutcomesDataWriter returns the CSV file for writing outcomes data.
+func (p *Provider) OutcomesDataWriter() *bufio.Writer {
+	return p.makeWriter("outcomes.csv")
+}
+
+func (p *Provider) makeWriter(name string) *bufio.Writer {
+	w, ok := p.openBuffers[name]
+	if !ok {
+		f, err := p.Files().CreateFile(name)
 		if err != nil {
-			panic(fmt.Errorf("failed to create agent data file: %v", err))
+			panic(fmt.Errorf("failed to create file: %s", name))
 		}
 
-		p.openFiles = append(p.openFiles, dataFile)
-		p.nodeAggregateDataWriter = bufio.NewWriter(dataFile)
+		w = bufio.NewWriter(f)
+
+		p.openFiles = append(p.openFiles, f)
+		p.openBuffers[name] = w
 	}
 
-	return p.nodeAggregateDataWriter
+	return w
 }

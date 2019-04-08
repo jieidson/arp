@@ -30,16 +30,36 @@ func (s OffenderState) String() string {
 }
 
 // NewOffenderAgent creates a new Offender agent.
-func NewOffenderAgent(id uint64) *Agent {
-	return &Agent{
+func NewOffenderAgent(id uint64, submodel int) *Agent {
+	agent := &Agent{
 		ID:   id,
 		Kind: OffenderAgentKind,
 		Behavior: []Behavior{
 			&CivilianBehavior{},
 			&OffenderBehavior{},
-			&OffenderModel1Behavior{},
 		},
 	}
+
+	var behavior Behavior
+
+	switch submodel {
+	case 1:
+		behavior = &OffenderModel1Behavior{}
+	case 2:
+		behavior = &OffenderModel2Behavior{}
+	case 3:
+		behavior = &OffenderModel3Behavior{}
+	case 4:
+		fallthrough
+	case 5:
+		panic("sub-models 4 and 5 are not ready yet")
+	default:
+		panic("unexpected submodel type")
+	}
+
+	agent.Behavior = append(agent.Behavior, behavior)
+
+	return agent
 }
 
 // OffenderBehavior implements offender agent behavior.
