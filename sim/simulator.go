@@ -142,6 +142,14 @@ func (s *Simulator) generateAgents(c config.Config) {
 	// Generate civilian agents
 	for i := uint64(0); i < c.Agent.Civilian; i++ {
 		agent := NewCivilianAgent(uint64(len(s.Agents)))
+
+		// In sub-model 5, civilians have a chance to rob targets.
+		if c.Offender.Model == 5 {
+			agent.Behavior = append(agent.Behavior,
+				&OffenderBehavior{},
+				&OffenderModel5Behavior{})
+		}
+
 		civilian, _ := agent.Civilian()
 
 		s.Agents = append(s.Agents, agent)

@@ -50,9 +50,9 @@ func NewOffenderAgent(id uint64, submodel int) *Agent {
 	case 3:
 		behavior = &OffenderModel3Behavior{}
 	case 4:
-		fallthrough
+		behavior = &OffenderModel4Behavior{}
 	case 5:
-		panic("sub-models 4 and 5 are not ready yet")
+		behavior = &OffenderModel5Behavior{}
 	default:
 		panic("unexpected submodel type")
 	}

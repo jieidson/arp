@@ -106,6 +106,8 @@ const ExampleConfig = `# Example ARP Simulator Configuration File
 
 
 [offender]
+  # Which sub-model to use 1, 2, 3, 4, or 5.
+  model = 1
 
   # Amount stolen per robbery.
   amount = 1
