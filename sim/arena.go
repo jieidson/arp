@@ -187,10 +187,10 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 		}
 	}
 
-	if row.PoliceCount == 0 && (row.LCPCount+row.HCPCount >= 2) {
+	if row.PoliceCount == 0 && (row.AtRiskCount >= 2) {
 		n.TotalConvergences++
 
-		if !row.Robbery {
+		if row.HCPCount > 0 && !row.Robbery {
 			n.TotalOpportunities++
 		}
 	}

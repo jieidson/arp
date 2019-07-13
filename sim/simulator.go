@@ -238,9 +238,10 @@ func (s *Simulator) logNodes() error {
 
 		node.Log(s.Provider, &nodeRow)
 
-		if nodeRow.PoliceCount == 0 && (nodeRow.LCPCount+nodeRow.HCPCount >= 2) {
+		if nodeRow.PoliceCount == 0 && nodeRow.AtRiskCount >= 2 {
 			tsRow.TotalConvergences++
-			if !nodeRow.Robbery {
+
+			if nodeRow.HCPCount > 0 && !nodeRow.Robbery {
 				tsRow.TotalOpportunities++
 			}
 		}

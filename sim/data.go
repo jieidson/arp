@@ -205,8 +205,10 @@ func (r *OutcomesDataRow) Write(w *bufio.Writer) error {
 	return writeRow(w, []string{
 		strconv.FormatUint(r.TotalRobberies, 10),
 		strconv.FormatUint(r.AverageNodeRobberies, 10),
+
 		strconv.FormatUint(r.TotalOffenders, 10),
 		strconv.FormatUint(r.TotalVictims, 10),
+
 		strconv.FormatUint(r.MajorMajorRobberies, 10),
 		strconv.FormatUint(r.MajorMinorRobberies, 10),
 		strconv.FormatUint(r.MinorMinorRobberies, 10),

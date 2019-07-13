@@ -45,7 +45,7 @@ func (civilian *CivilianBehavior) Init(p *Provider, agent *Agent) {
 	// Set it as the starting location
 	civilian.Home.Enter(agent)
 
-	if _, ok := agent.Offender(); ok {
+	if agent.Kind == OffenderAgentKind {
 		agent.Location.TotalHCP++
 	} else {
 		agent.Location.TotalLCP++
@@ -109,7 +109,7 @@ func (civilian *CivilianBehavior) Move(p *Provider, agent *Agent) {
 	edge.Follow(agent)
 
 	agent.TravelDistance++
-	if _, ok := agent.Offender(); ok {
+	if agent.Kind == OffenderAgentKind {
 		agent.Location.TotalHCP++
 	} else {
 		agent.Location.TotalLCP++
