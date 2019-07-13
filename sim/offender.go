@@ -80,6 +80,9 @@ type OffenderBehavior struct {
 // Move is run in the first phase of every tick in agent ID order.
 func (offender *OffenderBehavior) Move(p *Provider, agent *Agent) {
 	offender.State = NotOffenderState
+	offender.TargetID = 0
+	offender.Guardianship = 0
+	offender.Suitability = 0
 
 	if offender.Cooldown > 0 {
 		offender.Cooldown--
