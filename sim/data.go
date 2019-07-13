@@ -94,6 +94,8 @@ func (r *NodeDataRow) Write(w *bufio.Writer) error {
 		strconv.Itoa(r.MoralContext),
 		strconv.Itoa(r.Kind),
 
+		strconv.FormatUint(r.JobSiteCount, 10),
+
 		strconv.FormatUint(r.AgentCount, 10),
 		strconv.FormatUint(r.LCPCount, 10),
 		strconv.FormatUint(r.HCPCount, 10),
