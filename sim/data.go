@@ -115,6 +115,11 @@ type AggregateAgentDataRow struct {
 	TravelDistance  uint64
 	TotalVictimized uint64
 	TotalOffended   uint64
+
+	TotalStateNotOffender      uint64
+	TotalStateEvaluatedTargets uint64
+	TotalStateFoundTargets     uint64
+	TotalStateChoseTarget      uint64
 }
 
 // Write writes this row to a CSV file.
@@ -126,6 +131,11 @@ func (r *AggregateAgentDataRow) Write(w *bufio.Writer) error {
 		strconv.FormatUint(r.TravelDistance, 10),
 		strconv.FormatUint(r.TotalVictimized, 10),
 		strconv.FormatUint(r.TotalOffended, 10),
+
+		strconv.FormatUint(r.TotalStateNotOffender, 10),
+		strconv.FormatUint(r.TotalStateEvaluatedTargets, 10),
+		strconv.FormatUint(r.TotalStateFoundTargets, 10),
+		strconv.FormatUint(r.TotalStateChoseTarget, 10),
 	})
 }
 

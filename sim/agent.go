@@ -94,6 +94,13 @@ func (agent *Agent) AggregateLog(p *Provider, row *AggregateAgentDataRow) {
 	row.TravelDistance = agent.TravelDistance
 	row.TotalVictimized = agent.TotalVictimized
 	row.TotalOffended = agent.TotalOffended
+
+	if offender, ok := agent.Offender(); ok {
+		row.TotalStateNotOffender = offender.TotalStateNotOffender
+		row.TotalStateEvaluatedTargets = offender.TotalStateEvaluatedTargets
+		row.TotalStateFoundTargets = offender.TotalStateFoundTargets
+		row.TotalStateChoseTarget = offender.TotalStateChoseTarget
+	}
 }
 
 func (agent *Agent) String() string {

@@ -75,6 +75,11 @@ type OffenderBehavior struct {
 	TargetID     uint64
 	Guardianship int64
 	Suitability  int64
+
+	TotalStateNotOffender      uint64
+	TotalStateEvaluatedTargets uint64
+	TotalStateFoundTargets     uint64
+	TotalStateChoseTarget      uint64
 }
 
 // Move is run in the first phase of every tick in agent ID order.
@@ -96,4 +101,15 @@ func (offender *OffenderBehavior) Log(p *Provider, agent *Agent, row *AgentDataR
 	row.TargetID = offender.TargetID
 	row.Guardianship = offender.Guardianship
 	row.Suitability = offender.Suitability
+
+	switch offender.State {
+	case NotOffenderState:
+		offender.TotalStateNotOffender++
+	case EvaluatedTargetsOffenderState:
+		offender.TotalStateEvaluatedTargets++
+	case FoundTargetsOffenderState:
+		offender.TotalStateFoundTargets++
+	case ChoseTargetOffenderState:
+		offender.TotalStateChoseTarget++
+	}
 }
