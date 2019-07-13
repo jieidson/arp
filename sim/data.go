@@ -101,6 +101,8 @@ func (r *NodeDataRow) Write(w *bufio.Writer) error {
 		strconv.FormatUint(r.HCPCount, 10),
 		strconv.FormatUint(r.PoliceCount, 10),
 
+		strconv.FormatUint(r.AtRiskCount, 10),
+
 		strconv.FormatBool(r.Robbery),
 	})
 }
