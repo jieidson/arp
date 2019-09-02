@@ -169,21 +169,30 @@ func (n *Node) Log(p *Provider, row *NodeDataRow) {
 	for el := n.Agents.Front(); el != nil; el = el.Next() {
 		agent := el.Value.(*Agent)
 
-		if _, ok := agent.Police(); ok {
+		switch agent.Kind {
+		case PoliceAgentKind:
 			row.PoliceCount++
-		}
 
-		if offender, ok := agent.Offender(); ok {
-			row.HCPCount++
-			if offender.State == RobbedOffenderState {
-				row.Robbery = true
-			}
-		} else {
+		case CivilianAgentKind:
 			row.LCPCount++
-		}
+			if civilian, ok := agent.Civilian(); ok && civilian.IsActive {
+				row.AtRiskCount++
+				row.AtRiskLCPCount++
+			}
 
-		if civilian, ok := agent.Civilian(); ok && civilian.IsActive {
-			row.AtRiskCount++
+		case OffenderAgentKind:
+			row.HCPCount++
+			if civilian, ok := agent.Civilian(); ok && civilian.IsActive {
+				row.AtRiskCount++
+				row.AtRiskHCPCount++
+			}
+			if offender, ok := agent.Offender(); ok {
+				if offender.State == RobbedOffenderState {
+					row.Robbery = true
+				}
+			} else {
+				panic("offender kind not offender?")
+			}
 		}
 	}
 

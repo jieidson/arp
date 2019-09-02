@@ -76,7 +76,9 @@ type NodeDataRow struct {
 	HCPCount    uint64
 	PoliceCount uint64
 
-	AtRiskCount uint64
+	AtRiskCount    uint64
+	AtRiskLCPCount uint64
+	AtRiskHCPCount uint64
 
 	Robbery bool
 }
@@ -102,6 +104,8 @@ func (r *NodeDataRow) Write(w *bufio.Writer) error {
 		strconv.FormatUint(r.PoliceCount, 10),
 
 		strconv.FormatUint(r.AtRiskCount, 10),
+		strconv.FormatUint(r.AtRiskLCPCount, 10),
+		strconv.FormatUint(r.AtRiskHCPCount, 10),
 
 		strconv.FormatBool(r.Robbery),
 	})
