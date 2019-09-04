@@ -55,7 +55,7 @@ func (civilian *CivilianBehavior) Init(p *Provider, agent *Agent) {
 	if civilian.Employed {
 		// Ensure that the work location is not the same as their home location.
 		for civilian.Work == nil || civilian.Work == civilian.Home {
-			civilian.chooseWork(p)
+			civilian.ChooseWork(p)
 		}
 	}
 
@@ -154,7 +154,7 @@ func (civilian *CivilianBehavior) Log(p *Provider, agent *Agent, row *AgentDataR
 	row.Wealth = uint64(civilian.Wealth)
 }
 
-func (civilian *CivilianBehavior) chooseWork(p *Provider) {
+func (civilian *CivilianBehavior) ChooseWork(p *Provider) {
 	cfg := p.Config.Workspace
 	arena := p.Arena()
 

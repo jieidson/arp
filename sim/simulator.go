@@ -2,6 +2,7 @@ package sim
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/jieidson/arp/config"
 )
@@ -103,6 +104,54 @@ func (s *Simulator) Loop() error {
 
 // tick executes a single tick of the simulation.
 func (s *Simulator) tick() error {
+	// Check if it's pay day.
+	if s.CurrentTick > 0 && s.CurrentTick%s.Provider.Config.Economy.PayPeriod == 0 {
+		s.Provider.Logger().Println("pay day tick", s.CurrentTick)
+		// Gather all the civilian agents
+		unemployed := make([]*CivilianBehavior, 0, len(s.Agents))
+		employed := make([]*CivilianBehavior, 0, len(s.Agents))
+
+		for _, agent := range s.Agents {
+			if civilian, ok := agent.Civilian(); ok {
+				if civilian.Employed {
+					employed = append(employed, civilian)
+
+					// If employed, pay them
+					civilian.Wealth += int64(s.Provider.Config.Economy.PayRate)
+				} else {
+					unemployed = append(unemployed, civilian)
+				}
+			}
+		}
+
+		// Choose some unemployed civilians to be hired
+		hireCount := int(math.Round(
+			float64(len(unemployed)) * (float64(s.Provider.Config.Economy.HiringRate) / 100.0)))
+		s.Provider.Logger().Println(len(unemployed), "unemployed, hiring", hireCount)
+		if hireCount > 0 {
+			for _, i := range s.Provider.RNG().PermN(len(unemployed), hireCount) {
+				c := unemployed[i]
+				c.Employed = true
+				// Ensure that the work location is not the same as their home location.
+				for c.Work == nil || c.Work == c.Home {
+					c.ChooseWork(s.Provider)
+				}
+			}
+		}
+
+		// Choose some employed civilians to be fired
+		fireCount := int(math.Round(
+			float64(len(employed)) * (float64(s.Provider.Config.Economy.FiringRate) / 100.0)))
+		s.Provider.Logger().Println(len(employed), "employed, firing", fireCount)
+		if fireCount > 0 {
+			for _, i := range s.Provider.RNG().PermN(len(employed), fireCount) {
+				c := employed[i]
+				c.Employed = false
+				c.Work = nil
+			}
+		}
+	}
+
 	// Check if it's the first tick of a new day.
 	if s.CurrentTick%s.Provider.Config.Time.TicksPerDay == 0 {
 		s.dayStartPhase()
