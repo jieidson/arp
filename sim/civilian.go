@@ -114,26 +114,19 @@ func (civilian *CivilianBehavior) Move(p *Provider, agent *Agent) {
 	} else {
 		agent.Location.TotalLCP++
 	}
+
+	if agent.Location == civilian.Target {
+		// Target reached, choose a new one and go to sleep.
+		civilian.IsActive = false
+		target, busyTicks := civilian.pickNextTarget(agent)
+
+		civilian.Target = target
+		civilian.AlarmTick = p.Simulator().CurrentTick + busyTicks
+	}
 }
 
 // Action is run in the second phase of every tick in random order.
-func (civilian *CivilianBehavior) Action(p *Provider, agent *Agent) {
-	if !civilian.IsActive {
-		return
-	}
-
-	// If the agent hasn't reached it's target yet, don't take an action.
-	if agent.Location != civilian.Target {
-		return
-	}
-
-	// The agent reached it's target, become inactive
-	civilian.IsActive = false
-	target, busyTicks := civilian.pickNextTarget(agent)
-
-	civilian.Target = target
-	civilian.AlarmTick = p.Simulator().CurrentTick + busyTicks
-}
+func (civilian *CivilianBehavior) Action(p *Provider, agent *Agent) {}
 
 // Log collects data about the agent at the end of every tick.
 func (civilian *CivilianBehavior) Log(p *Provider, agent *Agent, row *AgentDataRow) {
