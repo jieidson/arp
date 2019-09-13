@@ -2,27 +2,39 @@ package main
 
 import (
 	"fmt"
-	"sort"
+	"math"
 
 	"github.com/jieidson/arp/sim"
 )
 
-const testSeed = 1234
-const iterations = 1000000
+const (
+	testSeed = 1234
+
+	size = 1000000
+)
 
 func main() {
 	rng := sim.NewRNG(testSeed)
 
-	values := make([]float64, 0, iterations)
+	values := make([]uint64, size)
 
-	for i := 0; i < iterations; i++ {
-		values = append(values, rng.Float64(0, 10))
+	for i := range values {
+		values[i] = rng.NormalUint64(720, 144)
 	}
 
-	sort.Float64Slice(values).Sort()
-
-	fmt.Println("value")
+	var sum uint64
 	for _, value := range values {
-		fmt.Println(value)
+		sum += value
 	}
+
+	mean := float64(sum) / float64(size)
+	fmt.Println("mean:", mean)
+
+	var stddev float64
+	for _, value := range values {
+		stddev += math.Pow(float64(value)-mean, 2)
+	}
+
+	stddev = math.Sqrt(stddev / (size - 1))
+	fmt.Println("stddev", stddev)
 }
